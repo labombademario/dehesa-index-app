@@ -12,6 +12,9 @@ App de [dehesaindex.com](https://dehesaindex.com) hecha con Expo (React Native +
 
 Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 
+## Avisos con la app cerrada
+Sin servidor. `src/lib/notify.ts` define una tarea de segundo plano (expo-background-task) que el sistema lanza cada 4 h como mínimo: descarga los datos, compara con los avisos y lanza una notificación local (expo-notifications) solo cuando un aviso pasa a cumplirse. La tarea se registra solo si hay avisos activos. El permiso se pide al crear el primer aviso. iOS decide cuándo ejecuta la tarea (a menudo por la noche o al cargar), así que el aviso puede llegar con horas de retraso. No funciona en Expo Go: hace falta una build de desarrollo (`npx expo run:android` / EAS).
+
 ## Datos
 Lee `https://dehesaindex.com/data/app/v1/` (lo genera `scripts/build-app-views.mjs` en el repo de la web, con su contrato `test-app-views.mjs`). Solo descarga los ficheros cuyo hash cambia en `manifest.json`. Lleva una copia en `src/data/bundled.json` para el primer arranque sin conexión (`npm run sync-data`).
 
@@ -25,6 +28,6 @@ npm test
 ```
 
 ## Pendiente
-- Notificaciones push de avisos con la app cerrada (fase 2).
-- Identificador `com.dehesaindex.app` provisional; iconos y pantalla de inicio definitivos.
+- Identificador `com.dehesaindex.app` provisional.
+- Iconos sacados de `assets/logo.png` de la web (761 px): para las tiendas conviene el logo original en vector o a más resolución.
 - Cuentas de Apple Developer y Google Play; builds con EAS.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm } from './logic.ts';
+import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm, newlyHit } from './logic.ts';
 import { num, pct, date, decimalsFor } from './format.ts';
 
 const P = (id: string, value: number, changePct: number | null, yearAgo: number | null = null): any =>
@@ -50,4 +50,18 @@ test('formato en cuatro idiomas', () => {
   assert.equal(date('2026-09-27', 'es'), '27 sep 2026');
   assert.equal(date('2026-08', 'fr'), 'août 2026');
   assert.equal(norm('Gasóleo'), 'gasoleo');
+});
+
+test('notificaciones: avisa una vez y se rearma al dejar de cumplirse', () => {
+  const rules = [{ id: 'a', priceId: 't', cond: 'ge' as const, value: 260, on: true }, { id: 'b', priceId: 't', cond: 'le' as const, value: 200, on: true }, { id: 'c', priceId: 't', cond: 'ge' as const, value: 1, on: false }];
+  let r = newlyHit(rules, [P('t', 264.1, 0)], []);
+  assert.deepEqual(r.fire.map(x => x.rule.id), ['a']);
+  assert.deepEqual(r.hit, ['a']);
+  r = newlyHit(rules, [P('t', 265, 0)], r.hit);          // sigue cumplido: no repite
+  assert.equal(r.fire.length, 0);
+  r = newlyHit(rules, [P('t', 250, 0)], r.hit);          // deja de cumplirse
+  assert.deepEqual(r.hit, []);
+  r = newlyHit(rules, [P('t', 261, 0)], r.hit);          // vuelve a cumplirse: avisa otra vez
+  assert.deepEqual(r.fire.map(x => x.rule.id), ['a']);
+  assert.equal(newlyHit(rules, [], []).fire.length, 0);  // precio desaparecido: nada
 });

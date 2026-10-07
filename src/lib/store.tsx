@@ -6,6 +6,7 @@ import type { AppData, Lang, Price } from './types';
 import type { AlertRule } from './logic';
 import { bundled, cached, refresh } from './api';
 import { translate } from './i18n';
+import { USER_KEY, runCheck, syncBackgroundTask } from './notify';
 
 export type Profile = 'cereal' | 'dairy' | 'pig' | 'buyer';
 export type Market = 'ES' | 'US' | 'CA';
@@ -30,7 +31,6 @@ export const PRESETS: Record<Market, Record<Profile, string[]>> = {
   CA: { cereal: ['ca:trigo', 'ca:canola_elevador', 'ca:cebada', 'ca:trigo_cwrs_ab'], dairy: ['ca:leche', 'ca:cebada', 'ca:maiz'], pig: ['ca:cerdo', 'ca:cerdo_ab', 'ca:cebada', 'ca:maiz'], buyer: ['ca:trigo', 'ca:canola_elevador', 'ca:cerdo', 'ca:leche'] },
 };
 export const BASKET_MAX = 8;
-const USER_KEY = 'dehesa:user:v1';
 
 function deviceLang(): Lang {
   try { const l = getLocales()[0]?.languageCode; if (l === 'es' || l === 'en' || l === 'fr' || l === 'it') return l; } catch { /* nada */ }
@@ -78,6 +78,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       reload();
     })();
   }, [reload]);
+
+  // Avisos: comprobar cada vez que llegan datos y mantener la tarea de segundo plano solo si hay avisos activos
+  useEffect(() => { if (ready && data.fetchedAt) runCheck(data, user.alerts.filter(a => a.on), user.lang).catch(() => {}); }, [data, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (ready) syncBackgroundTask(user.alerts.some(a => a.on)); }, [ready, user.alerts]);
 
   const setUser = useCallback((patch: Partial<UserState> | ((u: UserState) => Partial<UserState>)) => {
     setUserState(prev => {

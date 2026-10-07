@@ -11,6 +11,21 @@ export function evaluateAlert(rule: AlertRule, price: Price | undefined): AlertS
   return hit ? { kind: 'hit' } : { kind: 'gap', gap: Math.abs(rule.value - price.value) };
 }
 
+/**
+ * Avisos que se acaban de cumplir. Solo avisa una vez: un aviso que ya estaba cumplido en la comprobación
+ * anterior (prevHit) no se repite; cuando deja de cumplirse sale de la lista y puede volver a avisar.
+ */
+export function newlyHit(rules: AlertRule[], prices: Price[], prevHit: string[]): { fire: { rule: AlertRule; price: Price }[]; hit: string[] } {
+  const prev = new Set(prevHit), hit: string[] = [], fire: { rule: AlertRule; price: Price }[] = [];
+  for (const rule of rules) {
+    const price = prices.find(p => p.id === rule.priceId);
+    if (evaluateAlert(rule, price).kind !== 'hit' || !price) continue;
+    hit.push(rule.id);
+    if (!prev.has(rule.id)) fire.push({ rule, price });
+  }
+  return { fire, hit };
+}
+
 /** Margen de un cultivo: ingresos − costes, precio de equilibrio por tonelada y colchón sobre el precio */
 export function cropMargin(ha: number, yieldT: number, costHa: number, priceT: number) {
   const income = ha * yieldT * priceT, cost = ha * costHa, margin = income - cost;

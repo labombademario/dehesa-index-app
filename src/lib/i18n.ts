@@ -85,7 +85,7 @@ const S: Record<string, Row> = {
   paused: ['Pausado', 'Paused', 'En pause', 'In pausa'],
   missing: ['Este precio ya no se publica', 'This price is no longer published', 'Ce prix n’est plus publié', 'Questo prezzo non è più pubblicato'],
   noAlerts: ['Aún no tienes avisos. Crea uno desde el detalle de un precio.', 'No alerts yet. Create one from a price’s detail.', 'Pas encore d’alertes. Créez-en une depuis le détail d’un prix.', 'Nessun avviso. Creane uno dal dettaglio di un prezzo.'],
-  alertsNote: ['Los avisos se comprueban al abrir la app. Las notificaciones con la app cerrada llegan en la siguiente fase.', 'Alerts are checked when you open the app. Notifications with the app closed come in the next phase.', 'Les alertes sont vérifiées à l’ouverture de l’app. Les notifications app fermée arrivent dans la prochaine phase.', 'Gli avvisi si controllano all’apertura dell’app. Le notifiche ad app chiusa arrivano nella prossima fase.'],
+  alertsNote: ['El teléfono revisa tus avisos varias veces al día, también con la app cerrada, y te manda una notificación cuando se cumplen. La hora exacta la decide iOS o Android.', 'Your phone checks your alerts several times a day, even with the app closed, and notifies you when one is reached. iOS or Android decides the exact time.', 'Le téléphone vérifie vos alertes plusieurs fois par jour, même app fermée, et vous prévient quand l’une est atteinte. iOS ou Android choisit l’heure exacte.', 'Il telefono controlla i tuoi avvisi più volte al giorno, anche ad app chiusa, e ti invia una notifica quando uno si verifica. L’ora esatta la decide iOS o Android.'],
   delete: ['Borrar', 'Delete', 'Supprimer', 'Elimina'],
   // explotación
   crops: ['Cultivos', 'Crops', 'Cultures', 'Colture'],
@@ -167,6 +167,14 @@ const S: Record<string, Row> = {
   sourcesHint: ['Cada precio de la app viene de uno de estos organismos. La metodología y las licencias están en la web.', 'Every price in the app comes from one of these bodies. Methodology and licences are on the website.', 'Chaque prix de l’app provient de l’un de ces organismes. Méthodologie et licences sur le site.', 'Ogni prezzo dell’app proviene da uno di questi enti. Metodologia e licenze sono sul sito.'],
   pricesCount: ['{0} precios', '{0} prices', '{0} prix', '{0} prezzi'],
   stepOf: ['Paso {0} de {1}', 'Step {0} of {1}', 'Étape {0} sur {1}', 'Passo {0} di {1}'],
+  notifChannel: ['Avisos de precio', 'Price alerts', 'Alertes de prix', 'Avvisi di prezzo'],
+  notifBody: ['Ahora {0}. Tu aviso: {1} {2}.', 'Now {0}. Your alert: {1} {2}.', 'Actuellement {0}. Votre alerte : {1} {2}.', 'Ora {0}. Il tuo avviso: {1} {2}.'],
+  notifOff: ['Las notificaciones de Dehesa Index están desactivadas, así que los avisos solo se verán dentro de la app. Puedes activarlas en los ajustes del teléfono.', 'Dehesa Index notifications are off, so alerts will only show inside the app. You can turn them on in your phone settings.', 'Les notifications de Dehesa Index sont désactivées : les alertes ne s’afficheront que dans l’app. Vous pouvez les activer dans les réglages du téléphone.', 'Le notifiche di Dehesa Index sono disattivate, quindi gli avvisi si vedranno solo nell’app. Puoi attivarle nelle impostazioni del telefono.'],
+  openPhoneSettings: ['Abrir ajustes del teléfono', 'Open phone settings', 'Ouvrir les réglages du téléphone', 'Apri impostazioni del telefono'],
+  notifications: ['Notificaciones', 'Notifications', 'Notifications', 'Notifiche'],
+  notifHow: ['Se cambian en los ajustes del teléfono', 'Changed in your phone settings', 'Se modifient dans les réglages du téléphone', 'Si cambiano nelle impostazioni del telefono'],
+  notifOnShort: ['Activadas', 'On', 'Activées', 'Attive'],
+  notifOffShort: ['Desactivadas', 'Off', 'Désactivées', 'Disattivate'],
 };
 
 const IDX: Record<Lang, number> = { es: 0, en: 1, fr: 2, it: 3 };

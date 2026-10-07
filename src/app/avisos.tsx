@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, Switch, Text, TextInput, View } from 'react-native';
+import { Linking, Pressable, Switch, Text, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Button, Note, Segmented, SectionTitle, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { evaluateAlert, type AlertRule } from '../lib/logic';
 import { num } from '../lib/format';
+import { ensurePermission, markSeen, notificationsEnabled } from '../lib/notify';
 
 const parse = (v: string) => { const n = parseFloat(v.replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : null; };
 
@@ -15,6 +16,8 @@ export default function Avisos() {
   const L = user.lang;
   const [form, setForm] = useState<{ priceId: string; cond: AlertRule['cond']; value: string } | null>(null);
   const [err, setErr] = useState(false);
+  const [notifOk, setNotifOk] = useState<boolean | null>(null);
+  useEffect(() => { if (user.alerts.length) notificationsEnabled().then(setNotifOk); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = (priceId: string) => { const p = price(priceId); setErr(false); setForm({ priceId, cond: 'ge', value: p ? String(Math.round(p.value * 100) / 100) : '' }); };
   useEffect(() => { if (nuevo) open(String(nuevo)); }, [nuevo]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -23,8 +26,11 @@ export default function Avisos() {
     if (!form) return;
     const v = parse(form.value);
     if (v == null) { setErr(true); return; }
-    setUser(u => ({ alerts: [...u.alerts, { id: 'a' + Date.now().toString(36), priceId: form.priceId, cond: form.cond, value: v, on: true }] }));
+    const rule: AlertRule = { id: 'a' + Date.now().toString(36), priceId: form.priceId, cond: form.cond, value: v, on: true };
+    if (evaluateAlert(rule, price(rule.priceId)).kind === 'hit') markSeen(rule.id); // ya cumplido: se ve aquí, no hace falta notificarlo
+    setUser(u => ({ alerts: [...u.alerts, rule] }));
     setForm(null);
+    ensurePermission(L).then(setNotifOk);
   };
   const toggle = (id: string, on: boolean) => setUser(u => ({ alerts: u.alerts.map(a => a.id === id ? { ...a, on } : a) }));
   const del = (id: string) => setUser(u => ({ alerts: u.alerts.filter(a => a.id !== id) }));
@@ -90,6 +96,12 @@ export default function Avisos() {
           </Pressable>))}
         </Card>
       </> : null}
+      {notifOk === false ? (
+        <Card style={{ padding: 14, gap: 10 }}>
+          <Text style={s.rowSub}>{t('notifOff')}</Text>
+          <Button kind="secondary" label={t('openPhoneSettings')} onPress={() => Linking.openSettings()} />
+        </Card>
+      ) : null}
       <Note>{t('alertsNote')}</Note>
     </Screen>
   );

@@ -1,12 +1,25 @@
-import React from 'react';
-import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Stack, router } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
+// La pantalla de inicio se queda hasta que están cargadas las preferencias (evita ver un instante la bienvenida o Hoy sin datos)
+SplashScreen.preventAutoHideAsync().catch(() => {});
+SplashScreen.setOptions({ duration: 250, fade: true });
+
 function RootStack() {
-  const { t } = useApp();
+  const { t, ready } = useApp();
+  useEffect(() => { if (ready) SplashScreen.hideAsync().catch(() => {}); }, [ready]);
+  // Al tocar una notificación de aviso, abrir ese precio
+  const last = Notifications.useLastNotificationResponse();
+  useEffect(() => {
+    const url = last?.notification.request.content.data?.url;
+    if (last && last.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER && typeof url === 'string' && url.startsWith('/serie/')) router.push(url as any);
+  }, [last]);
   return (
     <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('tabToday') }} />
