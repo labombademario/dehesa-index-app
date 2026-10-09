@@ -1,6 +1,6 @@
 // Datos de dehesaindex.com/data/app/v1 con caché en el teléfono y copia incluida para el primer arranque sin conexión.
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { AppData } from './types';
+import type { AppData, CountryProfile } from './types';
 
 const BASE = 'https://dehesaindex.com/data/app/v1/';
 const FILES = ['prices', 'today', 'news', 'countries', 'sections'] as const;
@@ -65,4 +65,49 @@ export async function refresh(): Promise<AppData> {
   const c: Cached = { hashes, bodies, fetchedAt: new Date().toISOString() };
   try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch { /* sin espacio: seguimos con lo descargado */ }
   return toData(bodies, c.fetchedAt);
+}
+
+// Ficha de un pais (data/app/v1/country/<CC>.json): se baja al abrir el pais y se guarda en el telefono para verla sin conexion.
+const profileMem: Record<string, CountryProfile> = {};
+export async function loadCountry(cc: string): Promise<{ profile: CountryProfile | null; offline: boolean }> {
+  const key = 'dehesa:country:' + cc;
+  let stored: CountryProfile | null = profileMem[cc] ?? null;
+  if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.countries?.[cc]?.hash as string | undefined;
+    if (!h) return { profile: null, offline: false };   // este pais no tiene ficha
+    if (stored && stored.hash === h) { profileMem[cc] = stored; return { profile: stored, offline: false }; }
+    const fresh: CountryProfile = await getJson(BASE + 'country/' + cc + '.json?h=' + h);
+    profileMem[cc] = fresh;
+    try { await AsyncStorage.setItem(key, JSON.stringify(fresh)); } catch { /* sin espacio */ }
+    return { profile: fresh, offline: false };
+  } catch {
+    if (stored) profileMem[cc] = stored;
+    return { profile: stored, offline: true };
+  }
+}
+export function countryFromMemory(cc: string): CountryProfile | null { return profileMem[cc] ?? null; }
+
+// Historico completo para los rangos de los graficos (6 meses ... maximo). Se baja al abrir el grafico y se queda en memoria.
+type Pts = [string, number][];
+const histMem: Record<string, Pts> = {};
+export async function loadPriceHistory(id: string, version: string): Promise<Pts | null> {
+  if (histMem[id]) return histMem[id];
+  try {
+    const r = await getJson(BASE + 'history/' + id.replace(/[^A-Za-z0-9_.-]/g, '_') + '.json?v=' + encodeURIComponent(version));
+    return (histMem[id] = r.points as Pts);
+  } catch { return null; }
+}
+const chunkMem: Record<string, Map<string, Pts>> = {};
+export async function loadSeriesHistory(file: string, id: string): Promise<Pts | null> {
+  try {
+    if (!chunkMem[file]) {
+      const r = await getJson('https://dehesaindex.com/data/' + file, 25000);
+      const m = new Map<string, Pts>();
+      for (const s of (r.series ?? [])) if (Array.isArray(s.points)) m.set(s.id, s.points.filter((x: any) => typeof x[1] === 'number'));
+      chunkMem[file] = m;
+    }
+    return chunkMem[file].get(id) ?? null;
+  } catch { return null; }
 }

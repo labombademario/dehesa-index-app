@@ -4,6 +4,8 @@ import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { useApp, BASKET_MAX } from '../../lib/store';
 import { Screen, Card, Row, Button, LineChart, Note, Change, text } from '../../components/ui';
 import { C } from '../../lib/theme';
+import { RangeChart } from '../../components/RangeChart';
+import { loadPriceHistory } from '../../lib/api';
 import { num, pct, date } from '../../lib/format';
 
 export default function Serie() {
@@ -29,17 +31,7 @@ export default function Serie() {
         <Text style={{ fontSize: 16, color: C.textMuted }}>{p.unit[L]}</Text>
         <Change v={p.changePct} text={pct(p.changePct, L)} />
       </View>
-      <Card style={{ padding: 14 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{t('lastPoints', pts.length)}</Text>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{t('max')} {num(mx, L)}</Text>
-        </View>
-        <LineChart points={pts} width={width - 32 - 28 - 2} label={`${p.name[L]}: ${num(pts[0], L)} → ${num(p.value, L)} ${p.unit[L]}`} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{t('min')} {num(mn, L)} · {date(p.points[0]?.[0] ?? p.date, L)}</Text>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{date(p.date, L)}</Text>
-        </View>
-      </Card>
+      <RangeChart points={p.points} unit={p.unit[L]} label={p.name[L]} width={width - 32 - 28 - 2} load={() => loadPriceHistory(p.id, p.date)} />
       <Card>
         <Row first title={t('source')} right={p.sourceName} />
         <Row title={t('lastData')} right={date(p.date, L)} />

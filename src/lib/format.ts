@@ -47,3 +47,9 @@ export function eur(v: number, lang: Lang): string {
   const s = new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: 0 }).format(Math.abs(v));
   return (v < 0 ? '−' : '') + s + ' €';
 }
+
+/** Cifras de indicadores de pais: sin decimales de mas (615.590 t, 3,72 %, 21,7 %) */
+export function numAuto(v: number, lang: Lang): string {
+  const a = Math.abs(v);
+  return num(v, lang, a >= 1000 ? 0 : a >= 100 ? 1 : 2);
+}

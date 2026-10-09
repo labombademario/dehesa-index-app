@@ -49,3 +49,7 @@ export interface AppData {
   sections: Section[];
   fetchedAt: string | null;   // null = copia incluida en la app (sin conexion desde la instalacion)
 }
+
+export interface CountrySeries { id: string; label: string; unit: string; frequency: string; latest: number; period: string; changePct: number | null; sourceId: string; file?: string; points: [string, number][] }
+export interface CountryGroup { id: string; title: T4; total: number; series: CountrySeries[] }
+export interface CountryProfile { country: string; seriesTotal: number; latestPeriod: string | null; firstPeriod: string | null; sources: string[]; sourceNames: Record<string, string>; groups: CountryGroup[]; hash?: string }
