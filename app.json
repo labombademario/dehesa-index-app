@@ -46,7 +46,8 @@
           "defaultChannel": "alertas"
         }
       ],
-      "expo-background-task"
+      "expo-background-task",
+      "./plugins/with-ios-scene-lifecycle"
     ],
     "scheme": "dehesaindex",
     "experiments": {
