@@ -36,6 +36,9 @@ export default function Today() {
         )) : <Row first title={t('emptyBasket')} onPress={() => router.push('/precios')} />}
       </Card>
 
+      <SectionTitle>{t('summaryTitle')}</SectionTitle>
+      <Card><Row first title={t('summaryTitle')} sub={t('summarySub')} right="›" onPress={() => router.push('/resumen')} /></Card>
+
       {cal.length ? <>
         <SectionTitle action={t('seeCalendar')} onAction={() => router.push('/calendario')}>{t('upcoming')}</SectionTitle>
         <Card>{cal.map((e, i) => { const lt = localTime(e.at, L); return <Row key={e.id} first={i === 0} title={e.name} sub={e.agency} right={lt.time} rightSub={lt.day} />; })}</Card>

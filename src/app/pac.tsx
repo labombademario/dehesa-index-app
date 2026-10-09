@@ -36,7 +36,7 @@ export default function Pac() {
       <Stack.Screen options={{ title: 'PAC' }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text }} accessibilityRole="header">{t('pacTitle')}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t('pacIntro')}</Text>
-      {!pac ? <Note>{done ? t('missing') : '…'}</Note> : <>
+      {!pac ? <Note>{done ? t('noDataNow') : '…'}</Note> : <>
         <Segmented options={[{ value: 'direct', label: t('pacDirect') }, { value: 'rural', label: t('pacRural') }]} value={kind} onChange={setKind} />
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {pac.years.map((y, i) => (

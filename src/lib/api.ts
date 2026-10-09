@@ -181,3 +181,27 @@ export async function loadPac(): Promise<PacData | null> {
   }
   return pacMem;
 }
+
+// Resumen diario y semanal (data/app/v1/summary.json)
+export type SummaryData = {
+  daily: { at: string; counts: { datasets: number; periods: number; series: number; revisions: number };
+    movers: { cc: string; label: string; labelT?: Record<string, string>; unit: string; period: string; value: number; changePct: number }[];
+    revisions: { cc: string; label: string; labelT?: Record<string, string>; unit: string; period: string; old: number; new: number; pct: number }[] } | null;
+  weekly: { week: string; from: string; to: string; items: number; sources: number; topics: [string, number][]; regions: [string, number][];
+    top: { h: string; source: string; url: string; date: string; region: string; topic: string; lang: string }[] } | null;
+};
+let sumMem: SummaryData | null = null;
+export async function loadSummary(): Promise<SummaryData | null> {
+  if (sumMem) return sumMem;
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.files?.['summary.json']?.hash as string | undefined;
+    if (!h) return null;
+    const d = await getJson(BASE + 'summary.json?h=' + h);
+    sumMem = d.summary as SummaryData;
+    try { await AsyncStorage.setItem('dehesa:summary', JSON.stringify(sumMem)); } catch { /* */ }
+  } catch {
+    try { const raw = await AsyncStorage.getItem('dehesa:summary'); if (raw) sumMem = JSON.parse(raw); } catch { /* */ }
+  }
+  return sumMem;
+}
