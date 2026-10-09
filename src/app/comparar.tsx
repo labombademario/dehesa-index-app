@@ -4,13 +4,13 @@ import Svg, { Line, Path } from 'react-native-svg';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle, s } from '../components/ui';
-import { C } from '../lib/theme';
+import { C, mode } from '../lib/theme';
 import { num, pct } from '../lib/format';
 import { norm } from '../lib/logic';
 import { loadPriceHistory } from '../lib/api';
 
 type Pts = [string, number][];
-const COLORS = ['#1f6b43', '#b03a2e', '#2b6cb0', '#c07f12'];
+const colors = () => (mode === 'dark' ? ['#7FD0A0', '#F08A7E', '#7FB2E8', '#E3B04F'] : ['#1f6b43', '#b03a2e', '#2b6cb0', '#c07f12']);
 const RANGES = [{ k: '6m', m: 6 }, { k: '1y', m: 12 }, { k: '3y', m: 36 }, { k: '5y', m: 60 }, { k: '10y', m: 120 }, { k: 'max', m: 0 }];
 function ts(p: string): number {
   let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p); if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
@@ -43,7 +43,7 @@ export default function Comparar() {
   }, [q, sel, data.prices, L]);
   const series = sel.map((id, i) => {
     const p = data.prices.find(x => x.id === id)!; const all = hist[id] ?? p.points;
-    return { id, p, color: COLORS[i % 4], all };
+    return { id, p, color: colors()[i % 4], all };
   });
   const lastTs = series.length ? Math.max(...series.map(x => ts(x.all[x.all.length - 1][0]))) : 0;
   const cur = RANGES.find(r => r.k === range) ?? RANGES[1];

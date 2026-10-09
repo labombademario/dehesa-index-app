@@ -3,14 +3,14 @@ import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-na
 import Svg, { Path } from 'react-native-svg';
 import { router } from 'expo-router';
 import { Card, Note, Row, SectionTitle } from './ui';
-import { C } from '../lib/theme';
+import { C, mode } from '../lib/theme';
 import { useApp } from '../lib/store';
 import { loadMap, mapFromMemory } from '../lib/api';
 import { num } from '../lib/format';
 import type { CountryMap, MapMetric } from '../lib/types';
 
 const RAMPS = { green: ['#e8f1e4', '#bfdcb8', '#8cc08c', '#4f9a62', '#1f6b43'], warm: ['#fdecc8', '#f9c97a', '#ef9b4a', '#d4622d', '#a32d1f'] };
-const NODATA = '#e4e4e4';
+const nodata = () => (mode === 'dark' ? '#3A3D2C' : '#e4e4e4');
 
 /** Mismos cortes que la web: cuantiles sobre los valores publicados, hasta 5 clases */
 export function classify(vals: number[]) {
@@ -22,7 +22,7 @@ export function classify(vals: number[]) {
   return { n, br, cls, min: sorted[0], max: sorted[sorted.length - 1] };
 }
 export function metricColor(m: MapMetric, x: number | undefined, k: ReturnType<typeof classify>): string {
-  if (x == null) return NODATA;
+  if (x == null) return nodata();
   const ramp = RAMPS[m.ramp];
   return ramp[Math.round(k.cls(x) * (ramp.length - 1) / Math.max(1, k.n - 1))];
 }
@@ -68,7 +68,7 @@ export function CountryMapView({ cc }: { cc: string }) {
         </ScrollView>
         <Svg width={w} height={h} viewBox={map.viewBox} accessibilityLabel={`${t('mapRegions')} · ${m.label[L]}`}>
           {map.regions.map(r => (
-            <Path key={r.id} d={r.d} fill={metricColor(m, m.vals[r.id], k)} stroke={r.id === sel ? '#111111' : '#FFFFFF'} strokeWidth={r.id === sel ? 3 : 1}
+            <Path key={r.id} d={r.d} fill={metricColor(m, m.vals[r.id], k)} stroke={r.id === sel ? (mode === 'dark' ? '#FFFFFF' : '#111111') : C.surface} strokeWidth={r.id === sel ? 3 : 1}
               onPress={() => setSel(r.id)} />
           ))}
         </Svg>
@@ -83,7 +83,7 @@ export function CountryMapView({ cc }: { cc: string }) {
               </View>
             );
           })}
-          {missing.length ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><View style={{ width: 14, height: 14, borderRadius: 3, backgroundColor: NODATA, borderWidth: 1, borderColor: '#00000026' }} /><Text style={{ fontSize: 11.5, color: C.textMuted }}>{t('mapNoData')}</Text></View> : null}
+          {missing.length ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><View style={{ width: 14, height: 14, borderRadius: 3, backgroundColor: nodata(), borderWidth: 1, borderColor: C.border }} /><Text style={{ fontSize: 11.5, color: C.textMuted }}>{t('mapNoData')}</Text></View> : null}
         </View>
         <Text style={{ fontSize: 12, color: C.textMuted }}>{m.label[L]}{m.period ? ` · ${m.period.slice(0, 10)}` : ''}</Text>
         {selected ? (
