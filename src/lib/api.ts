@@ -151,3 +151,15 @@ export async function loadRegionData(cc: string): Promise<RegionData | null> {
     return fresh;
   } catch { if (stored) regMem[cc] = stored; return stored; }
 }
+
+// Catalogo completo de un pais (data/catalog/<CC>.json de la web: todas sus series, sin puntos). Pesa hasta ~400 KB: solo al explorar.
+export interface CatSeries { id: string; label: string; unit: string; freq: string; group: string; latestPeriod: string; latest: number; changePct: number | null; sourceId: string; file: string }
+const catMem: Record<string, CatSeries[]> = {};
+export async function loadCatalog(cc: string): Promise<CatSeries[] | null> {
+  if (catMem[cc]) return catMem[cc];
+  try {
+    const r = await getJson('https://dehesaindex.com/data/catalog/' + cc + '.json', 30000);
+    return (catMem[cc] = (r.series ?? []).filter((s: any) => s.file && typeof s.latest === 'number' && s.latestPeriod));
+  } catch { return null; }
+}
+export function catalogFromMemory(cc: string): CatSeries[] | null { return catMem[cc] ?? null; }

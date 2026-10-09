@@ -27,6 +27,7 @@ function RootStack() {
       <Stack.Screen name="serie/[id]" options={{ title: '' }} />
       <Stack.Screen name="seccion/[id]" options={{ title: '' }} />
       <Stack.Screen name="pais/[code]" options={{ title: t('tabCountries') }} />
+      <Stack.Screen name="explorar" options={{ title: '' }} />
       <Stack.Screen name="comparar" options={{ title: '' }} />
       <Stack.Screen name="region" options={{ title: '' }} />
       <Stack.Screen name="indicador" options={{ title: '' }} />

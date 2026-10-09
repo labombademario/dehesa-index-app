@@ -77,6 +77,7 @@ export default function Pais() {
           })}
         </Card>
       </> : null}
+      {prof ? <Button kind="secondary" label={t('explore')} onPress={() => router.push({ pathname: '/explorar', params: { cc: c.code } })} /> : null}
       <Button label={t('fullProfile')} onPress={() => Linking.openURL(c.url)} />
     </Screen>
   );
