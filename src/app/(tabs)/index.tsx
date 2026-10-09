@@ -7,6 +7,13 @@ import { C, changeColor } from '../../lib/theme';
 import { movers } from '../../lib/logic';
 import { num, pct, date, localTime } from '../../lib/format';
 
+// Nombre legible de un conjunto de datos: si el feed solo trae el nombre del fichero, se limpia (data/abares-stats.json -> abares)
+function dataName(name: string, file: string): string {
+  const n = name.replace(/^Update /, '');
+  if (/^data\/.+\.json$/.test(n)) return n.replace(/^data\//, '').replace(/\.json$/, '').replace(/-stats$/, '').replace(/-/g, ' ');
+  return n;
+}
+
 export default function Today() {
   const { data, user, t } = useApp();
   const L = user.lang;
@@ -36,12 +43,12 @@ export default function Today() {
 
       {news.length ? <>
         <SectionTitle action={t('seeAll')} onAction={() => router.push('/noticias')}>{t('news')}</SectionTitle>
-        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={`${n.source} · ${n.country}`} onPress={() => Linking.openURL(n.url)} />)}</Card>
+        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country].filter(Boolean).join(' · ')} onPress={() => Linking.openURL(n.url)} />)}</Card>
       </> : null}
 
       {data.today.newDatasets.length ? <>
         <SectionTitle>{t('newData')}</SectionTitle>
-        <Card>{data.today.newDatasets.slice(0, 5).map((d, i) => <Row key={d.file} first={i === 0} title={d.name.replace(/^Update /, '')} right={`${num(d.series, L, 0)} ${t('series')}`} />)}</Card>
+        <Card>{data.today.newDatasets.slice(0, 5).map((d, i) => <Row key={d.file} first={i === 0} title={dataName(d.name, d.file)} right={`${num(d.series, L, 0)} ${t('series')}`} />)}</Card>
       </> : null}
       {data.today.revisions ? <Note>{t('revisions', data.today.revisions)}</Note> : null}
       <View style={{ height: 8 }} />

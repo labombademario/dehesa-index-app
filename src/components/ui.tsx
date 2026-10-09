@@ -20,7 +20,7 @@ export function Screen({ children, title, subtitle, right, scroll = true, refres
   ) : null;
   if (!scroll) return <View style={s.screen}>{head}{children}</View>;
   return (
-    <ScrollView style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen}
+    <ScrollView style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen} contentInsetAdjustmentBehavior="automatic"
       refreshControl={refresh ? <RefreshControl refreshing={refreshing} onRefresh={reload} tintColor={C.accent} colors={[C.accent]} /> : undefined}>
       {head}
       <DataStatus />
