@@ -2,6 +2,7 @@ import React from 'react';
 import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import { View, type ColorValue } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../../lib/store';
 import { C, ANDROID } from '../../lib/theme';
 import { Icon } from '../../components/ui';
@@ -22,6 +23,8 @@ function TabIcon({ d, focused, color }: { d: string; focused: boolean; color: st
 
 export default function TabsLayout() {
   const { t, user, ready } = useApp();
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, ANDROID ? 0 : 8);
   if (ready && !user.onboarded) return <Redirect href="/bienvenida" />;
   const icon = (k: keyof typeof ICONS) => ({ focused, color }: { focused: boolean; color: ColorValue }) => <TabIcon d={ICONS[k]} focused={focused} color={String(color)} />;
   return (
@@ -29,7 +32,7 @@ export default function TabsLayout() {
       headerShown: false,
       tabBarActiveTintColor: ANDROID ? '#10251A' : C.accent,
       tabBarInactiveTintColor: ANDROID ? C.textSoft : C.textMuted,
-      tabBarStyle: { backgroundColor: ANDROID ? C.surfaceAlt : '#FBF9F3', borderTopColor: C.border, height: ANDROID ? 80 : undefined },
+      tabBarStyle: { backgroundColor: ANDROID ? C.surfaceAlt : '#FBF9F3', borderTopColor: C.border, height: ANDROID ? 80 : 52 + bottom, paddingBottom: ANDROID ? undefined : bottom, paddingTop: ANDROID ? undefined : 6 },
       tabBarLabelStyle: { fontSize: ANDROID ? 12 : 10.5, fontWeight: '600' },
       sceneStyle: { backgroundColor: C.bg },
     }}>
