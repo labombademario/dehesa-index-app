@@ -2,20 +2,21 @@ import React from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { useApp, BASKET_MAX } from '../../lib/store';
-import { Screen, Card, Row, Button, LineChart, Note, Change, text } from '../../components/ui';
-import { C } from '../../lib/theme';
+import { Screen, Card, Row, Button, Note, SectionTitle, Change, text } from '../../components/ui';
+import { C, changeColor } from '../../lib/theme';
 import { RangeChart } from '../../components/RangeChart';
 import { loadPriceHistory } from '../../lib/api';
 import { num, pct, date } from '../../lib/format';
 
 export default function Serie() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { price, user, setUser, t } = useApp();
+  const { price, data, user, setUser, t } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;
   const p = price(String(id));
   if (!p) return <Screen title="—"><Note>{t('missing')}</Note></Screen>;
   const inB = user.basket.includes(p.id);
+  const others = data.prices.filter(x => x.product === p.product && x.id !== p.id);
   const pts = p.points.map(x => x[1]);
   const mn = Math.min(...pts), mx = Math.max(...pts);
   const toggle = () => setUser(u => ({ basket: inB ? u.basket.filter(x => x !== p.id) : u.basket.length < BASKET_MAX ? [...u.basket, p.id] : u.basket }));
@@ -43,6 +44,11 @@ export default function Serie() {
         <Button style={{ flex: 1 }} label={t('createAlert')} onPress={() => router.push({ pathname: '/avisos', params: { nuevo: p.id } })} />
         <Button style={{ flex: 1 }} kind="secondary" label={inB ? t('removeBasket') : t('addBasket')} onPress={toggle} />
       </View>
+      <Button kind="secondary" label={t('compare')} onPress={() => router.push({ pathname: '/comparar', params: { ids: p.id } })} />
+      {others.length ? <>
+        <SectionTitle>{t('otherMarkets')}</SectionTitle>
+        <Card>{others.map((o, i) => <Row key={o.id} first={i === 0} title={o.place[L]} sub={o.unit[L]} right={num(o.value, L)} rightSub={pct(o.changePct, L)} rightColor={changeColor(o.changePct)} onPress={() => router.push(`/serie/${o.id}`)} />)}</Card>
+      </> : null}
       {!inB && user.basket.length >= BASKET_MAX ? <Note>{t('basketFull')}</Note> : null}
     </Screen>
   );

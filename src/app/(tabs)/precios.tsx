@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useApp } from '../../lib/store';
-import { Screen, Card, Row, SectionTitle, Segmented, Sparkline, s } from '../../components/ui';
+import { Screen, Card, Row, SectionTitle, Segmented, Sparkline, Button, s } from '../../components/ui';
 import { C, R, changeColor } from '../../lib/theme';
 import { num, pct, date } from '../../lib/format';
 import { norm } from '../../lib/logic';
@@ -53,6 +53,7 @@ export default function Prices() {
           </View>
         </Pressable>
       ) : null}
+      <Button kind="secondary" label={t('compare')} onPress={() => router.push('/comparar')} />
       <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={C.textMuted} returnKeyType="search"
         accessibilityLabel={t('search')} style={[s.input, { borderRadius: 28, paddingHorizontal: 16, backgroundColor: C.surfaceAlt, borderWidth: 0 }]} />
       {q.trim() ? (
