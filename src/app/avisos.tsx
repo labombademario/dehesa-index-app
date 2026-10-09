@@ -14,12 +14,14 @@ export default function Avisos() {
   const { nuevo } = useLocalSearchParams<{ nuevo?: string }>();
   const { data, user, setUser, price, t } = useApp();
   const L = user.lang;
-  const [form, setForm] = useState<{ priceId: string; cond: AlertRule['cond']; value: string } | null>(null);
+  const [form, setForm] = useState<{ priceId: string; cond: AlertRule['cond']; value: string; touched?: boolean } | null>(null);
   const [err, setErr] = useState(false);
   const [notifOk, setNotifOk] = useState<boolean | null>(null);
   useEffect(() => { if (user.alerts.length) notificationsEnabled().then(setNotifOk); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const open = (priceId: string) => { const p = price(priceId); setErr(false); setForm({ priceId, cond: 'ge', value: p ? String(Math.round(p.value * 100) / 100) : '' }); };
+  // Valor sugerido: un 2 % por encima (sube a) o por debajo (baja a) del precio actual, con la coma decimal del idioma
+  const suggest = (priceId: string, cond: AlertRule['cond']) => { const p = price(priceId); if (!p) return ''; const v = Math.round(p.value * (cond === 'ge' ? 1.02 : 0.98) * 100) / 100; return L === 'en' ? String(v) : String(v).replace('.', ','); };
+  const open = (priceId: string) => { setErr(false); setForm({ priceId, cond: 'ge', value: suggest(priceId, 'ge') }); };
   useEffect(() => { if (nuevo) open(String(nuevo)); }, [nuevo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = () => {
@@ -51,11 +53,11 @@ export default function Avisos() {
           </> : null}
           <View>
             <Text style={s.label}>{t('whenPrice')}</Text>
-            <Segmented value={form.cond} onChange={cond => setForm({ ...form, cond })} options={[{ value: 'ge', label: t('goesUp') }, { value: 'le', label: t('goesDown') }]} />
+            <Segmented value={form.cond} onChange={cond => setForm({ ...form, cond, value: form.touched ? form.value : suggest(form.priceId, cond) })} options={[{ value: 'ge', label: t('goesUp') }, { value: 'le', label: t('goesDown') }]} />
           </View>
           <View>
             <Text style={s.label}>{t('value')}{fp ? ` (${fp.unit[L]})` : ''}</Text>
-            <TextInput style={s.input} value={form.value} onChangeText={value => { setErr(false); setForm({ ...form, value }); }}
+            <TextInput style={s.input} value={form.value} onChangeText={value => { setErr(false); setForm({ ...form, value, touched: true }); }}
               keyboardType="decimal-pad" accessibilityLabel={t('value')} returnKeyType="done" onSubmitEditing={save} />
             {err ? <Text style={{ color: C.negative, fontSize: 13, marginTop: 4 }}>{t('badValue')}</Text> : null}
           </View>

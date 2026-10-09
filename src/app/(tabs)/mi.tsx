@@ -14,7 +14,7 @@ export default function Mine() {
     { k: 'local', name: t('myMarket'), hint: t('myMarketHint'), icon: 'M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z', go: () => Linking.openURL('https://dehesaindex.com/mi-mercado.html') },
   ];
   return (
-    <Screen title={t('tabMine')}>
+    <Screen refresh title={t('tabMine')}>
       <Note>{t('mineHint')}</Note>
       {items.map(h => (
         <Pressable key={h.k} onPress={h.go} accessibilityRole="button" android_ripple={{ color: C.surfaceAlt }}

@@ -24,7 +24,7 @@ export default function Indicador() {
   const mn = pts.length ? Math.min(...pts) : sr.latest, mx = pts.length ? Math.max(...pts) : sr.latest;
   return (
     <Screen>
-      <Stack.Screen options={{ title: country ? country.name[L] : '' }} />
+      <Stack.Screen options={{ title: '' }} />
       <View>
         <Text style={{ fontSize: 14, color: C.textMuted, fontWeight: '500' }}>{country ? country.name[L] : cc}{group ? ` · ${group.title[L]}` : ''}</Text>
         <Text style={{ fontSize: 22, fontWeight: '700', color: C.text }} accessibilityRole="header">{sr.labelT?.[L] ?? sr.label}</Text>

@@ -27,7 +27,7 @@ function RootStack() {
   return (
     <>
     <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
-    <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false }}>
+    <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false, headerBackButtonDisplayMode: 'minimal' }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('tabToday') }} />
       <Stack.Screen name="bienvenida" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="serie/[id]" options={{ title: '' }} />
