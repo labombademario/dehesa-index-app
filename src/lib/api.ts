@@ -163,3 +163,21 @@ export async function loadCatalog(cc: string): Promise<CatSeries[] | null> {
   } catch { return null; }
 }
 export function catalogFromMemory(cc: string): CatSeries[] | null { return catMem[cc] ?? null; }
+
+// PAC: asignaciones por pais del Reglamento (UE) 2021/2115 (data/app/v1/pac.json)
+export type PacData = { sourceName: string; url: string; act: string; consolidated: string; unit: string; years: string[]; direct: [string, number[]][]; rural: [string, number[]][] };
+let pacMem: PacData | null = null;
+export async function loadPac(): Promise<PacData | null> {
+  if (pacMem) return pacMem;
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.files?.['pac.json']?.hash as string | undefined;
+    if (!h) return null;
+    const d = await getJson(BASE + 'pac.json?h=' + h);
+    pacMem = d.pac as PacData;
+    try { await AsyncStorage.setItem('dehesa:pac', JSON.stringify(pacMem)); } catch { /* */ }
+  } catch {
+    try { const raw = await AsyncStorage.getItem('dehesa:pac'); if (raw) pacMem = JSON.parse(raw); } catch { /* */ }
+  }
+  return pacMem;
+}

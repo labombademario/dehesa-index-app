@@ -17,7 +17,7 @@ export default function More() {
         return (
           <React.Fragment key={g}>
             <SectionTitle>{t(GROUP_KEY[g])}</SectionTitle>
-            <Card>{items.map((x, i) => <Row key={x.id} first={i === 0} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => router.push(`/seccion/${x.id}`)} />)}</Card>
+            <Card>{g === 'data' ? <Row first title="PAC / CAP" sub={t('pacTitle')} right="›" onPress={() => router.push('/pac')} /> : null}{items.map((x, i) => <Row key={x.id} first={i === 0 && g !== 'data'} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => router.push(`/seccion/${x.id}`)} />)}</Card>
           </React.Fragment>
         );
       })}

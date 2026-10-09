@@ -25,6 +25,7 @@ function RootStack() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('tabToday') }} />
       <Stack.Screen name="bienvenida" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="serie/[id]" options={{ title: '' }} />
+      <Stack.Screen name="pac" options={{ title: 'PAC' }} />
       <Stack.Screen name="seccion/[id]" options={{ title: '' }} />
       <Stack.Screen name="pais/[code]" options={{ title: t('tabCountries') }} />
       <Stack.Screen name="explorar" options={{ title: '' }} />
