@@ -148,7 +148,7 @@ export const s = StyleSheet.create({
   rowSub: { fontSize: 12.5, color: C.textMuted, marginTop: 1 },
   rowRight: { fontSize: 15, fontWeight: '700', color: C.text, fontVariant: ['tabular-nums'] },
   rowRightSub: { fontSize: 12.5, color: C.textMuted, fontVariant: ['tabular-nums'], fontWeight: '600' },
-  button: { borderRadius: R.button, paddingVertical: ANDROID ? 11 : 13, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 1 },
+  button: { borderRadius: R.button, paddingVertical: ANDROID ? 11 : 13, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   buttonText: { fontSize: 16, fontWeight: '600' },
   segI: { flexDirection: 'row', backgroundColor: C.surfaceAlt, borderRadius: 12, padding: 4, gap: 4 },
   segIItem: { flex: 1, paddingVertical: 9, borderRadius: 9, alignItems: 'center' },

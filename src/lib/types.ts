@@ -50,6 +50,19 @@ export interface AppData {
   fetchedAt: string | null;   // null = copia incluida en la app (sin conexion desde la instalacion)
 }
 
-export interface CountrySeries { id: string; label: string; unit: string; frequency: string; latest: number; period: string; changePct: number | null; sourceId: string; file?: string; points: [string, number][] }
+export interface CountrySeries { id: string; label: string; labelT?: T4; unit: string; frequency: string; latest: number; period: string; changePct: number | null; sourceId: string; file?: string; points: [string, number][] }
 export interface CountryGroup { id: string; title: T4; total: number; series: CountrySeries[] }
 export interface CountryProfile { country: string; seriesTotal: number; latestPeriod: string | null; firstPeriod: string | null; sources: string[]; sourceNames: Record<string, string>; groups: CountryGroup[]; hash?: string }
+
+export interface MapMetric { id: string; label: T4; unit: string; dec: number; ramp: 'green' | 'warm'; period: string | null; vals: Record<string, number> }
+export interface CountryMap { country: string; viewBox: string; regions: { id: string; name: T4; d: string }[]; metrics: MapMetric[]; hash?: string }
+
+export interface RegionPoint { period: string; value: number; points?: [number | string, number][] }
+export interface RegionRecord {
+  eaa: (RegionPoint & { k: string })[];
+  crops: { k: string; area: RegionPoint | null; prod: { period: string; value: number } | null }[];
+  animals: (RegionPoint & { k: string })[];
+  milk: RegionPoint | null;
+  farms: { period: string; HLD?: number; HA?: number; EUR?: number; LSU?: number; AWU?: number } | null;
+}
+export interface RegionData { country: string; units: Record<string, string>; source: { name: string; url: string; license: string } | null; labels: Record<string, T4>; regions: Record<string, RegionRecord>; hash?: string }

@@ -60,8 +60,8 @@ export default function Avisos() {
             {err ? <Text style={{ color: C.negative, fontSize: 13, marginTop: 4 }}>{t('badValue')}</Text> : null}
           </View>
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <Button label={t('save')} onPress={save} />
-            <Button kind="secondary" label={t('cancel')} onPress={() => setForm(null)} />
+            <Button style={{ flex: 1 }} label={t('save')} onPress={save} />
+            <Button style={{ flex: 1 }} kind="secondary" label={t('cancel')} onPress={() => setForm(null)} />
           </View>
         </Card>
       ) : null}

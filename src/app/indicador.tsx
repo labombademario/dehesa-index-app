@@ -25,14 +25,14 @@ export default function Indicador() {
       <Stack.Screen options={{ title: country ? country.name[L] : '' }} />
       <View>
         <Text style={{ fontSize: 14, color: C.textMuted, fontWeight: '500' }}>{country ? country.name[L] : cc}{group ? ` · ${group.title[L]}` : ''}</Text>
-        <Text style={{ fontSize: 22, fontWeight: '700', color: C.text }} accessibilityRole="header">{sr.label}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '700', color: C.text }} accessibilityRole="header">{sr.labelT?.[L] ?? sr.label}</Text>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         <Text style={text.big}>{numAuto(sr.latest, L)}</Text>
         <Text style={{ fontSize: 16, color: C.textMuted }}>{sr.unit}</Text>
         <Change v={sr.changePct} text={pct(sr.changePct, L)} />
       </View>
-      <RangeChart points={sr.points} unit={sr.unit} label={sr.label} width={width - 32 - 28 - 2} load={sr.file ? () => loadSeriesHistory(sr.file as string, sr.id) : undefined} />
+      <RangeChart points={sr.points} unit={sr.unit} label={sr.labelT?.[L] ?? sr.label} width={width - 32 - 28 - 2} load={sr.file ? () => loadSeriesHistory(sr.file as string, sr.id) : undefined} />
       <Card>
         <Row first title={t('source')} right={prof.sourceNames[sr.sourceId] ?? sr.sourceId} />
         <Row title={t('lastData')} right={sr.period} />

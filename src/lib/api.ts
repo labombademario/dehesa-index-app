@@ -1,6 +1,6 @@
 // Datos de dehesaindex.com/data/app/v1 con caché en el teléfono y copia incluida para el primer arranque sin conexión.
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { AppData, CountryProfile } from './types';
+import type { AppData, CountryProfile, CountryMap, RegionData } from './types';
 
 const BASE = 'https://dehesaindex.com/data/app/v1/';
 const FILES = ['prices', 'today', 'news', 'countries', 'sections'] as const;
@@ -110,4 +110,44 @@ export async function loadSeriesHistory(file: string, id: string): Promise<Pts |
     }
     return chunkMem[file].get(id) ?? null;
   } catch { return null; }
+}
+
+// Mapa de un pais (data/app/v1/map/<CC>.json): contornos de regiones y metricas, con copia en el telefono.
+const mapMem: Record<string, CountryMap> = {};
+export async function loadMap(cc: string): Promise<{ map: CountryMap | null; offline: boolean }> {
+  const key = 'dehesa:map:' + cc;
+  let stored: CountryMap | null = mapMem[cc] ?? null;
+  if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.maps?.[cc]?.hash as string | undefined;
+    if (!h) return { map: null, offline: false };
+    if (stored && stored.hash === h) { mapMem[cc] = stored; return { map: stored, offline: false }; }
+    const fresh: CountryMap = await getJson(BASE + 'map/' + cc + '.json?h=' + h, 25000);
+    mapMem[cc] = fresh;
+    try { await AsyncStorage.setItem(key, JSON.stringify(fresh)); } catch { /* sin espacio */ }
+    return { map: fresh, offline: false };
+  } catch {
+    if (stored) mapMem[cc] = stored;
+    return { map: stored, offline: true };
+  }
+}
+export function mapFromMemory(cc: string): CountryMap | null { return mapMem[cc] ?? null; }
+
+// Datos por region de un pais (data/app/v1/region/<CC>.json)
+const regMem: Record<string, RegionData> = {};
+export async function loadRegionData(cc: string): Promise<RegionData | null> {
+  const key = 'dehesa:region:' + cc;
+  let stored: RegionData | null = regMem[cc] ?? null;
+  if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.regionData?.[cc]?.hash as string | undefined;
+    if (!h) return null;
+    if (stored && stored.hash === h) { regMem[cc] = stored; return stored; }
+    const fresh: RegionData = await getJson(BASE + 'region/' + cc + '.json?h=' + h, 25000);
+    regMem[cc] = fresh;
+    try { await AsyncStorage.setItem(key, JSON.stringify(fresh)); } catch { /* sin espacio */ }
+    return fresh;
+  } catch { if (stored) regMem[cc] = stored; return stored; }
 }

@@ -28,7 +28,7 @@ export default function Seccion() {
             <Row title={t('source')} right="Dehesa Index" />
           </Card>
         </> : <Note>{t('missing')}</Note>}
-        <Button label={t('openWeb')} onPress={() => Linking.openURL('https://dehesaindex.com/metodologia.html')} />
+        <Button style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL('https://dehesaindex.com/metodologia.html')} />
       </Screen>
     );
   }
@@ -49,7 +49,7 @@ export default function Seccion() {
         </Card>
       </> : null}
       <Note>{t('sectionNote')}</Note>
-      <Button label={t('openWeb')} onPress={() => Linking.openURL(sec.url)} />
+      <Button style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL(sec.url)} />
     </Screen>
   );
 }

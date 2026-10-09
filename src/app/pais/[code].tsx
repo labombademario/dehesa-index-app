@@ -7,6 +7,7 @@ import { C, changeColor } from '../../lib/theme';
 import { num, numAuto, pct } from '../../lib/format';
 import type { Price, CountryProfile } from '../../lib/types';
 import { loadCountry, countryFromMemory } from '../../lib/api';
+import { CountryMapView } from '../../components/CountryMapView';
 
 const REGION_OF: Record<string, Price['region']> = { US: 'us', CA: 'ca', UK: 'uk', GB: 'uk' };
 
@@ -43,6 +44,7 @@ export default function Pais() {
           <Text style={{ fontSize: 13, color: C.textMuted, lineHeight: 19 }}>{t('coverageText', pctv, c.name[L])}</Text>
         </Card>
       ) : null}
+      <CountryMapView cc={c.code} />
       {prices.length ? <>
         <SectionTitle>{t('pricesHere')}</SectionTitle>
         <Card>{prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L]} right={`${num(p.value, L)} ${p.unit[L]}`}
@@ -67,7 +69,7 @@ export default function Pais() {
                   </View>
                   <Text style={{ fontSize: 18, color: C.textMuted }}>{on ? '⌃' : '⌄'}</Text>
                 </Pressable>
-                {on ? g.series.map(sr => <Row key={sr.id} title={sr.label} sub={`${sr.unit} · ${sr.period} · ${t(sr.frequency)}`} right={numAuto(sr.latest, L)}
+                {on ? g.series.map(sr => <Row key={sr.id} title={sr.labelT?.[L] ?? sr.label} sub={`${sr.unit} · ${sr.period} · ${t(sr.frequency)}`} right={numAuto(sr.latest, L)}
                   rightSub={sr.changePct == null ? undefined : pct(sr.changePct, L)} rightColor={changeColor(sr.changePct)}
                   onPress={() => router.push({ pathname: '/indicador', params: { cc: c.code, id: sr.id } })} />) : null}
               </View>

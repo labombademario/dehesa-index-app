@@ -40,8 +40,8 @@ export default function Serie() {
       </Card>
       {p.note ? <Note>{L === 'es' ? '' : t('noteEs') + ' '}{p.note.es}</Note> : null}
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <Button label={t('createAlert')} onPress={() => router.push({ pathname: '/avisos', params: { nuevo: p.id } })} />
-        <Button kind="secondary" label={inB ? t('removeBasket') : t('addBasket')} onPress={toggle} />
+        <Button style={{ flex: 1 }} label={t('createAlert')} onPress={() => router.push({ pathname: '/avisos', params: { nuevo: p.id } })} />
+        <Button style={{ flex: 1 }} kind="secondary" label={inB ? t('removeBasket') : t('addBasket')} onPress={toggle} />
       </View>
       {!inB && user.basket.length >= BASKET_MAX ? <Note>{t('basketFull')}</Note> : null}
     </Screen>
