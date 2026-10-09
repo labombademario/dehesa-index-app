@@ -16,6 +16,7 @@ export const C = {
   positive: '#276A43',
   negative: '#B23A34',
   outline: '#6B6550',
+  gold: '#C9A227',
 };
 
 export const ANDROID = Platform.OS === 'android';

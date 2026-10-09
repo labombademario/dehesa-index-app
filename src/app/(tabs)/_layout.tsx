@@ -33,7 +33,7 @@ export default function TabsLayout() {
       tabBarActiveTintColor: ANDROID ? '#10251A' : C.accent,
       tabBarInactiveTintColor: ANDROID ? C.textSoft : C.textMuted,
       tabBarStyle: { backgroundColor: ANDROID ? C.surfaceAlt : '#FBF9F3', borderTopColor: C.border, height: ANDROID ? 80 : 52 + bottom, paddingBottom: ANDROID ? undefined : bottom, paddingTop: ANDROID ? undefined : 6 },
-      tabBarLabelStyle: { fontSize: ANDROID ? 12 : 10.5, fontWeight: '600' },
+      tabBarLabelStyle: { fontSize: ANDROID ? 12 : 10.5, fontFamily: 'PublicSans_600SemiBold' },
       sceneStyle: { backgroundColor: C.bg },
     }}>
       <Tabs.Screen name="index" options={{ title: t('tabToday'), tabBarIcon: icon('index') }} />

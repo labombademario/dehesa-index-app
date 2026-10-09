@@ -6,6 +6,9 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from '../lib/store';
 import { C } from '../lib/theme';
+import { installFonts, useBrandFonts } from '../lib/fonts';
+
+installFonts();
 
 // La pantalla de inicio se queda hasta que están cargadas las preferencias (evita ver un instante la bienvenida o Hoy sin datos)
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -13,7 +16,8 @@ SplashScreen.setOptions({ duration: 250, fade: true });
 
 function RootStack() {
   const { t, ready } = useApp();
-  useEffect(() => { if (ready) SplashScreen.hideAsync().catch(() => {}); }, [ready]);
+  const fontsOk = useBrandFonts();
+  useEffect(() => { if (ready && fontsOk) SplashScreen.hideAsync().catch(() => {}); }, [ready, fontsOk]);
   // Al tocar una notificación de aviso, abrir ese precio
   const last = Notifications.useLastNotificationResponse();
   useEffect(() => {

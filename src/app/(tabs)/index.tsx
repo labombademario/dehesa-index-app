@@ -23,10 +23,15 @@ export default function Today() {
   const now = new Date();
   const weekday = new Intl.DateTimeFormat({ es: 'es-ES', en: 'en-GB', fr: 'fr-FR', it: 'it-IT' }[L], { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
   return (
-    <Screen refresh title={t('tabToday')} subtitle={weekday.charAt(0).toUpperCase() + weekday.slice(1)}
-      right={<Pressable onPress={() => router.push('/ajustes')} accessibilityRole="button" accessibilityLabel={t('settings')} hitSlop={8}
-        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" color={C.accent} size={22} /></Pressable>}>
+    <Screen refresh title={t('tabToday')} subtitle={weekday.charAt(0).toUpperCase() + weekday.slice(1)}>
+      <View style={{ backgroundColor: C.accent, borderRadius: 20, padding: 22, gap: 14 }}>
+        <Text accessibilityRole="header" style={{ fontSize: 28, lineHeight: 33, fontWeight: '700', color: '#FFFFFF' }}>{t('heroTitle')}</Text>
+        <Text style={{ fontSize: 15, lineHeight: 22, color: 'rgba(251,249,243,0.82)' }}>{t('heroSub')}</Text>
+        <Pressable onPress={() => router.navigate('/mi')} accessibilityRole="button" style={{ backgroundColor: C.gold, borderRadius: 999, paddingVertical: 14, paddingHorizontal: 18, alignItems: 'center' }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: C.accent, textAlign: 'center' }}>{t('heroCta')} →</Text>
+        </Pressable>
+      </View>
+
       <SectionTitle>{t('todayMovers')}</SectionTitle>
       <Card>
         {mv.length ? mv.map((p, i) => (

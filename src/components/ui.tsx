@@ -1,11 +1,28 @@
 // Piezas comunes de la interfaz. Los interruptores y campos son los nativos de cada sistema.
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle, type TextStyle, RefreshControl } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle, type TextStyle, RefreshControl } from 'react-native';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 import { C, R, ANDROID, changeColor } from '../lib/theme';
 import { useApp } from '../lib/store';
 import { date as fmtDate } from '../lib/format';
+
+export function BrandBar() {
+  const { t, user } = useApp();
+  const btn = { width: 44, height: 44, borderRadius: 22, backgroundColor: C.surfaceAlt, alignItems: 'center', justifyContent: 'center' } as const;
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+      <Image source={require('../../assets/logo-nav.png')} style={{ width: 40, height: 34 }} resizeMode="contain" accessibilityLabel="Dehesa Index" />
+      <View style={{ flex: 1 }} />
+      <Pressable onPress={() => router.push('/buscar')} accessibilityRole="button" accessibilityLabel={t('gsTitle')} hitSlop={6} style={btn}><Icon d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3" color={C.accent} size={22} /></Pressable>
+      <Pressable onPress={() => router.push('/ajustes')} accessibilityRole="button" accessibilityLabel={t('settings')} hitSlop={6} style={[btn, { width: 'auto', paddingHorizontal: 14 }]}>
+        <Text style={{ fontSize: 14, fontWeight: '700', color: C.accent }}>{user.lang.toUpperCase()} ▾</Text>
+      </Pressable>
+      <Pressable onPress={() => router.navigate('/mas')} accessibilityRole="button" accessibilityLabel={t('menu')} hitSlop={6} style={btn}><Icon d="M4 7h16M4 12h16M4 17h16" color={C.accent} size={22} /></Pressable>
+    </View>
+  );
+}
 
 export function Screen({ children, title, subtitle, right, scroll = true, refresh }: { children: React.ReactNode; title?: string; subtitle?: string; right?: React.ReactNode; scroll?: boolean; refresh?: boolean }) {
   const { refreshing, reload } = useApp();
@@ -22,6 +39,7 @@ export function Screen({ children, title, subtitle, right, scroll = true, refres
   return (
     <ScrollView style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen} contentInsetAdjustmentBehavior="automatic"
       refreshControl={refresh ? <RefreshControl refreshing={refreshing} onRefresh={reload} tintColor={C.accent} colors={[C.accent]} /> : undefined}>
+      {refresh ? <BrandBar /> : null}
       {head}
       <DataStatus />
       {children}
