@@ -11,6 +11,7 @@ export default function More() {
   const groups: Section['group'][] = ['production', 'trade', 'costs', 'data'];
   return (
     <Screen refresh title={t('tabMore')}>
+      <Card><Row first title={t('settings')} sub={`${t('language')} · ${t('market')}`} right="›" onPress={() => router.push('/ajustes')} /></Card>
       {groups.map(g => {
         const items = data.sections.filter(x => x.group === g);
         if (!items.length) return null;
