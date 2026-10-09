@@ -76,7 +76,7 @@ export default function Comparar() {
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {RANGES.map(r => { const on = r.k === cur.k; return (
               <Pressable key={r.k} onPress={() => setRange(r.k)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={{ flex: 1, alignItems: 'center', paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.accent : C.surfaceAlt }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: on ? '#FFFFFF' : C.text }}>{name(r.k)}</Text>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: on ? C.accentInk : C.text }}>{name(r.k)}</Text>
               </Pressable>); })}
           </View>
           {usable.length >= 2 ? (

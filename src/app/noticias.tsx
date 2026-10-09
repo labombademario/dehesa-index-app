@@ -16,7 +16,7 @@ function Chips({ options, value, onChange }: { options: { v: string; label: stri
         return (
           <Pressable key={o.v} onPress={() => onChange(o.v)} accessibilityRole="button" accessibilityState={{ selected: on }}
             style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, backgroundColor: on ? C.accent : C.surfaceAlt }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: on ? '#FFFFFF' : C.text }}>{o.label}{o.n != null ? ` · ${o.n}` : ''}</Text>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: on ? C.accentInk : C.text }}>{o.label}{o.n != null ? ` · ${o.n}` : ''}</Text>
           </Pressable>
         );
       })}

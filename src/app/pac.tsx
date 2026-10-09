@@ -41,7 +41,7 @@ export default function Pac() {
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {pac.years.map((y, i) => (
             <Pressable key={y} onPress={() => setYi(i)} accessibilityRole="button" accessibilityState={{ selected: i === yi }} style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: i === yi ? C.accent : C.surfaceAlt }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: i === yi ? '#fff' : C.text }}>{y}</Text>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: i === yi ? C.accentInk : C.text }}>{y}</Text>
             </Pressable>
           ))}
         </View>

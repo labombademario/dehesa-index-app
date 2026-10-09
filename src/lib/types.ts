@@ -26,7 +26,7 @@ export interface CalendarEvent { id: string; name: string; agency: string; at: s
 
 export interface Today {
   index: { value: number; period: string; changeMoMPct: number; changeYoYPct: number; base: { period: string; value: number } } | null;
-  newDatasets: { file: string; name: string; series: number }[];
+  newDatasets: { file: string; name: string; nameT?: Record<string, string>; series: number }[];
   revisions: number;
   calendar: CalendarEvent[];
 }

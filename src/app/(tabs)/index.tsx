@@ -24,18 +24,18 @@ export default function Today() {
   const weekday = new Intl.DateTimeFormat({ es: 'es-ES', en: 'en-GB', fr: 'fr-FR', it: 'it-IT' }[L], { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
   return (
     <Screen refresh title={t('tabToday')} subtitle={weekday.charAt(0).toUpperCase() + weekday.slice(1)}>
-      <View style={{ backgroundColor: C.accent, borderRadius: 20, padding: 22, gap: 14 }}>
+      <View style={{ backgroundColor: C.hero, borderRadius: 20, padding: 22, gap: 14 }}>
         <Text accessibilityRole="header" style={{ fontSize: 28, lineHeight: 33, fontWeight: '700', color: '#FFFFFF' }}>{t('heroTitle')}</Text>
         <Text style={{ fontSize: 15, lineHeight: 22, color: 'rgba(251,249,243,0.82)' }}>{t('heroSub')}</Text>
         <Pressable onPress={() => router.navigate('/mi')} accessibilityRole="button" style={{ backgroundColor: C.gold, borderRadius: 999, paddingVertical: 14, paddingHorizontal: 18, alignItems: 'center' }}>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: C.accent, textAlign: 'center' }}>{t('heroCta')} →</Text>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E3328', textAlign: 'center' }}>{t('heroCta')} →</Text>
         </Pressable>
       </View>
 
       <SectionTitle>{t('todayMovers')}</SectionTitle>
       <Card>
         {mv.length ? mv.map((p, i) => (
-          <Row key={p.id} first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${date(p.date, L)}`}
+          <Row key={p.id} badge first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${date(p.date, L)}`}
             right={`${num(p.value, L)} ${p.unit[L]}`} rightSub={pct(p.changePct, L)} rightColor={changeColor(p.changePct)}
             onPress={() => router.push(`/serie/${p.id}`)} />
         )) : <Row first title={t('emptyBasket')} onPress={() => router.push('/precios')} />}
@@ -56,7 +56,7 @@ export default function Today() {
 
       {data.today.newDatasets.length ? <>
         <SectionTitle>{t('newData')}</SectionTitle>
-        <Card>{data.today.newDatasets.slice(0, 5).map((d, i) => <Row key={d.file} first={i === 0} title={dataName(d.name, d.file)} right={`${num(d.series, L, 0)} ${t('series')}`} />)}</Card>
+        <Card>{data.today.newDatasets.slice(0, 5).map((d, i) => <Row key={d.file} first={i === 0} title={d.nameT?.[L] ?? dataName(d.name, d.file)} right={`${num(d.series, L, 0)} ${t('series')}`} />)}</Card>
       </> : null}
       {data.today.revisions ? <Note>{t('revisions', data.today.revisions)}</Note> : null}
       <View style={{ height: 8 }} />

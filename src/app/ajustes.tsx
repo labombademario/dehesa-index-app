@@ -24,6 +24,8 @@ export default function Ajustes() {
       <Stack.Screen options={{ title: t('settings') }} />
       <SectionTitle>{t('language')}</SectionTitle>
       <Card>{LANGS.map((l, i) => <View key={l} style={i > 0 ? s.rowDivider : undefined}><Choice label={LANG_NAMES[l]} on={user.lang === l} onPress={() => setUser({ lang: l })} /></View>)}</Card>
+      <SectionTitle>{t('appearance')}</SectionTitle>
+      <Segmented value={user.theme} onChange={theme => setUser({ theme })} options={[{ value: 'auto', label: t('themeAuto') }, { value: 'light', label: t('themeLight') }, { value: 'dark', label: t('themeDark') }]} />
       <SectionTitle>{t('profile')}</SectionTitle>
       <Card>{PROFILES.map((p, i) => <View key={p.v} style={i > 0 ? s.rowDivider : undefined}><Choice label={t(p.k)} on={user.profile === p.v} onPress={() => setUser({ profile: p.v })} /></View>)}</Card>
       <SectionTitle>{t('market')}</SectionTitle>

@@ -61,7 +61,7 @@ export function CountryMapView({ cc }: { cc: string }) {
             return (
               <Pressable key={x.id} onPress={() => setMid(x.id)} accessibilityRole="button" accessibilityState={{ selected: on }}
                 style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, backgroundColor: on ? C.accent : C.surfaceAlt }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: on ? '#FFFFFF' : C.text }}>{x.label[L]}</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: on ? C.accentInk : C.text }}>{x.label[L]}</Text>
               </Pressable>
             );
           })}

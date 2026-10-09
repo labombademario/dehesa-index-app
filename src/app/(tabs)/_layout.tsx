@@ -30,9 +30,9 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{
       headerShown: false,
-      tabBarActiveTintColor: ANDROID ? '#10251A' : C.accent,
+      tabBarActiveTintColor: C.accent,
       tabBarInactiveTintColor: ANDROID ? C.textSoft : C.textMuted,
-      tabBarStyle: { backgroundColor: ANDROID ? C.surfaceAlt : '#FBF9F3', borderTopColor: C.border, height: ANDROID ? 80 : 52 + bottom, paddingBottom: ANDROID ? undefined : bottom, paddingTop: ANDROID ? undefined : 6 },
+      tabBarStyle: { backgroundColor: ANDROID ? C.surfaceAlt : C.surface, borderTopColor: C.border, height: ANDROID ? 80 : 52 + bottom, paddingBottom: ANDROID ? undefined : bottom, paddingTop: ANDROID ? undefined : 6 },
       tabBarLabelStyle: { fontSize: ANDROID ? 12 : 10.5, fontFamily: 'PublicSans_600SemiBold' },
       sceneStyle: { backgroundColor: C.bg },
     }}>

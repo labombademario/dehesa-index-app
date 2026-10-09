@@ -54,7 +54,7 @@ export function RangeChart({ points, load, unit, label, width }: { points: Pts; 
           return (
             <Pressable key={o.k} onPress={() => setSel(o.k)} accessibilityRole="tab" accessibilityState={{ selected: on }}
               style={{ flex: 1, alignItems: 'center', paddingVertical: 7, borderRadius: 14, backgroundColor: on ? C.accent : C.surfaceAlt }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: on ? '#FFFFFF' : C.text }}>{name(o.k)}</Text>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: on ? C.accentInk : C.text }}>{name(o.k)}</Text>
             </Pressable>
           );
         })}

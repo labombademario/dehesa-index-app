@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useApp } from '../../lib/store';
-import { Screen, Card, Row, SectionTitle, Segmented, Sparkline, Button, s } from '../../components/ui';
+import { Screen, Card, Row, SectionTitle, Segmented, Sparkline, Button, OfficialBadge, s } from '../../components/ui';
 import { C, R, changeColor } from '../../lib/theme';
 import { num, pct, date } from '../../lib/format';
 import { norm } from '../../lib/logic';
@@ -28,6 +28,7 @@ export default function Prices() {
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={s.rowTitle}>{p.name[L]}</Text>
         <Text style={s.rowSub}>{p.place[L]} · {date(p.date, L)}</Text>
+        <OfficialBadge />
       </View>
       <Sparkline points={p.points.slice(-12).map(x => x[1])} color={changeColor(p.changePct)} />
       <View style={{ alignItems: 'flex-end', minWidth: 96 }}>

@@ -4,18 +4,26 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle, t
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
-import { C, R, ANDROID, changeColor } from '../lib/theme';
+import { C, R, ANDROID, changeColor, onThemeChange, mode as themeMode } from '../lib/theme';
 import { useApp } from '../lib/store';
 import { date as fmtDate } from '../lib/format';
 
+export function OfficialBadge() {
+  const { t } = useApp();
+  return <View style={{ alignSelf: 'flex-start', backgroundColor: C.badgeBg, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, marginTop: 3 }}><Text style={{ fontSize: 10.5, fontWeight: '700', letterSpacing: 0.4, color: C.badgeInk }}>{t('officialData')}</Text></View>;
+}
+
 export function BrandBar() {
-  const { t, user } = useApp();
+  const { t, user, setUser, mode } = useApp();
   const btn = { width: 44, height: 44, borderRadius: 22, backgroundColor: C.surfaceAlt, alignItems: 'center', justifyContent: 'center' } as const;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
       <Image source={require('../../assets/logo-nav.png')} style={{ width: 40, height: 34 }} resizeMode="contain" accessibilityLabel="Dehesa Index" />
       <View style={{ flex: 1 }} />
       <Pressable onPress={() => router.push('/buscar')} accessibilityRole="button" accessibilityLabel={t('gsTitle')} hitSlop={6} style={btn}><Icon d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3" color={C.accent} size={22} /></Pressable>
+      <Pressable onPress={() => setUser({ theme: mode === 'dark' ? 'light' : 'dark' })} accessibilityRole="button" accessibilityLabel={t('themeToggle')} hitSlop={6} style={btn}>
+        <Icon d={mode === 'dark' ? 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1' : 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z'} color={C.accent} size={22} />
+      </Pressable>
       <Pressable onPress={() => router.push('/ajustes')} accessibilityRole="button" accessibilityLabel={t('settings')} hitSlop={6} style={[btn, { width: 'auto', paddingHorizontal: 14 }]}>
         <Text style={{ fontSize: 14, fontWeight: '700', color: C.accent }}>{user.lang.toUpperCase()} ▾</Text>
       </Pressable>
@@ -67,12 +75,13 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
   return <View style={[s.card, style]}>{children}</View>;
 }
 
-export function Row({ title, sub, right, rightSub, rightColor, onPress, first, accessibilityLabel }: { title: string; sub?: string; right?: string; rightSub?: string; rightColor?: string; onPress?: () => void; first?: boolean; accessibilityLabel?: string }) {
+export function Row({ title, sub, right, rightSub, rightColor, onPress, first, accessibilityLabel, badge }: { badge?: boolean; title: string; sub?: string; right?: string; rightSub?: string; rightColor?: string; onPress?: () => void; first?: boolean; accessibilityLabel?: string }) {
   const body = (
     <View style={[s.row, !first && s.rowDivider]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={s.rowTitle}>{title}</Text>
         {sub ? <Text style={s.rowSub}>{sub}</Text> : null}
+        {badge ? <OfficialBadge /> : null}
       </View>
       {right != null ? (
         <View style={{ alignItems: 'flex-end' }}>
@@ -149,7 +158,7 @@ export function Note({ children }: { children: React.ReactNode }) {
   return <Text style={s.note}>{children}</Text>;
 }
 
-export const s = StyleSheet.create({
+function build() { return StyleSheet.create({
   screen: { padding: 16, paddingBottom: 40, gap: 16, backgroundColor: C.bg, flexGrow: 1 },
   headRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   title: { fontSize: ANDROID ? 28 : 34, fontWeight: '700', color: C.text, letterSpacing: ANDROID ? 0 : -0.5 },
@@ -177,7 +186,11 @@ export const s = StyleSheet.create({
   segAOn: { backgroundColor: C.accentSoft },
   segText: { fontSize: 14, fontWeight: '600', color: C.text },
   note: { fontSize: 13, color: C.textMuted, lineHeight: 19 },
-  input: { fontSize: 16, padding: 10, borderRadius: R.input, borderWidth: 1, borderColor: ANDROID ? C.outline : '#DAD3C2', backgroundColor: '#FBF9F3', color: C.text },
+  input: { fontSize: 16, padding: 10, borderRadius: R.input, borderWidth: 1, borderColor: ANDROID ? C.outline : C.borderStrong, backgroundColor: C.surfaceInput, color: C.text },
   label: { fontSize: 12.5, color: C.textMuted, marginBottom: 4 },
-});
-export const text: Record<string, TextStyle> = { big: { fontSize: 40, fontWeight: '700', color: C.text, fontVariant: ['tabular-nums'], letterSpacing: -1 } };
+}); }
+// Los estilos se rehacen al cambiar de tema (los demas ficheros los leen en cada pintado)
+export let s = build();
+export let text: Record<string, TextStyle> = { big: { fontSize: 40, fontWeight: '700', color: C.text, fontVariant: ['tabular-nums'], letterSpacing: -1 } };
+onThemeChange(() => rebuildStyles());
+export function rebuildStyles(): void { s = build(); text = { big: { fontSize: 40, fontWeight: '700', color: C.text, fontVariant: ['tabular-nums'], letterSpacing: -1 } }; }

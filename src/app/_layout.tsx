@@ -15,7 +15,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 SplashScreen.setOptions({ duration: 250, fade: true });
 
 function RootStack() {
-  const { t, ready } = useApp();
+  const { t, ready, mode } = useApp();
   const fontsOk = useBrandFonts();
   useEffect(() => { if (ready && fontsOk) SplashScreen.hideAsync().catch(() => {}); }, [ready, fontsOk]);
   // Al tocar una notificación de aviso, abrir ese precio
@@ -25,6 +25,8 @@ function RootStack() {
     if (last && last.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER && typeof url === 'string' && url.startsWith('/serie/')) router.push(url as any);
   }, [last]);
   return (
+    <>
+    <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('tabToday') }} />
       <Stack.Screen name="bienvenida" options={{ headerShown: false, gestureEnabled: false }} />
@@ -45,6 +47,7 @@ function RootStack() {
       <Stack.Screen name="noticias" options={{ title: t('news') }} />
       <Stack.Screen name="ajustes" options={{ title: t('settings') }} />
     </Stack>
+    </>
   );
 }
 
@@ -52,7 +55,6 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <AppProvider>
-        <StatusBar style="dark" />
         <RootStack />
       </AppProvider>
     </SafeAreaProvider>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { useApp, BASKET_MAX } from '../../lib/store';
-import { Screen, Card, Row, Button, Note, SectionTitle, Change, text } from '../../components/ui';
+import { Screen, Card, Row, Button, Note, SectionTitle, Change, OfficialBadge, text } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { RangeChart } from '../../components/RangeChart';
 import { loadPriceHistory } from '../../lib/api';
@@ -26,6 +26,7 @@ export default function Serie() {
       <View>
         <Text style={{ fontSize: 14, color: C.textMuted, fontWeight: '500' }}>{p.place[L]}</Text>
         <Text style={{ fontSize: 26, fontWeight: '700', color: C.text }} accessibilityRole="header">{p.name[L]}</Text>
+        <OfficialBadge />
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         <Text style={text.big}>{num(p.value, L)}</Text>

@@ -52,7 +52,7 @@ export default function Explorar() {
             return (
               <Pressable key={x.id} onPress={() => { setGroup(x.id); setLimit(PAGE); }} accessibilityRole="button" accessibilityState={{ selected: on }}
                 style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, backgroundColor: on ? C.accent : C.surfaceAlt }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: on ? '#FFFFFF' : C.text }}>{x.id === 'all' ? t('exploreAll') : gname(x.id)} · {x.n}</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: on ? C.accentInk : C.text }}>{x.id === 'all' ? t('exploreAll') : gname(x.id)} · {x.n}</Text>
               </Pressable>
             );
           })}

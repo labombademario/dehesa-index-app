@@ -6,6 +6,8 @@ import type { AppData, Lang, Price } from './types';
 import type { AlertRule } from './logic';
 import { bundled, cached, refresh } from './api';
 import { translate } from './i18n';
+import { applyTheme, type Mode } from './theme';
+import { useColorScheme } from 'react-native';
 import { USER_KEY, runCheck, syncBackgroundTask } from './notify';
 
 export type Profile = 'cereal' | 'dairy' | 'pig' | 'buyer';
@@ -14,6 +16,7 @@ export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha
 export interface UserState {
   v: 1;
   lang: Lang;
+  theme: 'auto' | 'light' | 'dark';
   onboarded: boolean;
   profile: Profile;
   market: Market;
@@ -37,7 +40,7 @@ function deviceLang(): Lang {
   return 'es';
 }
 export function defaults(): UserState {
-  return { v: 1, lang: deviceLang(), onboarded: false, profile: 'cereal', market: 'ES', basket: [], alerts: [],
+  return { v: 1, lang: deviceLang(), theme: 'auto', onboarded: false, profile: 'cereal', market: 'ES', basket: [], alerts: [],
     crops: [{ id: 'c1', product: 'trigo', ha: '40', yld: '6.5', cost: '1150' }, { id: 'c2', product: 'maiz', ha: '15', yld: '11', cost: '2100' }],
     milk: { cows: '120', kg: '9500', cost: '38' }, pig: { n: '2000', kg: '88', cost: '1.55' } };
 }
@@ -55,6 +58,7 @@ interface Ctx {
   t: (key: string, ...vars: (string | number)[]) => string;
   price: (id: string) => Price | undefined;
   ready: boolean;
+  mode: Mode;
 }
 const C = createContext<Ctx | null>(null);
 
@@ -64,6 +68,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [offline, setOffline] = useState(false);
+  const system = useColorScheme();
+  const mode: Mode = user.theme === 'dark' ? 'dark' : user.theme === 'light' ? 'light' : system === 'dark' ? 'dark' : 'light';
+  applyTheme(mode); // antes de pintar los hijos, para que lean la paleta nueva
 
   const reload = useCallback(async () => {
     setRefreshing(true);
@@ -92,10 +99,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(() => ({
-    data, refreshing, offline, reload, user, setUser, ready,
+    data, refreshing, offline, reload, user, setUser, ready, mode,
     t: (key, ...vars) => translate(user.lang, key, ...vars),
     price: (id: string) => data.prices.find(p => p.id === id),
-  }), [data, refreshing, offline, reload, user, setUser, ready]);
+  }), [data, refreshing, offline, reload, user, setUser, ready, mode]);
   return <C.Provider value={value}>{children}</C.Provider>;
 }
 
