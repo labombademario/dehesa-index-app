@@ -11,13 +11,13 @@ import { loadCatalog, countryFromMemory, type CatSeries } from '../lib/api';
 const PAGE = 60;
 
 export default function Explorar() {
-  const { cc, g } = useLocalSearchParams<{ cc: string; g?: string }>();
+  const { cc, g, q: q0 } = useLocalSearchParams<{ cc: string; g?: string; q?: string }>();
   const { data, user, t } = useApp();
   const L = user.lang;
   const [cat, setCat] = useState<CatSeries[] | null>(null);
   const [state, setState] = useState<'loading' | 'ok' | 'fail'>('loading');
   const [group, setGroup] = useState<string>(g ? String(g) : 'all');
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(q0 ? String(q0) : '');
   const [limit, setLimit] = useState(PAGE);
   const prof = countryFromMemory(String(cc));
   const country = data.countries.find(x => x.code === cc);

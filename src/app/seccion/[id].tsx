@@ -1,11 +1,11 @@
 import React from 'react';
 import { Linking, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, text } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { num, pct, date } from '../../lib/format';
-import { figureText } from '../../lib/sections';
+import { figureText, NATIVE } from '../../lib/sections';
 
 export default function Seccion() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -48,8 +48,9 @@ export default function Seccion() {
           <Row title={t('period')} right={/^\d{4}-\d{2}-\d{2}$/.test(f.period) ? date(f.period, L) : f.period} />
         </Card>
       </> : null}
+      {NATIVE[sec.id] ? <Button style={{ flex: 0 }} label={t('seeSeries')} onPress={() => router.push({ pathname: '/explorar', params: NATIVE[sec.id] })} /> : null}
       <Note>{t('sectionNote')}</Note>
-      <Button style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL(sec.url)} />
+      <Button kind={NATIVE[sec.id] ? 'secondary' : 'primary'} style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL(sec.url)} />
     </Screen>
   );
 }

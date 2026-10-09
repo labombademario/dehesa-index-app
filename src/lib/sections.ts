@@ -14,3 +14,12 @@ export function figureText(sec: Section, lang: Lang): string {
   return u === '%' ? `${v} %` : `${v} ${u}`;
 }
 
+
+/** Secciones de la web que se pueden ver aquí con las series del catálogo: país, grupo y filtro de texto opcional (para rendimientos, el texto «yield»). */
+export const NATIVE: Record<string, { cc: string; g?: string; q?: string }> = {
+  rendimientos: { cc: 'US', g: 'crops', q: 'yield' },
+  ganaderia: { cc: 'US', g: 'livestock' },
+  exportaciones: { cc: 'US', g: 'trade' },
+  canada: { cc: 'CA', g: 'crops' },
+  insumos: { cc: 'US', g: 'prices_paid' },
+};

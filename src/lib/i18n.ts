@@ -249,6 +249,7 @@ const S: Record<string, Row> = {
   themeLight: ["Claro", "Light", "Clair", "Chiaro"],
   themeDark: ["Oscuro", "Dark", "Sombre", "Scuro"],
   themeToggle: ["Cambiar entre modo claro y oscuro", "Switch between light and dark mode", "Basculer entre mode clair et sombre", "Passa tra modalità chiara e scura"],
+  seeSeries: ['Ver las series de esta sección', 'See this section’s series', 'Voir les séries de cette rubrique', 'Vedi le serie di questa sezione'],
   otherMarkets: ['Mismo producto en otros mercados', 'Same product in other markets', 'Même produit sur d’autres marchés', 'Stesso prodotto in altri mercati'],
   explore: ['Explorar todas las series', 'Browse all series', 'Parcourir toutes les séries', 'Esplora tutte le serie'],
   exploreLoading: ['Cargando el catálogo del país…', 'Loading the country catalogue…', 'Chargement du catalogue du pays…', 'Caricamento del catalogo del paese…'],
