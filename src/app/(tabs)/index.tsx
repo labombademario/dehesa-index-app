@@ -37,7 +37,7 @@ export default function Today() {
       </Card>
 
       <SectionTitle>{t('summaryTitle')}</SectionTitle>
-      <Card><Row first title={t('summaryTitle')} sub={t('summarySub')} right="›" onPress={() => router.push('/resumen')} /></Card>
+      <Card><Row first title={t('summaryTitle')} sub={t('summarySub')} right="›" onPress={() => router.push('/resumen')} /><Row title={t('gsTitle')} sub={t('gsPlaceholder')} right="›" onPress={() => router.push('/buscar')} /></Card>
 
       {cal.length ? <>
         <SectionTitle action={t('seeCalendar')} onAction={() => router.push('/calendario')}>{t('upcoming')}</SectionTitle>

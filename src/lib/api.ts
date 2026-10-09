@@ -205,3 +205,18 @@ export async function loadSummary(): Promise<SummaryData | null> {
   }
   return sumMem;
 }
+
+// Indice de busqueda de series (data/app/v1/search.json): [pais, id, etiqueta, grupo, "es|en|fr|it"]. Solo en memoria (pesa ~2 MB).
+export type SearchRow = [string, string, string, string, string];
+let searchMem: SearchRow[] | null = null;
+export async function loadSearchIndex(): Promise<SearchRow[] | null> {
+  if (searchMem) return searchMem;
+  try {
+    const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const h = m.search?.hash as string | undefined;
+    if (!h) return null;
+    const d = await getJson(BASE + 'search.json?h=' + h, 40000);
+    searchMem = d.rows as SearchRow[];
+  } catch { /* sin red */ }
+  return searchMem;
+}
