@@ -8,7 +8,7 @@ import { Screen, Card, Row, Note, SectionTitle } from '../components/ui';
 import { Chips } from '../components/Chips';
 import { RangeChart } from '../components/RangeChart';
 import { C } from '../lib/theme';
-import { num, pct } from '../lib/format';
+import { num, pct, date as fmtDate } from '../lib/format';
 import { webJson, countryName } from '../lib/fv';
 import { tx, fill, flag, type T4 } from '../lib/tx';
 
@@ -52,7 +52,7 @@ export default function Madera() {
           <SectionTitle>{flag('DE') + ' ' + tx(L, { es: 'Alemania: precio de la madera de los bosques estatales', en: 'Germany: state-forest timber prices', fr: 'Allemagne : prix du bois des forêts domaniales', it: 'Germania: prezzi del legname delle foreste statali' })}</SectionTitle>
           <Chips items={Object.keys(P).filter(x => pr.series[x]).map(x => ({ value: x, label: tx(L, P[x]) }))} value={k} onChange={setK} />
           <Card>
-            <Row first title={tx(L, P[k]) + ' · ' + last[0]} right={num(last[1], L, 1)} rightSub={tx(L, { es: 'índice ', en: 'index ', fr: 'indice ', it: 'indice ' }) + pr.base} />
+            <Row first title={tx(L, P[k]) + ' · ' + fmtDate(last[0], L)} right={num(last[1], L, 1)} rightSub={tx(L, { es: 'índice ', en: 'index ', fr: 'indice ', it: 'indice ' }) + pr.base} />
             {prev ? <Row title={tx(L, { es: 'Mes anterior', en: 'Previous month', fr: 'Mois précédent', it: 'Mese precedente' })} right={num(prev[1], L, 1)} rightSub={pct((last[1] / prev[1] - 1) * 100, L)} /> : null}
             {yago ? <Row title={tx(L, { es: 'Hace un año', en: 'A year ago', fr: 'Il y a un an', it: 'Un anno fa' })} right={num(yago[1], L, 1)} rightSub={pct((last[1] / yago[1] - 1) * 100, L)} /> : null}
           </Card>

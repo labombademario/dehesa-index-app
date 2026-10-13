@@ -5,7 +5,7 @@ import { C } from '../lib/theme';
 
 export function Chips<T extends string>({ items, value, onChange }: { items: { value: T; label: string; flag?: string }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
       {items.map(it => {
         const on = it.value === value;
         return (
