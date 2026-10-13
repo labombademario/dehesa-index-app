@@ -9,6 +9,7 @@ import { countryFromMemory, catalogFromMemory, loadSeriesHistory } from '../lib/
 import type { CountrySeries } from '../lib/types';
 import { RangeChart } from '../components/RangeChart';
 import { SourceCite } from '../components/SourceCite';
+import { ExportCsv } from '../components/ExportCsv';
 
 export default function Indicador() {
   const { cc, id } = useLocalSearchParams<{ cc: string; id: string }>();
@@ -42,6 +43,7 @@ export default function Indicador() {
         <Row title={t('frequency')} right={t(sr.frequency)} />
       </Card>
       <SourceCite sourceId={sr.sourceId} period={sr.period} />
+      <ExportCsv title={sr.labelT?.[L] ?? sr.label} place={country?.name[L]} unit={sr.unit} sourceId={sr.sourceId} points={sr.points} load={sr.file ? () => loadSeriesHistory(sr.file as string, sr.id) : undefined} />
       {country ? <Button kind="secondary" label={t('openOnWeb')} onPress={() => Linking.openURL(country.url)} /> : null}
     </Screen>
   );

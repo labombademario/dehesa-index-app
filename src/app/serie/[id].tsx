@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { SourceCite } from '../../components/SourceCite';
+import { ExportCsv } from '../../components/ExportCsv';
 import { useApp, BASKET_MAX, staleSuffix, srcName } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle, Change, OfficialBadge, text } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
@@ -47,6 +48,7 @@ export default function Serie() {
         {p.yearAgo ? <Row title={t('yearAgo')} sub={date(p.yearAgo.date, L)} right={`${num(p.yearAgo.value, L)} ${p.unit[L]}`} /> : null}
       </Card>
       <SourceCite sourceId={p.sourceId} period={p.date} />
+      <ExportCsv title={p.name[L]} place={p.place[L]} unit={p.unit[L]} sourceId={p.sourceId} sourceName={p.sourceName} points={p.points} load={() => loadPriceHistory(p.id, p.date)} />
       {p.note ? <Note>{L === 'es' ? '' : t('noteEs') + ' '}{p.note.es}</Note> : null}
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <Button style={{ flex: 1 }} label={t('createAlert')} onPress={() => router.push({ pathname: '/avisos', params: { nuevo: p.id } })} />

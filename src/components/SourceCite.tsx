@@ -22,6 +22,8 @@ function find(reg: Record<string, Src>, id: string): Src | null {
   for (const k of Object.keys(reg)) if ((reg[k].aliases || []).includes(id)) return reg[k];
   return null;
 }
+/** Datos de una fuente (nombre, licencia, atribución) para otras pantallas, p. ej. el CSV */
+export async function sourceInfo(id: string): Promise<Src | null> { const r = await loadReg(); return r ? find(r, id) : null; }
 const safe = (u?: string) => (u && /^https?:\/\//i.test(u) ? u : '');
 
 export function SourceCite({ sourceId, period }: { sourceId?: string | null; period?: string | null }) {
