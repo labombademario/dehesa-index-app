@@ -30,7 +30,7 @@ export default function Cesta() {
                 style={{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 6 }}><Text style={{ fontSize: 15, fontWeight: '600', color: C.negative }}>{t('remove')}</Text></Pressable>
             </View>
           ) : (
-            <Row key={p.id} first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${date(p.date, L)}`} right={`${num(p.value, L)} ${p.unit[L]}`}
+            <Row key={p.id} first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${p.stale ? t('staleData', date(p.date, L)) : date(p.date, L)}`} right={`${num(p.value, L)} ${p.unit[L]}`}
               rightSub={pct(p.changePct, L)} rightColor={changeColor(p.changePct)} onPress={() => router.push(`/serie/${p.id}`)} />
           ))}
         </Card>

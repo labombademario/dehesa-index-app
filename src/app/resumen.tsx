@@ -21,6 +21,9 @@ export default function Resumen() {
     return code;
   };
   const lab = (x: { label: string; labelT?: Record<string, string> }) => x.labelT?.[L] ?? x.label;
+  // unidad de cada cifra (antes no se mostraba): las de Eurostat vienen en inglés
+  const UN: Record<string, Record<string, string>> = { 'thousand t': { es: 'mil t', en: 'thousand t', fr: 'milliers de t', it: 'migliaia di t' }, 'thousand ha': { es: 'mil ha', en: 'thousand ha', fr: 'milliers d’ha', it: 'migliaia di ha' }, 'kg/ha': { es: 'kg/ha', en: 'kg/ha', fr: 'kg/ha', it: 'kg/ha' } };
+  const un = (u: string) => (u ? ' ' + (UN[u]?.[L] ?? u) : '');
   const d = sum?.daily, w = sum?.weekly;
   return (
     <Screen>
@@ -32,12 +35,12 @@ export default function Resumen() {
           <Text style={{ fontSize: 14, color: C.textMuted }}>{t('sumCounts', String(d.counts.periods), String(d.counts.series), String(d.counts.revisions))}</Text>
           <SectionTitle>{t('sumMovers')}</SectionTitle>
           <Card>{d.movers.map((m, i) => (
-            <Row key={m.cc + m.label + i} first={i === 0} title={lab(m)} sub={`${cname(m.cc)} · ${m.period}`} right={`${numAuto(m.value, L)}`} rightSub={pct(m.changePct, L)} rightColor={changeColor(m.changePct)} />
+            <Row key={m.cc + m.label + i} first={i === 0} title={lab(m)} sub={`${cname(m.cc)} · ${m.period}`} right={`${numAuto(m.value, L)}${un(m.unit)}`} rightSub={pct(m.changePct, L)} rightColor={changeColor(m.changePct)} />
           ))}</Card>
           {d.revisions.length ? <>
             <SectionTitle>{t('sumRevisions')}</SectionTitle>
             <Card>{d.revisions.map((r, i) => (
-              <Row key={r.cc + r.label + i} first={i === 0} title={lab(r)} sub={`${cname(r.cc)} · ${r.period}`} right={`${numAuto(r.old, L)} → ${numAuto(r.new, L)}`} rightSub={pct(r.pct, L)} />
+              <Row key={r.cc + r.label + i} first={i === 0} title={lab(r)} sub={`${cname(r.cc)} · ${r.period}`} right={`${numAuto(r.old, L)} → ${numAuto(r.new, L)}${un(r.unit)}`} rightSub={pct(r.pct, L)} />
             ))}</Card>
           </> : null}
         </> : null}

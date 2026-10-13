@@ -36,7 +36,12 @@ export default function Explotacion() {
   const { data, user, setUser, t } = useApp();
   const L = user.lang;
   const [tab, setTab] = useState<Tab>(user.profile === 'dairy' || user.profile === 'pig' ? 'livestock' : 'crops');
-  const eu = (product: string): Price | undefined => data.prices.find(p => p.region === 'eu' && p.product === product);
+  // Primero el precio del país del usuario (media nacional de la Comisión); si no lo publica, la referencia de España con su lugar a la vista
+  const mine = (product: string): Price | undefined => (user.market !== 'ES' ? data.prices.find(p => p.cc === user.market && p.product === product) : undefined);
+  const es = (product: string): Price | undefined => data.prices.find(p => p.region === 'eu' && !p.cc && p.product === product);
+  const eu = (product: string): Price | undefined => mine(product) ?? es(product);
+  // Una relación de precios no mezcla países: o los dos del país del usuario o los dos de la referencia de España
+  const pair = (a: string, b: string): [Price | undefined, Price | undefined] => (mine(a) && mine(b) ? [mine(a), mine(b)] : [es(a), es(b)]);
   const priceRef = (p: Price | undefined) => p ? t('priceRef', `${num(p.value, L)} ${p.unit[L]}`, `${p.place[L]}, ${date(p.date, L)}`) : t('noPrice');
 
   const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? { ...c, ...patch } : c) }));
@@ -44,9 +49,9 @@ export default function Explotacion() {
 
   const milk = eu('leche'), pig = eu('cerdo');
   const ratios = [
-    { key: 'ratioWheatDiesel', r: ratio(eu('trigo'), eu('diesel')), dec: 0, unit: 'l' },
-    { key: 'ratioPigMaize', r: ratio(pig, eu('maiz'), 10), dec: 2, unit: 'kg' },
-    { key: 'ratioMilkSoy', r: ratio(milk, eu('harina_soja'), 10), dec: 2, unit: 'kg' },
+    { key: 'ratioWheatDiesel', r: ratio(...pair('trigo', 'diesel')), dec: 0, unit: 'l' },
+    { key: 'ratioPigMaize', r: ratio(...pair('cerdo', 'maiz'), 10), dec: 2, unit: 'kg' },
+    { key: 'ratioMilkSoy', r: ratio(...pair('leche', 'harina_soja'), 10), dec: 2, unit: 'kg' },
   ];
 
   return (

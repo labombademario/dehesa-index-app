@@ -36,7 +36,7 @@ export default function Madera() {
   const [done, setDone] = useState(false);
   const [k, setK] = useState('total');
   const [cc, setCc] = useState('DE');
-  useEffect(() => { Promise.all([webJson('data/wood-prices-de.json', 12 * 3600e3), webJson('data/wood-removals.json', 24 * 3600e3)]).then(([a, b]) => { setPr(a); setRm(b); setDone(true); }); }, []);
+  useEffect(() => { Promise.all([webJson('data/wood-prices-de.json', 12 * 3600e3), webJson('data/wood-removals.json', 24 * 3600e3)]).then(([a, b]) => { setPr(a); setRm(b); setDone(true); if (b?.countries?.[user.market]) setCc(user.market); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const cw = Math.min(width, 700) - 32 - 28;
   const pts: [string, number][] = pr ? pr.months.map((m, i) => [m, pr.series[k]?.[i]] as [string, number | null | undefined]).filter((p): p is [string, number] => p[1] != null) : [];
   const last = pts[pts.length - 1], prev = pts[pts.length - 2], yago = last ? pts.find(p => p[0] === (+last[0].slice(0, 4) - 1) + last[0].slice(4)) : undefined;

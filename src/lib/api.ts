@@ -94,6 +94,7 @@ type Pts = [string, number][];
 const histMem: Record<string, Pts> = {};
 export async function loadPriceHistory(id: string, version: string): Promise<Pts | null> {
   if (histMem[id]) return histMem[id];
+  if (/^eu_[a-z]{2}_/.test(id)) return null;   // precios de otros países de la UE: el histórico ya viene en el propio precio (data/app/v1/eu/<CC>.json)
   try {
     const r = await getJson(BASE + 'history/' + id.replace(/[^A-Za-z0-9_.-]/g, '_') + '.json?v=' + encodeURIComponent(version));
     return (histMem[id] = r.points as Pts);

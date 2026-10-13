@@ -5,10 +5,15 @@ import { useApp } from '../lib/store';
 import { Screen, Card, Row, Button, Note, Segmented } from '../components/ui';
 import { C } from '../lib/theme';
 import { loadPac, type PacData } from '../lib/api';
+import { tx } from '../lib/tx';
+import { date } from '../lib/format';
 
+// «Md€» solo se entiende en español: abreviatura de miles de millones en cada idioma
+const BN: Record<string, string> = { es: 'Md€', en: 'bn €', fr: 'Md€', it: 'Mld €' };
+const MN: Record<string, string> = { es: 'M€', en: 'm €', fr: 'M€', it: 'Mln €' };
 function money(v: number, L: string): string {
   const n = v / 1e6;
-  return (n >= 1000 ? (n / 1000).toLocaleString(L, { maximumFractionDigits: 2 }) + ' Md€' : Math.round(n).toLocaleString(L) + ' M€');
+  return (n >= 1000 ? (n / 1000).toLocaleString(L, { maximumFractionDigits: 2 }) + ' ' + (BN[L] ?? BN.es) : Math.round(n).toLocaleString(L) + ' ' + (MN[L] ?? MN.es));
 }
 
 export default function Pac() {
@@ -33,7 +38,7 @@ export default function Pac() {
   const total = rows.reduce((a, r) => a + r.v, 0), max = rows[0]?.v ?? 1;
   return (
     <Screen>
-      <Stack.Screen options={{ title: 'PAC' }} />
+      <Stack.Screen options={{ title: tx(L, { es: 'PAC', en: 'CAP', fr: 'PAC', it: 'PAC' }) }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text }} accessibilityRole="header">{t('pacTitle')}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t('pacIntro')}</Text>
       {!pac ? <Note>{done ? t('noDataNow') : '…'}</Note> : <>
@@ -57,7 +62,7 @@ export default function Pac() {
             </View>
           ))}
         </Card>
-        <Text style={{ fontSize: 12, color: C.textMuted }}>{pac.act} · {pac.sourceName} · {pac.consolidated}</Text>
+        <Text style={{ fontSize: 12, color: C.textMuted }}>{pac.act.replace(/^Reglamento \(UE\)/, tx(L, { es: 'Reglamento (UE)', en: 'Regulation (EU)', fr: 'Règlement (UE)', it: 'Regolamento (UE)' }))} · {pac.sourceName} · {tx(L, { es: 'versión consolidada del', en: 'consolidated version of', fr: 'version consolidée du', it: 'versione consolidata del' })} {date(pac.consolidated, L)}</Text>
         <Button kind="secondary" style={{ flex: 0 }} label={t('pacLaw')} onPress={() => Linking.openURL(pac.url)} />
       </>}
     </Screen>

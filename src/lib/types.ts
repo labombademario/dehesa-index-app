@@ -8,6 +8,8 @@ export interface Price {
   region: 'eu' | 'us' | 'uk' | 'ca';
   /** país de la UE cuando el precio es de ese país (data/app/v1/eu/<CC>.json); sin él, España como referencia */
   cc?: string;
+  /** dato viejo para su frecuencia (fin de campaña, retraso del país): se rotula «Último dato: …» */
+  stale?: boolean;
   name: T4;
   place: T4;
   unit: T4;

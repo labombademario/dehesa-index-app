@@ -35,7 +35,7 @@ export default function Today() {
       <SectionTitle>{t('todayMovers')}</SectionTitle>
       <Card>
         {mv.length ? mv.map((p, i) => (
-          <Row key={p.id} badge first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${date(p.date, L)}`}
+          <Row key={p.id} badge first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${p.stale ? t('staleData', date(p.date, L)) : date(p.date, L)}`}
             right={`${num(p.value, L)} ${p.unit[L]}`} rightSub={pct(p.changePct, L)} rightColor={changeColor(p.changePct)}
             onPress={() => router.push(`/serie/${p.id}`)} />
         )) : <Row first title={t('emptyBasket')} onPress={() => router.push('/precios')} />}

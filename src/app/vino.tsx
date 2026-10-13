@@ -23,7 +23,8 @@ export default function Vino() {
   const { width } = useWindowDimensions();
   const [d, setD] = useState<Doc | null>(null);
   const [done, setDone] = useState(false);
-  const [cc, setCc] = useState<'ES' | 'FR'>('ES');
+  const [cc, setCc] = useState<'ES' | 'FR'>(user.market === 'FR' ? 'FR' : 'ES');
+  useEffect(() => { setCc(user.market === 'FR' ? 'FR' : 'ES'); }, [user.market]);
   const [col, setCol] = useState<'red' | 'white'>('red');
   const [ft, setFt] = useState<keyof typeof FRT>('vsig_var');
   useEffect(() => { webJson('data/wine-prices.json', 6 * 3600e3).then(x => { setD(x); setDone(true); }); }, []);

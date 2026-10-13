@@ -268,7 +268,7 @@ const S: Record<string, Row> = {
   ratioWheatDiesel: ['Litros de gasóleo que paga 1 t de trigo', 'Litres of diesel paid by 1 t of wheat', 'Litres de gazole payés par 1 t de blé', 'Litri di gasolio pagati da 1 t di frumento'],
   ratioPigMaize: ['Kg de maíz que paga 1 kg de cerdo', 'Kg of maize paid by 1 kg of pig', 'Kg de maïs payés par 1 kg de porc', 'Kg di mais pagati da 1 kg di suino'],
   ratioMilkSoy: ['Kg de harina de soja que paga 1 kg de leche', 'Kg of soybean meal paid by 1 kg of milk', 'Kg de tourteau de soja payés par 1 kg de lait', 'Kg di farina di soia pagati da 1 kg di latte'],
-  farmEu: ['Precios de referencia de España y la UE, en euros.', 'Reference prices from Spain and the EU, in euros.', 'Prix de référence d’Espagne et de l’UE, en euros.', 'Prezzi di riferimento di Spagna e UE, in euro.'],
+  farmEu: ['Precios de tu país cuando los publica la Comisión Europea; si no, la referencia de España (se indica el lugar de cada precio).', 'Your country’s prices when the European Commission publishes them; otherwise the Spanish reference (each price shows where it is from).', 'Les prix de votre pays quand la Commission européenne les publie ; sinon, la référence espagnole (le lieu de chaque prix est indiqué).', 'I prezzi del tuo paese quando la Commissione europea li pubblica; altrimenti il riferimento spagnolo (per ogni prezzo è indicato il luogo).'],
   pricesHere: ['Precios de este país en la app', 'This country’s prices in the app', 'Prix de ce pays dans l’app', 'Prezzi di questo paese nell’app'],
   period: ['Periodo', 'Period', 'Période', 'Periodo'],
   wipeConfirm: ['Se borrarán tu cesta, avisos y explotación de este teléfono.', 'Your basket, alerts and farm will be deleted from this phone.', 'Votre panier, vos alertes et votre exploitation seront effacés de ce téléphone.', 'Paniere, avvisi e azienda saranno cancellati da questo telefono.'],
@@ -415,6 +415,11 @@ const S: Record<string, Row> = {
   fvHidden: ['{0} productos no tienen precio publicado en {1} y no se muestran.', '{0} products have no published price in {1} and are not shown.', '{0} produits n’ont pas de prix publié en {1} et ne sont pas affichés.', '{0} prodotti non hanno un prezzo pubblicato in {1} e non sono mostrati.'],
   fvSourcesX: ['Fuente: Comisión Europea (portal de datos agroalimentarios).', 'Source: European Commission (agri-food data portal).', 'Source : Commission européenne (portail de données agroalimentaires).', 'Fonte: Commissione europea (portale dei dati agroalimentari).'],
   openInApp: ['Ver en la app', 'See in the app', 'Voir dans l’app', 'Vedi nell’app'],
+  basketSwitch: ['¿Cambiar tu cesta?', 'Change your basket?', 'Changer votre panier ?', 'Cambiare il paniere?'],
+  basketSwitchBody: ['Puedes poner en tu cesta los precios de este mercado, o dejarla como está.', 'You can fill your basket with this market’s prices, or keep it as it is.', 'Vous pouvez remplir votre panier avec les prix de ce marché, ou le garder tel quel.', 'Puoi riempire il paniere con i prezzi di questo mercato, o lasciarlo com’è.'],
+  basketKeep: ['Dejarla', 'Keep it', 'Le garder', 'Lasciarlo'],
+  basketReplace: ['Cambiarla', 'Change it', 'Le changer', 'Cambiarlo'],
+  staleData: ['Último dato: {0}', 'Latest data: {0}', 'Dernière donnée : {0}', 'Ultimo dato: {0}'],
 };
 
 const IDX: Record<Lang, number> = { es: 0, en: 1, fr: 2, it: 3 };

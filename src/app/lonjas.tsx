@@ -1,6 +1,6 @@
 // Lonjas y mercados locales (como lonjas.html de la web): precios semanales por provincia, zona o puerto que publica la Comisión Europea
 // para cereales, aceite de oliva y oleaginosas en España, Italia, Portugal, Grecia, Alemania y Francia. Nada se promedia ni se mezcla.
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
@@ -53,10 +53,12 @@ export default function Lonjas() {
   const s = list.find(x => x.id === sid) ?? list[0];
   const M = s ? marketsOf(s) : null, dec = s && s.unit.includes('/t') && !s.unit.includes('100') ? 1 : 2;
   useEffect(() => { setOpen(null); setPts(null); }, [s?.id, cc]);
+  const want = useRef<string | null>(null);
   const show = (name: string, r: Reg) => {
     if (open === name) { setOpen(null); return; }
-    setOpen(name); setPts(null);
+    setOpen(name); setPts(null); want.current = name;
     webJson('data/eu/' + fam + '/' + s!.id + '.json', 6 * 3600e3).then((d: any) => {
+      if (want.current !== name) return;   // ya se abrió otro mercado: esta respuesta llega tarde
       const reg = d?.regions?.find((x: any) => x.c === r.c && (x.m ?? '') === (r.m ?? ''));
       const ep = Date.parse((d?.epoch ?? '2000-01-01') + 'T00:00:00Z');
       setPts(reg ? (reg.d as number[]).map((dd, i) => [new Date(ep + dd * 864e5).toISOString().slice(0, 10), reg.v[i] as number] as [string, number]) : []);

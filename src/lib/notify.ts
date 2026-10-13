@@ -8,6 +8,7 @@ import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import * as BackgroundTask from 'expo-background-task';
 import { bundled, cached, refresh } from './api';
+import { webJson } from './fv';
 import { newlyHit, type AlertRule } from './logic';
 import { translate } from './i18n';
 import { num } from './format';
@@ -60,6 +61,20 @@ export async function ensurePermission(lang: Lang): Promise<boolean> {
 
 export async function notificationsEnabled(): Promise<boolean> { return granted(); }
 
+/** País de un precio de otro país de la UE (id «eu_fr_trigo» -> «FR»), o null. */
+export function euCcOf(id: string): string | null { const m = /^eu_([a-z]{2})_/.exec(id); return m ? m[1].toUpperCase() : null; }
+
+/** Añade a los datos los precios de los países de la UE que aparecen en esos ids (avisos, cesta), que no vienen en prices.json. */
+export async function withEuFor(data: AppData, ids: string[]): Promise<AppData> {
+  const ccs = [...new Set(ids.map(euCcOf).filter((x): x is string => !!x))];
+  if (!ccs.length) return data;
+  const extra: AppData['prices'] = [];
+  for (const cc of ccs) {
+    try { const d = await webJson('data/app/v1/eu/' + cc + '.json', 6 * 3600e3); if (d?.prices) extra.push(...d.prices); } catch { /* sin red: se queda sin ese país */ }
+  }
+  return extra.length ? { ...data, prices: data.prices.concat(extra.filter(x => !data.prices.some(y => y.id === x.id))) } : data;
+}
+
 /** Compara los avisos con los precios y notifica los recién cumplidos. Devuelve cuántos ha notificado. */
 export async function runCheck(data: AppData, rules: AlertRule[], lang: Lang): Promise<number> {
   const { fire, hit } = newlyHit(rules, data.prices, await readHit());
@@ -89,6 +104,7 @@ async function backgroundCheck() {
   if (!rules.length) return;
   let data: AppData;
   try { data = await refresh(); } catch { data = (await cached()) ?? bundled(); }
+  data = await withEuFor(data, rules.map(r => r.priceId));
   await runCheck(data, rules, user.lang ?? 'es');
 }
 

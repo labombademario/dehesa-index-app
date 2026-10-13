@@ -31,12 +31,15 @@ export default function Fruta() {
   const { id, c } = useLocalSearchParams<{ id: string; c?: string }>();
   const { user, t } = useApp();
   const L = user.lang;
+  const homeCc = user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES';
   const { width } = useWindowDimensions();
   const [P, setP] = useState<FvProduct | null>(null);
   const [done, setDone] = useState(false);
-  const [cc, setCc] = useState<string>((c as string) || 'ES');
+  const [cc, setCc] = useState<string>((c as string) || homeCc);
   const [variants, setVariants] = useState<{ id: string; label: string; pts: Pts }[]>([]);
   const [vi, setVi] = useState(0);
+  useEffect(() => { if (!c) setCc(homeCc); }, [homeCc]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [vDone, setVDone] = useState(false);
   const [perc, setPerc] = useState<Pts | null>(null);
   const [crops, setCrops] = useState<CropsDoc | null>(null);
   const [farm, setFarm] = useState<FarmDoc | null>(null);
@@ -45,14 +48,15 @@ export default function Fruta() {
   const isES = cc === 'ES';
   const ref = P?.eu?.latest[cc];
   useEffect(() => {
-    if (!P?.eu || !ref) { setVariants([]); return; }
+    setVariants([]); setVDone(false);   // al cambiar de país no se ve ni un instante la serie del anterior
+    if (!P?.eu || !ref) { setVDone(true); return; }
     let alive = true;
     const ids = [ref.series].concat(P.eu.series.filter(s => s.stage === ref.stage && s.id !== ref.series).map(s => s.id)).slice(0, 6);
     Promise.all(ids.map(sid => loadEuSeries(sid, cc))).then(rs => {
       if (!alive) return;
       const out = ids.map((sid, i) => ({ id: sid, label: variantName(P.eu!.series.find(s => s.id === sid)!.variant, L), pts: rs[i] ?? [] })).filter(v => v.pts.length > 1);
-      setVariants(out.slice(0, 1).concat(out.slice(1).sort((a, b) => b.pts.length - a.pts.length).slice(0, 2))); setVi(0);
-    });
+      setVariants(out.slice(0, 1).concat(out.slice(1).sort((a, b) => b.pts.length - a.pts.length).slice(0, 2))); setVi(0); setVDone(true);
+    }).catch(() => { if (alive) setVDone(true); });
     return () => { alive = false; };
   }, [P, cc, L]);
   const nm = P ? P.name[L] : '';
@@ -104,6 +108,9 @@ export default function Fruta() {
           <Row first title={t('fvWeekOf', nm, countryName(cc, L), v.label, stageName(ref.stage, L), fmtDate(last[0], L))} right={num(last[1], L, 2) + ' €/kg'} />
           {prev ? <Row title={t('fvPrevWeek')} right={num(prev[1], L, 2) + ' €/kg'} rightSub={pct((last[1] / prev[1] - 1) * 100, L)} /> : null}
           {yago ? <Row title={t('fvYearAgo')} right={num(yago[1], L, 2) + ' €/kg'} rightSub={pct((last[1] / yago[1] - 1) * 100, L)} /> : null}
+        </Card> : vDone ? <Card>
+          {/* serie demasiado corta para un gráfico: se enseña el último precio publicado */}
+          <Row first title={t('fvWeekOf', nm, countryName(cc, L), variantName(ref.variant, L), stageName(ref.stage, L), fmtDate(ref.d, L))} right={num(ref.v, L, 2) + ' €/kg'} />
         </Card> : <Note>{t('loading')}</Note>}
         {stale && last ? <Note>{t('fvStale', fmtDate(last[0], L))}</Note> : null}
         {variants.length > 1 ? <><Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('fvType')}</Text>

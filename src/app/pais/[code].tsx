@@ -14,7 +14,7 @@ const REGION_OF: Record<string, Price['region']> = { US: 'us', CA: 'ca', UK: 'uk
 
 export default function Pais() {
   const { code } = useLocalSearchParams<{ code: string }>();
-  const { data, user, t } = useApp();
+  const { data, user, t, loadEu } = useApp();
   const L = user.lang;
   const c = data.countries.find(x => x.code === code);
   const [prof, setProf] = useState<CountryProfile | null>(() => countryFromMemory(String(code)));
@@ -23,11 +23,12 @@ export default function Pais() {
   useEffect(() => {
     let alive = true;
     loadCountry(String(code)).then(r => { if (!alive) return; setProf(r.profile); setState(r.profile ? 'ok' : r.offline ? 'offline' : 'none'); });
+    loadEu(String(code));   // media nacional de la Comisión para los países de la UE (no viene en prices.json)
     return () => { alive = false; };
-  }, [code]);
+  }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!c) return <Screen title="—"><Note>{t('missing')}</Note></Screen>;
   const reg = REGION_OF[c.code];
-  const prices = data.prices.filter(p => (reg ? p.region === reg : p.region === 'eu' && p.place.es.includes(c.name.es)));
+  const prices = data.prices.filter(p => (reg ? p.region === reg && !p.cc : p.cc === c.code || (c.code === 'ES' && p.region === 'eu' && !p.cc && p.place.es.includes(c.name.es))));
   const pctv = c.coveragePct;
   return (
     <Screen>
@@ -37,12 +38,12 @@ export default function Pais() {
         <Card style={{ padding: 14, gap: 8 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ fontSize: 15, fontWeight: '600', color: C.text }}>{t('coverage')}</Text>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{pctv} %</Text>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: C.text }}>{num(pctv, L, 0)} %</Text>
           </View>
-          <View style={{ height: 8, borderRadius: 4, backgroundColor: C.surfaceAlt, overflow: 'hidden' }} accessibilityLabel={`${pctv} %`}>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: C.surfaceAlt, overflow: 'hidden' }} accessibilityLabel={`${num(pctv, L, 0)} %`}>
             <View style={{ width: `${pctv}%`, height: 8, backgroundColor: C.accent }} />
           </View>
-          <Text style={{ fontSize: 13, color: C.textMuted, lineHeight: 19 }}>{t('coverageText', pctv, c.name[L])}</Text>
+          <Text style={{ fontSize: 13, color: C.textMuted, lineHeight: 19 }}>{t('coverageText', num(pctv, L, 0), c.name[L])}</Text>
         </Card>
       ) : null}
       <CountryMapView cc={c.code} />

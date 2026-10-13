@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -21,10 +21,15 @@ function addMonths(t: number, n: number) { const d = new Date(t); d.setUTCMonth(
 
 export default function Comparar() {
   const { ids } = useLocalSearchParams<{ ids?: string }>();
-  const { data, user, t } = useApp();
+  const { data, user, t, loadEu } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;
-  const [sel, setSel] = useState<string[]>(() => (ids ? String(ids).split(',').filter(x => data.prices.some(p => p.id === x)).slice(0, 4) : []));
+  const want = ids ? String(ids).split(',').slice(0, 4) : user.basket.slice(0, 2);   // sin enlace: los dos primeros de la cesta
+  const [sel, setSel] = useState<string[]>(() => want.filter(x => data.prices.some(p => p.id === x)));
+  // ids de otros países de la UE: se cargan y se añaden en cuanto llegan
+  useEffect(() => { want.forEach(x => { const m = /^eu_([a-z]{2})_/.exec(x); if (m) loadEu(m[1].toUpperCase()); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const seen = useRef(new Set(want.filter(x => data.prices.some(p => p.id === x))));   // cada id pedido se añade una sola vez (si luego se quita, no vuelve)
+  useEffect(() => { const add = want.filter(x => !seen.current.has(x) && data.prices.some(p => p.id === x)); if (!add.length) return; add.forEach(x => seen.current.add(x)); setSel(o => o.concat(add.filter(x => !o.includes(x))).slice(0, 4)); }, [data.prices]); // eslint-disable-line react-hooks/exhaustive-deps
   const [q, setQ] = useState('');
   const [range, setRange] = useState('1y');
   const [hist, setHist] = useState<Record<string, Pts>>({});

@@ -9,7 +9,7 @@ import { bundled, cached, refresh } from './api';
 import { translate } from './i18n';
 import { applyTheme, type Mode } from './theme';
 import { useColorScheme } from 'react-native';
-import { USER_KEY, runCheck, syncBackgroundTask } from './notify';
+import { USER_KEY, runCheck, syncBackgroundTask, euCcOf } from './notify';
 
 export type Profile = 'cereal' | 'dairy' | 'pig' | 'buyer';
 /** 'US', 'CA' o el código del país de la UE (ES, IT, FR, DE...). España usa los precios generales; el resto, los suyos (data/app/v1/eu/<CC>.json). */
@@ -54,7 +54,12 @@ export function defaults(): UserState {
     milk: { cows: '120', kg: '9500', cost: '38' }, pig: { n: '2000', kg: '88', cost: '1.55' } };
 }
 export function resolvePreset(prices: Price[], keys: string[]): string[] {
-  return keys.map(k => { const [r, p] = k.split(':'); return /^[A-Z]{2}$/.test(r) ? prices.find(x => x.cc === r && x.product === p)?.id : prices.find(x => x.region === r && !x.cc && x.product === p)?.id; }).filter((x): x is string => !!x);
+  const out = keys.map(k => { const [r, p] = k.split(':'); return /^[A-Z]{2}$/.test(r) ? prices.find(x => x.cc === r && x.product === p)?.id : prices.find(x => x.region === r && !x.cc && x.product === p)?.id; }).filter((x): x is string => !!x);
+  // Un país que no publica los productos del perfil (p. ej. Chipre o Letonia sin cereales) no se queda con la cesta vacía:
+  // se completa con otros precios de ESE país, nunca de otro
+  const cc = keys.map(k => k.split(':')[0]).find(r => /^[A-Z]{2}$/.test(r) && r !== 'ES' && r !== 'US' && r !== 'CA');
+  if (cc && out.length < 4) for (const x of prices) { if (out.length >= 4) break; if (x.cc === cc && !out.includes(x.id)) out.push(x.id); }
+  return out;
 }
 
 interface Ctx {
@@ -104,7 +109,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [reload]);
 
   // Avisos: comprobar cada vez que llegan datos y mantener la tarea de segundo plano solo si hay avisos activos
-  useEffect(() => { if (ready && data.fetchedAt) runCheck(data, user.alerts.filter(a => a.on), user.lang).catch(() => {}); }, [data, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (con merged, que ya incluye los precios de otros países de la UE cargados: un aviso sobre el trigo de Francia también se comprueba)
   useEffect(() => { if (ready) syncBackgroundTask(user.alerts.some(a => a.on)); }, [ready, user.alerts]);
 
   const setUser = useCallback((patch: Partial<UserState> | ((u: UserState) => Partial<UserState>)) => {
@@ -115,8 +120,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  useEffect(() => { if (ready) loadEu(user.market); }, [ready, user.market, loadEu]);
+  // País del usuario y, además, los de los precios de su cesta y sus avisos (p. ej. alguien de España que sigue el trigo de Francia)
+  const euNeeded = useMemo(() => [...new Set([user.market, ...user.basket.map(euCcOf), ...user.alerts.map(a => euCcOf(a.priceId))].filter((x): x is string => !!x))].sort().join(','), [user.market, user.basket, user.alerts]);
+  useEffect(() => { if (ready) euNeeded.split(',').filter(Boolean).forEach(cc => { loadEu(cc); }); }, [ready, euNeeded, loadEu]);
   const merged = useMemo<AppData>(() => { const extra = Object.values(eu).flat(); return extra.length ? { ...data, prices: data.prices.concat(extra.filter(x => !data.prices.some(y => y.id === x.id))) } : data; }, [data, eu]);
+  useEffect(() => { if (ready && merged.fetchedAt) runCheck(merged, user.alerts.filter(a => a.on), user.lang).catch(() => {}); }, [merged, ready]); // eslint-disable-line react-hooks/exhaustive-deps
   const value = useMemo<Ctx>(() => ({
     data: merged, loadEu, refreshing, offline, reload, user, setUser, ready, mode,
     t: (key, ...vars) => translate(user.lang, key, ...vars),

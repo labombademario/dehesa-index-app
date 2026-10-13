@@ -21,12 +21,14 @@ function title(s: string): string { return s.toLowerCase().replace(/(^|[\s-])\S/
 export default function Siembra() {
   const { user, t } = useApp();
   const L = user.lang;
-  const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: user.market === 'US' ? 'US' : user.market === 'CA' ? 'CA' : 'ES', r: '', area: '', costs: {} });
+  const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: user.market === 'US' ? 'US' : user.market === 'CA' ? 'CA' : user.market === 'FR' ? 'FR' : 'ES', r: '', area: '', costs: {} });
   const [doc, setDoc] = useState<SowDoc | null>(null);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { AsyncStorage.getItem(KEY).then(raw => { if (raw) { try { setSt(s => ({ ...s, ...JSON.parse(raw) })); } catch { /* */ } } setLoaded(true); }); }, []);
   useEffect(() => { if (loaded) AsyncStorage.setItem(KEY, JSON.stringify(st)).catch(() => {}); }, [st, loaded]);
-  useEffect(() => { setDoc(null); webJson('data/sowing/' + st.c.toLowerCase() + '.json', 12 * 3600e3).then(setDoc); }, [st.c]);
+  const [docDone, setDocDone] = useState(false);
+  // la respuesta de un país que ya no está elegido se descarta (al cambiar rápido de país)
+  useEffect(() => { let alive = true; setDoc(null); setDocDone(false); webJson('data/sowing/' + st.c.toLowerCase() + '.json', 12 * 3600e3).then((d: any) => { if (alive) { setDoc(d); setDocDone(true); } }).catch(() => { if (alive) setDocDone(true); }); return () => { alive = false; }; }, [st.c]);
   const rname = (code: string) => { const R = doc?.regions[code]; if (!R) return code; if (R.names) return R.names[L] ?? R.name; if (st.c === 'US') return US[code] ?? code; return R.name ? title(R.name) : code; };
   const regs = useMemo(() => (doc ? Object.keys(doc.regions).sort((a, b) => rname(a).localeCompare(rname(b), L)) : []), [doc, L]);
   const rows = useMemo(() => (doc && st.r && doc.regions[st.r] ? sowRows(doc, st.r, st.costs) : []), [doc, st.r, st.costs]);
@@ -74,7 +76,7 @@ export default function Siembra() {
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{t('swTitle')}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t('swSub')}</Text>
       <Segmented options={(['ES', 'FR', 'US', 'CA'] as CC[]).map(c => ({ value: c, label: CNAME[c][L] }))} value={st.c} onChange={c => setSt(s => ({ ...s, c, r: '' }))} />
-      {!doc ? <Note>{t('loading')}</Note> : <>
+      {!doc ? <Note>{docDone ? t('noDataNow') : t('loading')}</Note> : <>
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('swRegion')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {regs.map(r => (

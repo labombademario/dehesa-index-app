@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useApp } from '../../lib/store';
@@ -17,6 +17,7 @@ export default function Prices() {
   const L = user.lang;
   const [q, setQ] = useState('');
   const [reg, setReg] = useState<Reg>(user.market === 'US' ? 'us' : user.market === 'CA' ? 'ca' : 'eu');
+  useEffect(() => { setReg(user.market === 'US' ? 'us' : user.market === 'CA' ? 'ca' : 'eu'); }, [user.market]);   // al cambiar de mercado en Ajustes
   const idx = data.today.index;
   const found = useMemo(() => {
     const k = norm(q.trim());
@@ -31,7 +32,7 @@ export default function Prices() {
       style={[s.row, i > 0 && s.rowDivider]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={s.rowTitle}>{p.name[L]}</Text>
-        <Text style={s.rowSub}>{p.place[L]} · {date(p.date, L)}</Text>
+        <Text style={s.rowSub}>{p.place[L]} · {p.stale ? t('staleData', date(p.date, L)) : date(p.date, L)}</Text>
         <OfficialBadge />
       </View>
       <Sparkline points={p.points.slice(-12).map(x => x[1])} color={changeColor(p.changePct)} />

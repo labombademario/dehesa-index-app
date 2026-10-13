@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { useApp, BASKET_MAX } from '../../lib/store';
@@ -10,11 +10,15 @@ import { num, pct, date } from '../../lib/format';
 
 export default function Serie() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { price, data, user, setUser, t } = useApp();
+  const { price, data, user, setUser, t, loadEu } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;
   const p = price(String(id));
-  if (!p) return <Screen title="—"><Note>{t('missing')}</Note></Screen>;
+  // Precio de otro país de la UE (desde un aviso o un enlace): se carga su fichero antes de decir que no existe
+  const euCc = /^eu_([a-z]{2})_/.exec(String(id))?.[1].toUpperCase();
+  const [tried, setTried] = useState(!euCc);
+  useEffect(() => { if (!p && euCc) loadEu(euCc).finally(() => setTried(true)); }, [euCc]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!p) return <Screen title="—"><Note>{tried ? t('missing') : t('loading')}</Note></Screen>;
   const inB = user.basket.includes(p.id);
   const others = data.prices.filter(x => x.product === p.product && x.id !== p.id);
   const pts = p.points.map(x => x[1]);
@@ -33,6 +37,7 @@ export default function Serie() {
         <Text style={{ fontSize: 16, color: C.textMuted }}>{p.unit[L]}</Text>
         <Change v={p.changePct} text={pct(p.changePct, L)} />
       </View>
+      {p.stale ? <Note>{t('staleData', date(p.date, L))}</Note> : null}
       <RangeChart points={p.points} unit={p.unit[L]} label={p.name[L]} width={width - 32 - 28 - 2} load={() => loadPriceHistory(p.id, p.date)} />
       <Card>
         <Row first title={t('source')} right={p.sourceName} />

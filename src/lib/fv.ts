@@ -39,7 +39,7 @@ export function loadFv(): Promise<FvDoc | null> { return getCached('data/fv-prod
 /** Serie semanal de la Comisión: [[YYYY-MM-DD, €/kg]] del país pedido */
 export async function loadEuSeries(id: string, cc: string): Promise<[string, number][] | null> {
   const d = await getCached('data/eu/fruta/' + id + '.json', 6 * 3600e3); if (!d) return null;
-  const r = (d.regions as { c: string; d: number[]; v: number[] }[]).find(x => x.c === cc); if (!r) return [];
+  const r = ((d.regions ?? []) as { c: string; d: number[]; v: number[] }[]).find(x => x.c === cc); if (!r) return [];
   const e0 = Date.UTC(2000, 0, 1);
   return r.d.map((dd, i) => [new Date(e0 + dd * 864e5).toISOString().slice(0, 10), r.v[i] / 100] as [string, number]);
 }

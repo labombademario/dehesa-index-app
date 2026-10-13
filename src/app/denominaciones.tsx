@@ -26,8 +26,9 @@ export default function Denominaciones() {
   const [ty, setTy] = useState<'all' | 'PDO' | 'PGI'>('all');
   const [q, setQ] = useState('');
   const [all, setAll] = useState(false);
-  useEffect(() => { webJson('data/gi/index.json', 24 * 3600e3).then((d: any) => { const c = d?.countries ?? null; setIdx(c); if (c && !pc && user.market && c[user.market]) setCc(user.market); }); }, []);
-  useEffect(() => { if (doc[cc] === undefined) webJson('data/gi/' + cc + '.json', 24 * 3600e3).then((d: any) => setDoc(o => ({ ...o, [cc]: d ? { wine: d.wine ?? [], cheese: d.cheese ?? [] } : null }))); setAll(false); }, [cc]);
+  const [idxDone, setIdxDone] = useState(false);
+  useEffect(() => { webJson('data/gi/index.json', 24 * 3600e3).catch(() => null).then((d: any) => { const c = d?.countries ?? null; setIdx(c); setIdxDone(true); if (c && !pc && user.market && c[user.market]) setCc(user.market); }); }, []);
+  useEffect(() => { if (doc[cc] === undefined) webJson('data/gi/' + cc + '.json', 24 * 3600e3).catch(() => null).then((d: any) => setDoc(o => ({ ...o, [cc]: d ? { wine: d.wine ?? [], cheese: d.cheese ?? [] } : null }))); setAll(false); }, [cc]);
   const ccs = useMemo(() => (idx ? Object.keys(idx).filter(k => idx[k].wine + idx[k].cheese > 0).sort((a, b) => (idx[b].wine + idx[b].cheese) - (idx[a].wine + idx[a].cheese)) : []), [idx]);
   const d = doc[cc];
   const items = useMemo(() => {
@@ -40,7 +41,7 @@ export default function Denominaciones() {
       <Stack.Screen options={{ title: tx(L, { es: 'Denominaciones de origen', en: 'Designations of origin', fr: 'Appellations d’origine', it: 'Denominazioni di origine' }) }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{tx(L, { es: 'Denominaciones de origen', en: 'Designations of origin', fr: 'Appellations d’origine', it: 'Denominazioni di origine' })}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{tx(L, { es: 'Vinos y quesos con nombre protegido en la UE (registrados y vigentes).', en: 'Wines and cheeses with a name protected in the EU (registered and in force).', fr: 'Vins et fromages au nom protégé dans l’UE (enregistrés et en vigueur).', it: 'Vini e formaggi con nome protetto nell’UE (registrati e in vigore).' })}</Text>
-      {!idx ? <Note>{t('loading')}</Note> : <>
+      {!idx ? <Note>{idxDone ? t('noDataNow') : t('loading')}</Note> : <>
         <Chips items={ccs.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={setCc} />
         <Segmented options={[{ value: 'wine' as Kind, label: '🍷 ' + tx(L, { es: 'Vinos', en: 'Wines', fr: 'Vins', it: 'Vini' }) + (idx[cc] ? ' (' + idx[cc].wine + ')' : '') }, { value: 'cheese' as Kind, label: '🧀 ' + tx(L, { es: 'Quesos', en: 'Cheeses', fr: 'Fromages', it: 'Formaggi' }) + (idx[cc] ? ' (' + idx[cc].cheese + ')' : '') }]} value={kind} onChange={setKind} />
         <Segmented options={[{ value: 'all' as const, label: tx(L, { es: 'Todas', en: 'All', fr: 'Toutes', it: 'Tutte' }) }, { value: 'PDO' as const, label: tx(L, TYPE.PDO) }, { value: 'PGI' as const, label: tx(L, TYPE.PGI) }]} value={ty} onChange={setTy} />
