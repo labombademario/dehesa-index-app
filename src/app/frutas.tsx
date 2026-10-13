@@ -23,11 +23,14 @@ export default function Frutas() {
   const groups = useMemo(() => {
     if (!doc) return [] as { g: 'veg' | 'fruit' | 'nut'; items: FvProduct[] }[];
     const qq = norm(q);
+    // solo productos con dato del país elegido: nunca se rellena con lo de otro país
+    const has = (p: FvProduct) => !!p.eu?.latest[cc] || (cc === 'ES' && !!p.perc);
     return (['veg', 'fruit', 'nut'] as const).filter(x => g === 'all' || g === x).map(x => ({
       g: x,
-      items: doc.products.filter(p => p.group === x && (!qq || norm(p.name[L] + ' ' + p.name.es + ' ' + p.name.en).includes(qq))).sort((a, b) => a.name[L].localeCompare(b.name[L], L)),
+      items: doc.products.filter(p => p.group === x && has(p) && (!qq || norm(p.name[L] + ' ' + p.name.es + ' ' + p.name.en).includes(qq))).sort((a, b) => a.name[L].localeCompare(b.name[L], L)),
     })).filter(x => x.items.length);
-  }, [doc, g, q, L]);
+  }, [doc, g, q, L, cc]);
+  const hidden = useMemo(() => (doc ? doc.products.filter(p => (g === 'all' || p.group === g) && !(p.eu?.latest[cc] || (cc === 'ES' && p.perc))).length : 0), [doc, g, cc]);
   const ccs = useMemo(() => (doc ? doc.countries.slice().sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)) : []), [doc, L]);
   const now = Date.now();
   const gName = { veg: t('fvVeg'), fruit: t('fvFruit'), nut: t('fvNut') };
@@ -79,8 +82,9 @@ export default function Frutas() {
             </Card>
           </View>
         ))}
+        {hidden ? <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvHidden', hidden, countryName(cc, L))}</Text> : null}
         <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvHow')}</Text>
-        <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvSources')}</Text>
+        <Text style={{ fontSize: 12, color: C.textMuted }}>{cc === 'ES' ? t('fvSources') : t('fvSourcesX')}</Text>
       </>}
     </Screen>
   );

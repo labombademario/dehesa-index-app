@@ -1,5 +1,6 @@
 // Ficha de una fruta, hortaliza o fruto seco (como producto.html?p=<id> de la web): precio semanal del país elegido con gráfico y tipos,
-// comparación entre países, precio percibido del MAPA con su estacionalidad y producción por provincia en España.
+// comparación entre países; en España, precio percibido del MAPA con su estacionalidad y producción por provincia; en el resto, lo que cobra el
+// agricultor en ESE país (INSEE o Eurostat). Nunca se ponen datos de un país en la ficha de otro.
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -8,7 +9,7 @@ import { Screen, Card, Row, Note, Segmented, SectionTitle } from '../../componen
 import { RangeChart } from '../../components/RangeChart';
 import { C } from '../../lib/theme';
 import { num, date as fmtDate, pct } from '../../lib/format';
-import { loadFv, loadEuSeries, loadPerc, loadCrops, countryName, stageName, variantName, type FvProduct, type CropsDoc } from '../../lib/fv';
+import { loadFv, loadEuSeries, loadPerc, loadCrops, loadFarm, countryName, stageName, variantName, type FvProduct, type CropsDoc, type FarmDoc } from '../../lib/fv';
 
 type Pts = [string, number][];
 const DAY = 864e5;
@@ -38,7 +39,10 @@ export default function Fruta() {
   const [vi, setVi] = useState(0);
   const [perc, setPerc] = useState<Pts | null>(null);
   const [crops, setCrops] = useState<CropsDoc | null>(null);
-  useEffect(() => { loadFv().then(d => { const p = d?.products.find(x => x.id === id) ?? null; setP(p); setDone(true); if (p?.eu && !p.eu.latest[cc]) setCc(p.eu.latest.ES ? 'ES' : Object.keys(p.eu.latest)[0]); if (p?.perc) loadPerc(p.perc.file, p.perc.id).then(setPerc); if (p?.crops) loadCrops(p.crops.group).then(setCrops); }); }, [id]);
+  const [farm, setFarm] = useState<FarmDoc | null>(null);
+  // el país pedido se respeta aunque no tenga precio semanal (antes saltaba a España sin avisar)
+  useEffect(() => { loadFv().then(d => { const p = d?.products.find(x => x.id === id) ?? null; setP(p); setDone(true); if (p?.perc) loadPerc(p.perc.file, p.perc.id).then(setPerc); if (p?.crops) loadCrops(p.crops.group).then(setCrops); }); loadFarm().then(setFarm); }, [id]);
+  const isES = cc === 'ES';
   const ref = P?.eu?.latest[cc];
   useEffect(() => {
     if (!P?.eu || !ref) { setVariants([]); return; }
@@ -53,15 +57,15 @@ export default function Fruta() {
   }, [P, cc, L]);
   const nm = P ? P.name[L] : '';
   const cw = Math.min(width, 700) - 32 - 28;
-  const ccs = useMemo(() => (P?.eu ? Object.keys(P.eu.latest).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)) : []), [P, L]);
+  const ccs = useMemo(() => { const k = P?.eu ? Object.keys(P.eu.latest) : []; if (cc && !k.includes(cc)) k.push(cc); return k.sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)); }, [P, L, cc]);
   if (!P) return <Screen><Stack.Screen options={{ title: '' }} /><Note>{done ? t('noDataNow') : t('loading')}</Note></Screen>;
   const v = variants[vi], R = v ? v.pts : [], last = R[R.length - 1], prev = R[R.length - 2];
   const yago = last ? R.reduce<[string, number] | null>((b, p) => { const d = Math.abs(Date.parse(p[0]) - (Date.parse(last[0]) - 364 * DAY)); return d <= 10 * DAY && (!b || d < Math.abs(Date.parse(b[0]) - (Date.parse(last[0]) - 364 * DAY))) ? p : b; }, null) : null;
   const stale = last ? Date.now() - Date.parse(last[0]) > 42 * DAY : false;
-  const cmp = ccs.map(k => ({ k, x: P.eu!.latest[k] })).sort((a, b) => b.x.v - a.x.v), mx = Math.max(0.01, ...cmp.map(z => z.x.v));
+  const cmp = ccs.filter(k => P.eu?.latest[k]).map(k => ({ k, x: P.eu!.latest[k] })).sort((a, b) => b.x.v - a.x.v), mx = Math.max(0.01, ...cmp.map(z => z.x.v));
   // precio percibido: estacionalidad de los 10 últimos años completos
   let season: { m: number; v: number | null }[] = [], pLast: [string, number] | null = null, pYear: [string, number] | null = null, dead = false, ya = 0, yb = 0;
-  if (perc && perc.length > 24) {
+  if (isES && perc && perc.length > 24) {
     pLast = perc[perc.length - 1]; const ly = (+pLast[0].slice(0, 4) - 1) + pLast[0].slice(4); pYear = perc.find(p => p[0] === ly) ?? null;
     dead = Date.now() - Date.parse(pLast[0] + '-15') > 400 * DAY; yb = +pLast[0].slice(0, 4) - 1; ya = yb - 9;
     const acc = Array.from({ length: 12 }, () => [0, 0]);
@@ -72,7 +76,7 @@ export default function Fruta() {
   const MON = { es: ['E', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'], en: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'], fr: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'], it: ['G', 'F', 'M', 'A', 'M', 'G', 'L', 'A', 'S', 'O', 'N', 'D'] }[L];
   // cultivos
   let crop: { camp: string; prev: string | null; prov: boolean; tot: any; totP: any; fr: any; ind: any; gl: any; top: [string, number][] } | null = null;
-  if (crops && P.crops) {
+  if (isES && crops && P.crops) {
     const camps = Object.keys(crops.campaigns).sort(), cy = camps[camps.length - 1], cp = camps.length > 1 ? camps[camps.length - 2] : null, ex = P.crops.extra ?? {};
     const f = (camp: string | null, code?: string) => (camp && code ? crops.campaigns[camp].crops.find(x => x.c === code) : undefined);
     const tot = f(cy, P.crops.code);
@@ -85,7 +89,7 @@ export default function Fruta() {
     <Screen>
       <Stack.Screen options={{ title: nm }} />
       <Text style={{ fontSize: 28, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{P.emoji} {nm}</Text>
-      {P.eu ? <>
+      {ccs.length ? <>
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('fvCountry')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {ccs.map(k => (
@@ -96,7 +100,7 @@ export default function Fruta() {
           ))}
         </ScrollView>
         <SectionTitle>{t('fvWeek')}</SectionTitle>
-        {ref && last ? <Card>
+        {!ref ? <Note>{t('fvNoEuC', countryName(cc, L))}</Note> : ref && last ? <Card>
           <Row first title={t('fvWeekOf', nm, countryName(cc, L), v.label, stageName(ref.stage, L), fmtDate(last[0], L))} right={num(last[1], L, 2) + ' €/kg'} />
           {prev ? <Row title={t('fvPrevWeek')} right={num(prev[1], L, 2) + ' €/kg'} rightSub={pct((last[1] / prev[1] - 1) * 100, L)} /> : null}
           {yago ? <Row title={t('fvYearAgo')} right={num(yago[1], L, 2) + ' €/kg'} rightSub={pct((last[1] / yago[1] - 1) * 100, L)} /> : null}
@@ -132,6 +136,36 @@ export default function Fruta() {
         </Card> : null}
         {perc && perc.length > 1 ? <RangeChart points={perc} unit="€/kg" label={t('fvPerc')} width={cw} /> : null}
       </> : null}
+      {!isES && cc ? (() => {
+        const fm = farm?.products[P.id]?.[cc], ix = fm?.idx, ab = fm?.abs;
+        const note = (n?: string | null) => (n ? <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvFSer', ({ 'Antillas francesas': ['Antillas francesas', 'French West Indies', 'Antilles françaises', 'Antille francesi'], 'Córcega': ['Córcega', 'Corsica', 'Corse', 'Corsica'], invernadero: ['invernadero', 'under glass', 'sous serre', 'in serra'], 'aire libre': ['aire libre', 'in the open', 'plein champ', 'pieno campo'] } as Record<string, string[]>)[n]?.[['es', 'en', 'fr', 'it'].indexOf(L)] ?? n)}</Text> : null);
+        const plab = (p: string) => (/^\d{4}-Q\d$/.test(p) ? (L === 'en' ? 'Q' : 'T') + p.slice(6) + ' ' + p.slice(0, 4) : fmtDate(p, L));
+        const il = ix ? ix.pts[ix.pts.length - 1] : null, iyKey = il ? (+il[0].slice(0, 4) - 1) + il[0].slice(4) : '', iy = ix ? ix.pts.find(p => p[0] === iyKey) ?? null : null;
+        const ap = ab ? ab.pts.map(p => [p[0], p[1] / 100] as [string, number]) : [], al = ap[ap.length - 1], apv = ap.length > 1 && +ap[ap.length - 2][0] === +al[0] - 1 ? ap[ap.length - 2] : null, amx = Math.max(0.01, ...ap.slice(-8).map(p => p[1]));
+        return <>
+          <SectionTitle>{t('fvFarm', countryName(cc, L))}</SectionTitle>
+          {!ix && !ab ? <Note>{t('fvFNone', countryName(cc, L))}</Note> : null}
+          {ix && il ? <>
+            <Card>
+              <Row first title={t('fvFIdx', plab(il[0]))} right={num(il[1], L, 1)} rightSub="2020 = 100" />
+              {iy ? <Row title={t('fvFIdxY')} right={num(iy[1], L, 1)} rightSub={pct((il[1] / iy[1] - 1) * 100, L)} /> : null}
+            </Card>
+            <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvFIdxHow')}</Text>
+            {note(ix.note)}
+            <RangeChart key={'fi' + cc} points={ix.pts} unit="2020 = 100" label={t('fvFarm', countryName(cc, L))} width={cw} />
+          </> : null}
+          {ab && al ? <>
+            <Card>
+              <Row first title={t('fvFAbs', al[0])} right={num(al[1], L, 2) + ' €/kg'} />
+              {apv ? <Row title={t('fvFAbsY', apv[0])} right={num(apv[1], L, 2) + ' €/kg'} rightSub={pct((al[1] / apv[1] - 1) * 100, L)} /> : null}
+            </Card>
+            <Card>{ap.slice(-8).reverse().map((p, i) => <Bar key={p[0]} label={p[0]} value={num(p[1], L, 2) + ' €/kg'} frac={p[1] / amx} strong={i === 0} />)}</Card>
+            <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvFAbsHow')}</Text>
+            {note(ab.note)}
+          </> : null}
+          {ix || ab ? <Text style={{ fontSize: 12, color: C.textMuted }}>{ix?.src === 'insee' ? t('fvFSrcI') : t('fvFSrcE')}</Text> : null}
+        </>;
+      })() : null}
       {crop ? <>
         <SectionTitle>{t('fvCrop', crop.camp)}</SectionTitle>
         <Card>
@@ -148,7 +182,7 @@ export default function Fruta() {
         </> : null}
         {crop.prov ? <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvProvisional')}</Text> : null}
       </> : null}
-      <Text style={{ fontSize: 12, color: C.textMuted }}>{t('fvSources')}</Text>
+      <Text style={{ fontSize: 12, color: C.textMuted }}>{isES ? t('fvSources') : t('fvSourcesX')}</Text>
     </Screen>
   );
 }
