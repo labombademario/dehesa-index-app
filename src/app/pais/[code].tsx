@@ -9,6 +9,7 @@ import { num, numAuto, pct } from '../../lib/format';
 import { SourceCite } from '../../components/SourceCite';
 import type { Price, CountryProfile } from '../../lib/types';
 import { loadCountry, countryFromMemory } from '../../lib/api';
+import { webJson } from '../../lib/fv';
 import { CountryMapView } from '../../components/CountryMapView';
 
 const REGION_OF: Record<string, Price['region']> = { US: 'us', CA: 'ca', UK: 'uk', GB: 'uk' };
@@ -21,6 +22,8 @@ export default function Pais() {
   const [prof, setProf] = useState<CountryProfile | null>(() => countryFromMemory(String(code)));
   const [state, setState] = useState<'loading' | 'ok' | 'none' | 'offline'>(prof ? 'ok' : 'loading');
   const [open, setOpen] = useState<string | null>(null);
+  const [tradeOk, setTradeOk] = useState(false);
+  useEffect(() => { webJson('data/app/v1/trade/index.json', 6 * 3600e3).then(d => setTradeOk(!!d?.countries?.[String(code)])); }, [code]);
   useEffect(() => {
     let alive = true;
     loadCountry(String(code)).then(r => { if (!alive) return; setProf(r.profile); setState(r.profile ? 'ok' : r.offline ? 'offline' : 'none'); });
@@ -86,6 +89,7 @@ export default function Pais() {
         {['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code) ? <Row first={!['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code)} title={'🏛️ ' + tx(L, { es: 'Lonjas y mercados locales', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze e mercati locali' })} right="›" onPress={() => router.push({ pathname: '/lonjas', params: { c: c.code } })} /> : null}
       </Card> : null}
       {['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL', 'PT'].includes(c.code) ? <Card><Row first title={'⛽💧 ' + t('envTitle')} right="›" onPress={() => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } })} /></Card> : null}
+      {tradeOk ? <Card><Row first title={'🚢 ' + t('tradeByProduct')} right="›" onPress={() => router.push({ pathname: '/comercio/[cc]', params: { cc: c.code } })} /></Card> : null}
       {prof ? <Button kind="secondary" label={t('explore')} onPress={() => router.push({ pathname: '/explorar', params: { cc: c.code } })} /> : null}
       <Button label={t('fullProfile')} onPress={() => Linking.openURL(c.url)} />
     </Screen>
