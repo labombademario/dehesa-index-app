@@ -6,6 +6,7 @@ import { Screen, Card, Row, SectionTitle, Icon, Note } from '../../components/ui
 import { C, changeColor } from '../../lib/theme';
 import { movers } from '../../lib/logic';
 import { countryName } from '../../lib/fv';
+import { tx } from '../../lib/tx';
 import { num, pct, date, localTime } from '../../lib/format';
 
 // Nombre legible de un conjunto de datos: si el feed solo trae el nombre del fichero, se limpia (data/abares-stats.json -> abares)
@@ -43,7 +44,7 @@ export default function Today() {
       </Card>
 
       <SectionTitle>{t('summaryTitle')}</SectionTitle>
-      <Card><Row first title={t('summaryTitle')} sub={t('summarySub')} right="›" onPress={() => router.push('/resumen')} /><Row title={t('gsTitle')} sub={t('gsPlaceholder')} right="›" onPress={() => router.push('/buscar')} /></Card>
+      <Card><Row first title={tx(L, { es: 'Qué ha cambiado hoy', en: 'What changed today', fr: 'Ce qui a changé aujourd’hui', it: 'Cosa è cambiato oggi' })} sub={tx(L, { es: 'Datos nuevos, cambios históricos, retrasos y próximas actualizaciones', en: 'New data, historical changes, delays and upcoming updates', fr: 'Nouvelles données, changements historiques, retards et prochaines mises à jour', it: 'Nuovi dati, cambiamenti storici, ritardi e prossimi aggiornamenti' })} right="›" onPress={() => router.push('/cambios')} /><Row title={t('summaryTitle')} sub={t('summarySub')} right="›" onPress={() => router.push('/resumen')} /><Row title={t('gsTitle')} sub={t('gsPlaceholder')} right="›" onPress={() => router.push('/buscar')} /></Card>
 
       {cal.length ? <>
         <SectionTitle action={t('seeCalendar')} onAction={() => router.push('/calendario')}>{t('upcoming')}</SectionTitle>
