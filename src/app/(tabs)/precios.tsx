@@ -8,7 +8,7 @@ import { num, pct, date } from '../../lib/format';
 import { norm } from '../../lib/logic';
 import type { Price } from '../../lib/types';
 import { countryName } from '../../lib/fv';
-import { flag } from '../../lib/tx';
+import { flag, tx } from '../../lib/tx';
 
 type Reg = Price['region'];
 
@@ -27,6 +27,7 @@ export default function Prices() {
   // Europa: primero los precios del país del usuario (si no es España) y luego España, que es la referencia de la UE en la web; nunca se mezclan
   const mine = reg === 'eu' && user.market !== 'ES' ? data.prices.filter(p => p.cc === user.market) : [];
   const list = data.prices.filter(p => p.region === reg && !p.cc);
+  const isSpain = (p: Price) => /España/.test(p.place.es);
   const row = (p: Price, i: number) => (
     <Pressable key={p.id} onPress={() => router.push(`/serie/${p.id}`)} accessibilityRole="button" android_ripple={{ color: C.surfaceAlt }}
       style={[s.row, i > 0 && s.rowDivider]}>
@@ -81,9 +82,16 @@ export default function Prices() {
           {mine.length ? <>
             <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag(user.market)} {countryName(user.market, L)}</Text>
             <Card>{mine.map(row)}</Card>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag('ES')} {countryName('ES', L)}</Text>
           </> : null}
-          <Card>{list.map(row)}</Card>
+          {reg === 'eu' ? <>
+            {/* España y, aparte, las referencias de toda la UE o del mercado mundial (avena UE, Brent, urea…): no van bajo «España» */}
+            <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag('ES')} {countryName('ES', L)}</Text>
+            <Card>{list.filter(isSpain).map(row)}</Card>
+            {list.some(p => !isSpain(p)) ? <>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>🌍 {tx(L, { es: 'Referencias de la UE y del mercado mundial', en: 'EU and world-market references', fr: 'Références de l’UE et du marché mondial', it: 'Riferimenti UE e del mercato mondiale' })}</Text>
+              <Card>{list.filter(p => !isSpain(p)).map(row)}</Card>
+            </> : null}
+          </> : <Card>{list.map(row)}</Card>}
         </>
       )}
     </Screen>

@@ -20,9 +20,9 @@ export default function Seccion() {
         <Text style={{ fontSize: 26, fontWeight: '700', color: C.text }} accessibilityRole="header">{t('index')}</Text>
         {ix ? <>
           <Text style={text.big}>{num(ix.value, L, 1)}</Text>
-          <Text style={{ fontSize: 14, color: C.textMuted }}>{t('indexBase', ix.base.period)}</Text>
+          <Text style={{ fontSize: 14, color: C.textMuted }}>{t('indexBase', /^\d{4}-\d{2}(-\d{2})?$/.test(ix.base.period) ? date(ix.base.period, L) : ix.base.period)}</Text>
           <Card>
-            <Row first title={t('period')} right={ix.period} />
+            <Row first title={t('period')} right={/^\d{4}-\d{2}(-\d{2})?$/.test(ix.period) ? date(ix.period, L) : ix.period} />
             <Row title={t('inMonth', '').trim()} right={pct(ix.changeMoMPct, L)} rightColor={changeColor(ix.changeMoMPct)} />
             <Row title={t('inYear', '').trim()} right={pct(ix.changeYoYPct, L)} />
             <Row title={t('source')} right="Dehesa Index" />

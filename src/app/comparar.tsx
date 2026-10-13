@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import Svg, { Line, Path } from 'react-native-svg';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../lib/store';
+import { useApp, staleSuffix } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle, s } from '../components/ui';
 import { C, mode } from '../lib/theme';
 import { num, pct } from '../lib/format';
@@ -46,9 +46,10 @@ export default function Comparar() {
     const k = norm(q.trim());
     return data.prices.filter(p => !sel.includes(p.id) && (!k || norm(`${p.name[L]} ${p.place[L]} ${p.name.es} ${p.product}`).includes(k))).slice(0, k ? 30 : 12);
   }, [q, sel, data.prices, L]);
-  const series = sel.map((id, i) => {
-    const p = data.prices.find(x => x.id === id)!; const all = hist[id] ?? p.points;
-    return { id, p, color: colors()[i % 4], all };
+  // un precio que deja de publicarse tras una actualización se descarta (antes: find(...)! y la pantalla se caía)
+  const series = sel.flatMap((id, i) => {
+    const p = data.prices.find(x => x.id === id); if (!p) return [];
+    return [{ id, p, color: colors()[i % 4], all: hist[id] ?? p.points }];
   });
   const lastTs = series.length ? Math.max(...series.map(x => ts(x.all[x.all.length - 1][0]))) : 0;
   const cur = RANGES.find(r => r.k === range) ?? RANGES[1];
@@ -71,7 +72,7 @@ export default function Comparar() {
       {series.length ? (
         <Card>
           {series.map((sr, i) => (
-            <Row key={sr.id} first={i === 0} title={sr.p.name[L]} sub={`${sr.p.place[L]} · ${sr.p.unit[L]}`} right={num(sr.p.value, L)} rightSub={t('compareRemove')} rightColor={sr.color}
+            <Row key={sr.id} first={i === 0} title={sr.p.name[L]} sub={`${sr.p.place[L]} · ${sr.p.unit[L]}${staleSuffix(sr.p, L, t)}`} right={num(sr.p.value, L)} rightSub={t('compareRemove')} rightColor={sr.color}
               onPress={() => setSel(sel.filter(x => x !== sr.id))} />
           ))}
         </Card>
@@ -108,7 +109,7 @@ export default function Comparar() {
         <>
           <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={C.textMuted} accessibilityLabel={t('search')}
             style={[s.input, { borderRadius: 28, paddingHorizontal: 16, backgroundColor: C.surfaceAlt, borderWidth: 0 }]} />
-          <Card>{found.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${p.unit[L]}`} right="+" onPress={() => { setSel([...sel, p.id]); setQ(''); }} />)}</Card>
+          <Card>{found.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={`${p.place[L]} · ${p.unit[L]}${staleSuffix(p, L, t)}`} right="+" onPress={() => { setSel([...sel, p.id]); setQ(''); }} />)}</Card>
         </>
       )}
     </Screen>

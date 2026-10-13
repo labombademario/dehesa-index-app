@@ -41,7 +41,7 @@ export default function More() {
         return (
           <React.Fragment key={g}>
             <SectionTitle>{t(GROUP_KEY[g])}</SectionTitle>
-            <Card>{g === 'data' ? <Row first title="PAC / CAP" sub={t('pacTitle')} right="›" onPress={() => router.push('/pac')} /> : null}{items.map((x, i) => <Row key={x.id} first={i === 0 && g !== 'data'} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => (x.id === 'recan' ? router.push('/recan') : secFor(x.id, user.market) ? router.push({ pathname: '/sec/[id]', params: { id: secFor(x.id, user.market)! } }) : router.push(`/seccion/${x.id}`))} />)}</Card>
+            <Card>{g === 'data' ? <Row first title={tx(user.lang, { es: 'PAC', en: 'CAP', fr: 'PAC', it: 'PAC' })} sub={t('pacTitle')} right="›" onPress={() => router.push('/pac')} /> : null}{items.map((x, i) => <Row key={x.id} first={i === 0 && g !== 'data'} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => (x.id === 'recan' ? router.push('/recan') : secFor(x.id, user.market) ? router.push({ pathname: '/sec/[id]', params: { id: secFor(x.id, user.market)! } }) : router.push(`/seccion/${x.id}`))} />)}</Card>
           </React.Fragment>
         );
       })}

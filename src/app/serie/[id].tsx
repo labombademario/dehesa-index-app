@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams, Stack } from 'expo-router';
-import { useApp, BASKET_MAX } from '../../lib/store';
+import { useApp, BASKET_MAX, staleSuffix, srcName } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle, Change, OfficialBadge, text } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { RangeChart } from '../../components/RangeChart';
@@ -40,7 +40,7 @@ export default function Serie() {
       {p.stale ? <Note>{t('staleData', date(p.date, L))}</Note> : null}
       <RangeChart points={p.points} unit={p.unit[L]} label={p.name[L]} width={width - 32 - 28 - 2} load={() => loadPriceHistory(p.id, p.date)} />
       <Card>
-        <Row first title={t('source')} right={p.sourceName} />
+        <Row first title={t('source')} right={srcName(p.sourceName, L)} />
         <Row title={t('lastData')} right={date(p.date, L)} />
         <Row title={t('frequency')} right={t(p.frequency)} />
         {p.yearAgo ? <Row title={t('yearAgo')} sub={date(p.yearAgo.date, L)} right={`${num(p.yearAgo.value, L)} ${p.unit[L]}`} /> : null}
@@ -53,7 +53,7 @@ export default function Serie() {
       <Button kind="secondary" label={t('compare')} onPress={() => router.push({ pathname: '/comparar', params: { ids: p.id } })} />
       {others.length ? <>
         <SectionTitle>{t('otherMarkets')}</SectionTitle>
-        <Card>{others.map((o, i) => <Row key={o.id} first={i === 0} title={o.place[L]} sub={o.unit[L]} right={num(o.value, L)} rightSub={pct(o.changePct, L)} rightColor={changeColor(o.changePct)} onPress={() => router.push(`/serie/${o.id}`)} />)}</Card>
+        <Card>{others.map((o, i) => <Row key={o.id} first={i === 0} title={o.place[L]} sub={o.unit[L] + staleSuffix(o, L, t)} right={num(o.value, L)} rightSub={pct(o.changePct, L)} rightColor={changeColor(o.changePct)} onPress={() => router.push(`/serie/${o.id}`)} />)}</Card>
       </> : null}
       {!inB && user.basket.length >= BASKET_MAX ? <Note>{t('basketFull')}</Note> : null}
     </Screen>

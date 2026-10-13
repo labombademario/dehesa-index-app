@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Linking, Pressable, Switch, Text, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../lib/store';
+import { useApp, staleSuffix } from '../lib/store';
 import { Screen, Card, Button, Note, Segmented, SectionTitle, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { evaluateAlert, type AlertRule } from '../lib/logic';
@@ -9,6 +9,9 @@ import { num } from '../lib/format';
 import { ensurePermission, markSeen, notificationsEnabled } from '../lib/notify';
 
 const parse = (v: string) => { const n = parseFloat(v.replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : null; };
+
+// Umbral con los decimales que escribió el usuario (antes «sube a 1,000 €/t», que se leía como mil)
+const ud = (v: number) => (Number.isInteger(v) ? 0 : Math.min(3, String(v).split('.')[1]?.length ?? 0));
 
 export default function Avisos() {
   const { nuevo } = useLocalSearchParams<{ nuevo?: string }>();
@@ -38,7 +41,9 @@ export default function Avisos() {
   const del = (id: string) => setUser(u => ({ alerts: u.alerts.filter(a => a.id !== id) }));
 
   // Para elegir precio: primero los de la cesta, luego el resto
-  const choices = [...user.basket.map(id => price(id)).filter(Boolean), ...data.prices.filter(p => !user.basket.includes(p.id))] as NonNullable<ReturnType<typeof price>>[];
+  // primero la cesta, luego los precios del país del usuario y después el resto (antes los de su país quedaban fuera del corte)
+  const rest = data.prices.filter(p => !user.basket.includes(p.id));
+  const choices = [...user.basket.map(id => price(id)).filter(Boolean), ...rest.filter(p => p.cc === user.market), ...rest.filter(p => p.cc !== user.market)] as NonNullable<ReturnType<typeof price>>[];
   const fp = form ? price(form.priceId) : undefined;
 
   return (
@@ -76,10 +81,10 @@ export default function Avisos() {
             return (
               <View key={a.id} style={[s.row, i > 0 && s.rowDivider]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={s.rowTitle}>{p ? p.name[L] : a.priceId}</Text>
-                  <Text style={s.rowSub}>{a.cond === 'ge' ? t('goesUp') : t('goesDown')} {num(a.value, L)} {p?.unit[L] ?? ''}{p ? ` · ${t('now', num(p.value, L))}` : ''}</Text>
+                  <Text style={s.rowTitle}>{p ? `${p.name[L]} · ${p.place[L]}` : t('loading')}</Text>
+                  <Text style={s.rowSub}>{a.cond === 'ge' ? t('goesUp') : t('goesDown')} {num(a.value, L, ud(a.value))} {p?.unit[L] ?? ''}{p ? ` · ${t('now', num(p.value, L))}` : ''}</Text>
                   <Text style={[s.rowSub, { fontWeight: '600', color: st.kind === 'hit' ? C.positive : C.textMuted }]}>{status}</Text>
-                  <Pressable onPress={() => del(a.id)} accessibilityRole="button" hitSlop={8} style={{ minHeight: 32, justifyContent: 'center', alignSelf: 'flex-start' }}>
+                  <Pressable onPress={() => del(a.id)} accessibilityRole="button" accessibilityLabel={`${t('delete')}: ${p ? p.name[L] + ' · ' + p.place[L] : ''}`} hitSlop={8} style={{ minHeight: 32, justifyContent: 'center', alignSelf: 'flex-start' }}>
                     <Text style={{ color: C.negative, fontSize: 14, fontWeight: '600' }}>{t('delete')}</Text></Pressable>
                 </View>
                 <Switch value={a.on} onValueChange={on => toggle(a.id, on)} trackColor={{ true: C.accent, false: C.border }} accessibilityLabel={p ? p.name[L] : a.priceId} />
@@ -91,9 +96,9 @@ export default function Avisos() {
 
       {!form ? <>
         <SectionTitle>{t('choosePrice')}</SectionTitle>
-        <Card>{choices.slice(0, 30).map((p, i) => (
+        <Card>{choices.slice(0, 60).map((p, i) => (
           <Pressable key={p.id} onPress={() => open(p.id)} accessibilityRole="button" android_ripple={{ color: C.surfaceAlt }} style={[s.row, i > 0 && s.rowDivider]}>
-            <View style={{ flex: 1 }}><Text style={s.rowTitle}>{p.name[L]}</Text><Text style={s.rowSub}>{p.place[L]}</Text></View>
+            <View style={{ flex: 1 }}><Text style={s.rowTitle}>{p.name[L]}</Text><Text style={s.rowSub}>{p.place[L] + staleSuffix(p, L, t)}</Text></View>
             <Text style={s.linkText}>+</Text>
           </Pressable>))}
         </Card>

@@ -5,6 +5,8 @@ import { useApp } from '../lib/store';
 import { Screen, Card, Row, SectionTitle, Note, Segmented } from '../components/ui';
 import { C, changeColor } from '../lib/theme';
 import { numAuto, pct, date } from '../lib/format';
+import { loadGloss } from '../lib/gloss';
+import { tl } from '../lib/labelTl';
 import { loadSummary, type SummaryData } from '../lib/api';
 
 export default function Resumen() {
@@ -20,7 +22,9 @@ export default function Resumen() {
     try { const n = new (Intl as any).DisplayNames([L], { type: 'region' }).of(code === 'EL' ? 'GR' : code); if (n) return n; } catch { /* */ }
     return code;
   };
-  const lab = (x: { label: string; labelT?: Record<string, string> }) => x.labelT?.[L] ?? x.label;
+  const lab = (x: { label: string; labelT?: Record<string, string> }) => x.labelT?.[L] ?? tl(x.label, L);   // sin labelT: glosario (antes salía en inglés)
+  const [, setGl] = useState(false);
+  useEffect(() => { loadGloss(L).then(() => setGl(v => !v)); }, [L]);
   // unidad de cada cifra (antes no se mostraba): las de Eurostat vienen en inglés
   const UN: Record<string, Record<string, string>> = { 'thousand t': { es: 'mil t', en: 'thousand t', fr: 'milliers de t', it: 'migliaia di t' }, 'thousand ha': { es: 'mil ha', en: 'thousand ha', fr: 'milliers d’ha', it: 'migliaia di ha' }, 'kg/ha': { es: 'kg/ha', en: 'kg/ha', fr: 'kg/ha', it: 'kg/ha' } };
   const un = (u: string) => (u ? ' ' + (UN[u]?.[L] ?? u) : '');

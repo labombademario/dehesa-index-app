@@ -7,6 +7,22 @@ import { C, changeColor } from '../lib/theme';
 import { numAuto, pct } from '../lib/format';
 import { norm } from '../lib/logic';
 import { loadCatalog, countryFromMemory, type CatSeries } from '../lib/api';
+import { loadGloss } from '../lib/gloss';
+import { tl } from '../lib/labelTl';
+import { tx } from '../lib/tx';
+
+// Nombre de cada grupo de series en los cuatro idiomas (antes salían ids internos como «idx_perc» o «prices_lv»)
+const GROUPS: Record<string, { es: string; en: string; fr: string; it: string }> = {
+  product: { es: 'Precios de productos', en: 'Product prices', fr: 'Prix des produits', it: 'Prezzi dei prodotti' }, production: { es: 'Producción', en: 'Production', fr: 'Production', it: 'Produzione' },
+  crops: { es: 'Cultivos', en: 'Crops', fr: 'Cultures', it: 'Colture' }, livestock: { es: 'Ganadería', en: 'Livestock', fr: 'Élevage', it: 'Allevamento' }, trade: { es: 'Comercio', en: 'Trade', fr: 'Commerce', it: 'Commercio' },
+  quotes: { es: 'Cotizaciones', en: 'Quotes', fr: 'Cotations', it: 'Quotazioni' }, prices: { es: 'Precios', en: 'Prices', fr: 'Prix', it: 'Prezzi' }, prices_paid: { es: 'Precios pagados', en: 'Prices paid', fr: 'Prix payés', it: 'Prezzi pagati' },
+  milk: { es: 'Leche', en: 'Milk', fr: 'Lait', it: 'Latte' }, milk_regions: { es: 'Leche por región', en: 'Milk by region', fr: 'Lait par région', it: 'Latte per regione' }, crops_regions: { es: 'Cultivos por región', en: 'Crops by region', fr: 'Cultures par région', it: 'Colture per regione' },
+  prices_lv: { es: 'Precios del ganado', en: 'Livestock prices', fr: 'Prix du bétail', it: 'Prezzi del bestiame' }, meat_regions: { es: 'Carne por región', en: 'Meat by region', fr: 'Viande par région', it: 'Carne per regione' }, prices_fv: { es: 'Frutas y hortalizas', en: 'Fruit and vegetables', fr: 'Fruits et légumes', it: 'Frutta e ortaggi' },
+  inputs: { es: 'Insumos', en: 'Inputs', fr: 'Intrants', it: 'Mezzi tecnici' }, inputs_f: { es: 'Fertilizantes', en: 'Fertilisers', fr: 'Engrais', it: 'Fertilizzanti' }, inputs_a: { es: 'Piensos', en: 'Feed', fr: 'Aliments du bétail', it: 'Mangimi' },
+  idx_perc: { es: 'Índices de precios percibidos', en: 'Output price indices', fr: 'Indices des prix à la production', it: 'Indici dei prezzi alla produzione' }, idx_pag: { es: 'Índices de precios pagados', en: 'Input price indices', fr: 'Indices des prix des intrants', it: 'Indici dei prezzi dei mezzi tecnici' },
+  costs: { es: 'Costes', en: 'Costs', fr: 'Coûts', it: 'Costi' }, environment: { es: 'Medio ambiente', en: 'Environment', fr: 'Environnement', it: 'Ambiente' }, organic: { es: 'Ecológico', en: 'Organic', fr: 'Bio', it: 'Biologico' },
+  stocks: { es: 'Existencias', en: 'Stocks', fr: 'Stocks', it: 'Scorte' }, income: { es: 'Renta', en: 'Income', fr: 'Revenus', it: 'Redditi' }, partners: { es: 'Socios comerciales', en: 'Trade partners', fr: 'Partenaires commerciaux', it: 'Partner commerciali' }, rates: { es: 'Tipos de interés', en: 'Interest rates', fr: 'Taux d’intérêt', it: 'Tassi d’interesse' },
+};
 
 const PAGE = 60;
 
@@ -26,7 +42,9 @@ export default function Explorar() {
     loadCatalog(String(cc)).then(r => { if (!alive) return; setCat(r); setState(r ? 'ok' : 'fail'); });
     return () => { alive = false; };
   }, [cc]);
-  const gname = (id: string) => prof?.groups.find(x => x.id === id)?.title[L] ?? id;
+  const gname = (id: string) => prof?.groups.find(x => x.id === id)?.title[L] ?? (GROUPS[id] ? tx(L, GROUPS[id]) : id);
+  const [, setGl] = useState(false);
+  useEffect(() => { loadGloss(L).then(() => setGl(v => !v)); }, [L]);
   const groups = useMemo(() => {
     const c: Record<string, number> = {};
     (cat ?? []).forEach(x => { c[x.group] = (c[x.group] || 0) + 1; });
@@ -59,7 +77,7 @@ export default function Explorar() {
         </ScrollView>
         <Note>{t('exploreCount', list.length)}</Note>
         <Card>
-          {list.slice(0, limit).map((x, i) => <Row key={x.id} first={i === 0} title={x.label} sub={`${x.unit} · ${x.latestPeriod} · ${t(x.freq)}`} right={numAuto(x.latest, L)}
+          {list.slice(0, limit).map((x, i) => <Row key={x.id} first={i === 0} title={tl(x.label, L)} sub={`${x.unit} · ${x.latestPeriod} · ${t(x.freq)}`} right={numAuto(x.latest, L)}
             rightSub={x.changePct == null ? undefined : pct(x.changePct, L)} rightColor={changeColor(x.changePct)}
             onPress={() => router.push({ pathname: '/indicador', params: { cc: String(cc), id: x.id } })} />)}
         </Card>

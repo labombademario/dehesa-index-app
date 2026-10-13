@@ -19,13 +19,13 @@ const CNAME: Record<CC, Record<Lang, string>> = { US: { es: 'EE. UU.', en: 'US',
 function title(s: string): string { return s.toLowerCase().replace(/(^|[\s-])\S/g, m => m.toUpperCase()); }
 
 export default function Siembra() {
-  const { user, t } = useApp();
+  const { user, t, ready } = useApp();
   const L = user.lang;
   const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: user.market === 'US' ? 'US' : user.market === 'CA' ? 'CA' : user.market === 'FR' ? 'FR' : 'ES', r: '', area: '', costs: {} });
   const [doc, setDoc] = useState<SowDoc | null>(null);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { AsyncStorage.getItem(KEY).then(raw => { if (raw) { try { setSt(s => ({ ...s, ...JSON.parse(raw) })); } catch { /* */ } } setLoaded(true); }); }, []);
-  useEffect(() => { if (loaded) AsyncStorage.setItem(KEY, JSON.stringify(st)).catch(() => {}); }, [st, loaded]);
+  useEffect(() => { if (loaded && ready) AsyncStorage.setItem(KEY, JSON.stringify(st)).catch(() => {}); }, [st, loaded, ready]);   // antes de leer el perfil no se guarda nada (se guardaba España por defecto)
   const [docDone, setDocDone] = useState(false);
   // la respuesta de un país que ya no está elegido se descarta (al cambiar rápido de país)
   useEffect(() => { let alive = true; setDoc(null); setDocDone(false); webJson('data/sowing/' + st.c.toLowerCase() + '.json', 12 * 3600e3).then((d: any) => { if (alive) { setDoc(d); setDocDone(true); } }).catch(() => { if (alive) setDocDone(true); }); return () => { alive = false; }; }, [st.c]);

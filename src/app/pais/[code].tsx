@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { tx } from '../../lib/tx';
-import { useApp } from '../../lib/store';
+import { useApp, staleSuffix } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { num, numAuto, pct } from '../../lib/format';
@@ -49,7 +49,7 @@ export default function Pais() {
       <CountryMapView cc={c.code} />
       {prices.length ? <>
         <SectionTitle>{t('pricesHere')}</SectionTitle>
-        <Card>{prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L]} right={`${num(p.value, L)} ${p.unit[L]}`}
+        <Card>{prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L] + staleSuffix(p, L, t)} right={`${num(p.value, L)} ${p.unit[L]}`}
           rightSub={pct(p.changePct, L)} rightColor={changeColor(p.changePct)} onPress={() => router.push(`/serie/${p.id}`)} />)}</Card>
       </> : null}
       <SectionTitle>{t('indicators')}</SectionTitle>

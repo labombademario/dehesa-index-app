@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Text, View } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { useApp, defaults, isEu, presetFor, resolvePreset } from '../lib/store';
+import { useApp, defaults, isEu, presetFor, resolvePreset, srcName } from '../lib/store';
 import { webJson } from '../lib/fv';
 import { PROFILES, Choice } from '../components/choice';
 import { MarketPicker } from '../components/MarketPicker';
@@ -32,8 +32,6 @@ export default function Ajustes() {
       } },
     ]);
   };
-  // Nombre de la fuente en el idioma de la app (los datos lo traen en español)
-  const srcName = (n: string) => n.replace(/^Comisión Europea/, tx(user.lang, { es: 'Comisión Europea', en: 'European Commission', fr: 'Commission européenne', it: 'Commissione europea' })).replace(/^Banco Mundial/, tx(user.lang, { es: 'Banco Mundial', en: 'World Bank', fr: 'Banque mondiale', it: 'Banca Mondiale' })).replace(/\(Reino Unido\)/, tx(user.lang, { es: '(Reino Unido)', en: '(UK)', fr: '(Royaume-Uni)', it: '(Regno Unito)' }));
   const wipe = () => Alert.alert(t('wipe'), t('wipeConfirm'), [
     { text: t('cancel'), style: 'cancel' },
     { text: t('delete'), style: 'destructive', onPress: () => { setUser({ ...defaults(), lang: user.lang }); router.replace('/bienvenida'); } },
@@ -55,7 +53,7 @@ export default function Ajustes() {
       <SectionTitle>{t('sources')}</SectionTitle>
       <Note>{t('sourcesHint')}</Note>
       <Card>
-        {sources.map(([name, count], i) => <Row key={name} first={i === 0} title={srcName(name)} right={t('pricesCount', count)} />)}
+        {sources.map(([name, count], i) => <Row key={name} first={i === 0} title={srcName(name, user.lang)} right={t('pricesCount', count)} />)}
         <Row title={t('openWeb')} right="›" onPress={() => Linking.openURL('https://dehesaindex.com/metodologia.html')} />
       </Card>
       <Button kind="danger" label={t('wipe')} onPress={wipe} />

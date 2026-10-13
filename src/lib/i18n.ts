@@ -420,6 +420,7 @@ const S: Record<string, Row> = {
   basketKeep: ['Dejarla', 'Keep it', 'Le garder', 'Lasciarlo'],
   basketReplace: ['Cambiarla', 'Change it', 'Le changer', 'Cambiarlo'],
   staleData: ['Último dato: {0}', 'Latest data: {0}', 'Dernière donnée : {0}', 'Ultimo dato: {0}'],
+  notAvailable: ['No disponible ahora. Ábrelo desde la página del país.', 'Not available right now. Open it from the country page.', 'Indisponible pour le moment. Ouvrez-le depuis la page du pays.', 'Non disponibile ora. Aprilo dalla pagina del paese.'],
 };
 
 const IDX: Record<Lang, number> = { es: 0, en: 1, fr: 2, it: 3 };

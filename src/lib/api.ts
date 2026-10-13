@@ -93,11 +93,12 @@ export function countryFromMemory(cc: string): CountryProfile | null { return pr
 type Pts = [string, number][];
 const histMem: Record<string, Pts> = {};
 export async function loadPriceHistory(id: string, version: string): Promise<Pts | null> {
-  if (histMem[id]) return histMem[id];
+  const mk = id + '@' + version;   // por versión: tras una actualización no se queda el histórico viejo sin el último dato
+  if (histMem[mk]) return histMem[mk];
   if (/^eu_[a-z]{2}_/.test(id)) return null;   // precios de otros países de la UE: el histórico ya viene en el propio precio (data/app/v1/eu/<CC>.json)
   try {
     const r = await getJson(BASE + 'history/' + id.replace(/[^A-Za-z0-9_.-]/g, '_') + '.json?v=' + encodeURIComponent(version));
-    return (histMem[id] = r.points as Pts);
+    return (histMem[mk] = r.points as Pts);
   } catch { return null; }
 }
 const chunkMem: Record<string, Map<string, Pts>> = {};

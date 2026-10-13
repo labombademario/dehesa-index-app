@@ -19,7 +19,7 @@ export default function Indicador() {
   if (!sr) { const c = catalogFromMemory(String(cc))?.find(x => x.id === id); if (c) sr = { id: c.id, label: c.label, unit: c.unit, frequency: c.freq, latest: c.latest, period: c.latestPeriod, changePct: c.changePct, sourceId: c.sourceId, file: c.file, points: [] }; }
   const group = prof?.groups.find(g => g.series.some(x => x.id === id));
   const country = data.countries.find(x => x.code === cc);
-  if (!sr) return <Screen title="—"><Note>{t('missing')}</Note></Screen>;
+  if (!sr) return <Screen title="—"><Note>{t('notAvailable')}</Note></Screen>;
   const pts = sr.points.map(x => x[1]);
   const mn = pts.length ? Math.min(...pts) : sr.latest, mx = pts.length ? Math.max(...pts) : sr.latest;
   return (

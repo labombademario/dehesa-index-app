@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Card, LineChart } from './ui';
 import { C } from '../lib/theme';
-import { numAuto, pct } from '../lib/format';
+import { numAuto, pct, date } from '../lib/format';
+import type { Lang } from '../lib/types';
 import { useApp } from '../lib/store';
 
 type Pts = [string, number][];
@@ -16,6 +17,9 @@ function ts(p: string): number {
   m = /^(\d{4})/.exec(p); return m ? Date.UTC(+m[1], 6, 1) : NaN;
 }
 function addMonths(t: number, n: number): number { const d = new Date(t); d.setUTCMonth(d.getUTCMonth() - n); return d.getTime(); }
+
+// Extremos del eje en formato local (antes «2025-07-27»)
+function axDate(s: string, L: Lang): string { return /^\d{4}-\d{2}(-\d{2})?$/.test(s) ? date(s, L) : s; }
 
 export function RangeChart({ points, load, unit, label, width }: { points: Pts; load?: () => Promise<Pts | null>; unit: string; label: string; width: number }) {
   const { user, t } = useApp();
@@ -67,8 +71,8 @@ export function RangeChart({ points, load, unit, label, width }: { points: Pts; 
         </View>
         <LineChart points={vals} width={width} label={`${label}: ${numAuto(vals[0], L)} → ${numAuto(vals[vals.length - 1], L)} ${unit}`} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{shown[0][0]}</Text>
-          <Text style={{ fontSize: 12, color: C.textMuted }}>{shown[shown.length - 1][0]}</Text>
+          <Text style={{ fontSize: 12, color: C.textMuted }}>{axDate(shown[0][0], L)}</Text>
+          <Text style={{ fontSize: 12, color: C.textMuted }}>{axDate(shown[shown.length - 1][0], L)}</Text>
         </View>
         <Text style={{ fontSize: 12.5, color: C.textMuted }}>{t('rangeChange')}: <Text style={{ fontWeight: '700', color: C.text }}>{pct(change, L)}</Text></Text>
       </> : null}

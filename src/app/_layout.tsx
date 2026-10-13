@@ -27,7 +27,9 @@ function RootStack() {
   return (
     <>
     <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
-    <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false, headerBackButtonDisplayMode: 'minimal' }}>
+    {/* key: al terminar de leer el perfil guardado (ready) las pantallas se montan de nuevo con el mercado y la cesta reales.
+        Antes, una pantalla abierta durante la pantalla de carga se quedaba con el usuario por defecto (España). */}
+    <Stack key={ready ? 'ready' : 'boot'} screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.accent, headerTitleStyle: { color: C.text }, contentStyle: { backgroundColor: C.bg }, headerShadowVisible: false, headerBackButtonDisplayMode: 'minimal' }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('tabToday') }} />
       <Stack.Screen name="bienvenida" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="serie/[id]" options={{ title: '' }} />

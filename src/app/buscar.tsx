@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { Stack, router } from 'expo-router';
-import { useApp } from '../lib/store';
+import { useApp, staleSuffix } from '../lib/store';
 import { Screen, Card, Row, SectionTitle, Note, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { norm } from '../lib/logic';
@@ -55,7 +55,7 @@ export default function Buscar() {
       {opening ? <Note>{t('gsOpening')}</Note> : null}
       {res && !total && idx ? <Note>{t('gsNone')}</Note> : null}
       {res && res.prices.length ? <><SectionTitle>{t('gsPrices')}</SectionTitle>
-        <Card>{res.prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L]} right="›" onPress={() => router.push(`/serie/${p.id}`)} />)}</Card></> : null}
+        <Card>{res.prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L] + staleSuffix(p, L, t)} right="›" onPress={() => router.push(`/serie/${p.id}`)} />)}</Card></> : null}
       {res && res.countries.length ? <><SectionTitle>{t('gsCountries')}</SectionTitle>
         <Card>{res.countries.map((c, i) => <Row key={c.code} first={i === 0} title={c.name[L]} right="›" onPress={() => router.push(`/pais/${c.code}`)} />)}</Card></> : null}
       {res && res.sections.length ? <><SectionTitle>{t('gsSections')}</SectionTitle>

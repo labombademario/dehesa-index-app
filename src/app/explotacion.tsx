@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Stack } from 'expo-router';
+import { tx } from '../lib/tx';
 import { useApp, type CropLine } from '../lib/store';
 import { Screen, Card, Row, Button, Note, Segmented, s } from '../components/ui';
 import { C } from '../lib/theme';
@@ -32,17 +33,21 @@ function Result({ L, t, income, cost, margin, extra }: { L: Lang; t: (k: string,
   );
 }
 
+const CROP: Record<string, { es: string; en: string; fr: string; it: string }> = { trigo: { es: 'Trigo', en: 'Wheat', fr: 'Blé', it: 'Frumento' }, maiz: { es: 'Maíz', en: 'Maize', fr: 'Maïs', it: 'Mais' }, cebada: { es: 'Cebada', en: 'Barley', fr: 'Orge', it: 'Orzo' } };
+
 export default function Explotacion() {
   const { data, user, setUser, t } = useApp();
   const L = user.lang;
   const [tab, setTab] = useState<Tab>(user.profile === 'dairy' || user.profile === 'pig' ? 'livestock' : 'crops');
   // Primero el precio del país del usuario (media nacional de la Comisión); si no lo publica, la referencia de España con su lugar a la vista
   const mine = (product: string): Price | undefined => (user.market !== 'ES' ? data.prices.find(p => p.cc === user.market && p.product === product) : undefined);
-  const es = (product: string): Price | undefined => data.prices.find(p => p.region === 'eu' && !p.cc && p.product === product);
+  // EE. UU. y Canadá: la calculadora trabaja en euros por tonelada; no se les pone el precio de Zaragoza como si fuera el suyo
+  const euMarket = user.market !== 'US' && user.market !== 'CA';
+  const es = (product: string): Price | undefined => (euMarket ? data.prices.find(p => p.region === 'eu' && !p.cc && p.product === product) : undefined);
   const eu = (product: string): Price | undefined => mine(product) ?? es(product);
   // Una relación de precios no mezcla países: o los dos del país del usuario o los dos de la referencia de España
   const pair = (a: string, b: string): [Price | undefined, Price | undefined] => (mine(a) && mine(b) ? [mine(a), mine(b)] : [es(a), es(b)]);
-  const priceRef = (p: Price | undefined) => p ? t('priceRef', `${num(p.value, L)} ${p.unit[L]}`, `${p.place[L]}, ${date(p.date, L)}`) : t('noPrice');
+  const priceRef = (p: Price | undefined) => p ? t('priceRef', `${num(p.value, L)} ${p.unit[L]}`, `${p.place[L]}, ${p.stale ? t('staleData', date(p.date, L)) : date(p.date, L)}`) : t('noPrice');
 
   const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? { ...c, ...patch } : c) }));
   const products: CropLine['product'][] = ['trigo', 'maiz', 'cebada'];
@@ -58,7 +63,7 @@ export default function Explotacion() {
     <Screen>
       <Stack.Screen options={{ title: t('farm') }} />
       <Segmented value={tab} onChange={setTab} options={[{ value: 'crops', label: t('crops') }, { value: 'livestock', label: t('livestock') }, { value: 'ratios', label: t('ratios') }]} />
-      {tab !== 'ratios' ? <Note>{t('example')} {t('farmEu')}</Note> : <Note>{t('ratiosHint')}</Note>}
+      {tab !== 'ratios' ? <Note>{t('example')} {euMarket ? t('farmEu') : tx(L, { es: 'Por ahora esta calculadora solo tiene precios de referencia de la Unión Europea, en euros. Para EE. UU. y Canadá no se usa un precio de otro país: los ingresos quedan sin calcular.', en: 'For now this calculator only has European Union reference prices, in euros. For the US and Canada no other country’s price is used, so income is left uncalculated.', fr: 'Pour l’instant, ce calculateur n’a que des prix de référence de l’Union européenne, en euros. Pour les États-Unis et le Canada, aucun prix d’un autre pays n’est utilisé : les recettes ne sont pas calculées.', it: 'Per ora questo calcolatore ha solo prezzi di riferimento dell’Unione europea, in euro. Per Stati Uniti e Canada non si usa il prezzo di un altro paese: i ricavi restano non calcolati.' })}</Note> : <Note>{t('ratiosHint')}</Note>}
 
       {tab === 'crops' ? <>
         {user.crops.map(c => {
@@ -66,7 +71,7 @@ export default function Explotacion() {
           const m = cropMargin(n(c.ha), n(c.yld), n(c.cost), p?.value ?? 0);
           return (
             <Card key={c.id} style={{ padding: 14, gap: 10 }}>
-              <Segmented value={c.product} onChange={product => setCrop(c.id, { product })} options={products.map(x => ({ value: x, label: eu(x)?.name[L] ?? x }))} />
+              <Segmented value={c.product} onChange={product => setCrop(c.id, { product })} options={products.map(x => ({ value: x, label: eu(x)?.name[L] ?? tx(L, CROP[x]) }))} />
               <Text style={s.rowSub}>{priceRef(p)}</Text>
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 <Field label={t('area')} value={c.ha} onChange={ha => setCrop(c.id, { ha })} />

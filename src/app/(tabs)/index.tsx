@@ -5,6 +5,7 @@ import { useApp } from '../../lib/store';
 import { Screen, Card, Row, SectionTitle, Icon, Note } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { movers } from '../../lib/logic';
+import { countryName } from '../../lib/fv';
 import { num, pct, date, localTime } from '../../lib/format';
 
 // Nombre legible de un conjunto de datos: si el feed solo trae el nombre del fichero, se limpia (data/abares-stats.json -> abares)
@@ -51,7 +52,7 @@ export default function Today() {
 
       {news.length ? <>
         <SectionTitle action={t('seeAll')} onAction={() => router.push('/noticias')}>{t('news')}</SectionTitle>
-        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country].filter(Boolean).join(' · ')} onPress={() => Linking.openURL(n.url)} />)}</Card>
+        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country ? countryName(n.country, user.lang) : ''].filter(Boolean).join(' · ')} onPress={() => Linking.openURL(n.url)} />)}</Card>
       </> : null}
 
       {data.today.newDatasets.length ? <>

@@ -9,12 +9,15 @@ import { bundled, cached, refresh } from './api';
 import { translate } from './i18n';
 import { applyTheme, type Mode } from './theme';
 import { useColorScheme } from 'react-native';
+import { date as fmtDay } from './format';
 import { USER_KEY, runCheck, syncBackgroundTask, euCcOf } from './notify';
 
 export type Profile = 'cereal' | 'dairy' | 'pig' | 'buyer';
 /** 'US', 'CA' o el código del país de la UE (ES, IT, FR, DE...). España usa los precios generales; el resto, los suyos (data/app/v1/eu/<CC>.json). */
 export type Market = string;
-export const isEu = (m: Market) => m !== 'US' && m !== 'CA';
+// Países de la UE con precios propios en data/app/v1/eu (más España); un código fuera de la lista (UK, CH, AR…) no pide ese fichero
+export const EU_CCS = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK'];
+export const isEu = (m: Market) => EU_CCS.includes(m);
 export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha: string; yld: string; cost: string }
 export interface UserState {
   v: 1;
@@ -43,6 +46,16 @@ export function presetFor(market: Market, profile: Profile): string[] {
   return EU_PRESET[profile].map(k => k.replace('@', market));
 }
 export const BASKET_MAX = 8;
+/** Nombre de la fuente en el idioma de la app (los datos lo traen en español: «Comisión Europea · Agri-food», «Defra (Reino Unido)») */
+export function srcName(n: string, L: Lang): string {
+  const W: Record<string, Record<Lang, string>> = { 'Comisión Europea': { es: 'Comisión Europea', en: 'European Commission', fr: 'Commission européenne', it: 'Commissione europea' }, 'Banco Mundial': { es: 'Banco Mundial', en: 'World Bank', fr: 'Banque mondiale', it: 'Banca Mondiale' }, 'Reino Unido': { es: 'Reino Unido', en: 'UK', fr: 'Royaume-Uni', it: 'Regno Unito' } };
+  for (const w in W) n = n.split(w).join(W[w][L] ?? w);
+  return n;
+}
+/** « · Último dato: 2 ago 2026» para un precio viejo para su frecuencia; '' si está al día */
+export function staleSuffix(p: Price | undefined, L: Lang, t: (k: string, ...v: (string | number)[]) => string): string {
+  return p?.stale ? ' · ' + t('staleData', fmtDay(p.date, L)) : '';
+}
 
 function deviceLang(): Lang {
   try { const l = getLocales()[0]?.languageCode; if (l === 'es' || l === 'en' || l === 'fr' || l === 'it') return l; } catch { /* nada */ }
