@@ -16,6 +16,7 @@ export default function More() {
         <Row first title={'🍅 ' + t('fvTitle')} sub={t('fvSub', 52)} right="›" onPress={() => router.push('/frutas')} />
         <Row title={'🌱 ' + t('swTitle')} sub={t('swSub')} right="›" onPress={() => router.push('/siembra')} />
         <Row title={'💧 ' + t('sqTitle')} sub={t('sqSub')} right="›" onPress={() => router.push('/sequia')} />
+        <Row title={'⛽ ' + t('envTitle')} sub={t('envSub')} right="›" onPress={() => router.push('/entorno')} />
       </Card>
       {groups.map(g => {
         const items = data.sections.filter(x => x.group === g);

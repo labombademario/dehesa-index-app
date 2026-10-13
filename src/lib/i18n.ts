@@ -389,6 +389,17 @@ const S: Record<string, Row> = {
   sqNotCovered: ['No entra en este informe', 'Not part of this report', 'Hors de ce rapport', 'Fuori da questo rapporto'],
   sqNote: ['El MITECO calcula dos índices por unidad: sequía prolongada (falta de lluvia y caudal) y escasez (si hay agua para riego, abastecimiento y otros usos). Solo cubre las cuencas que gestiona el Estado. Dehesa Index asigna el escenario con los umbrales generales de los planes.', 'MITECO computes two indices per unit: prolonged drought (lack of rain and flow) and scarcity (whether there is water for irrigation, supply and other uses). It covers only state-managed basins. Dehesa Index assigns the scenario with the plans’ general thresholds.', 'Le MITECO calcule deux indices par unité : sécheresse prolongée (manque de pluie et de débit) et pénurie (eau disponible pour l’irrigation et les autres usages). Seuls les bassins gérés par l’État sont couverts.', 'Il MITECO calcola due indici per unità: siccità prolungata (mancanza di pioggia e portata) e scarsità (acqua per irrigazione e altri usi). Copre solo i bacini gestiti dallo Stato.'],
   sqSource: ['Fuente: MITECO, Observatorio Nacional de la Sequía. Mapa: demarcaciones del MITECO (vía AEMA) y ríos de Natural Earth.', 'Source: MITECO, National Drought Observatory. Map: MITECO basin districts (via EEA) and Natural Earth rivers.', 'Source : MITECO, Observatoire national de la sécheresse. Carte : districts du MITECO (via AEE) et fleuves Natural Earth.', 'Fonte: MITECO, Osservatorio nazionale della siccità. Mappa: distretti del MITECO (tramite AEA) e fiumi Natural Earth.'],
+  // paquete por país (12 oct)
+  envTitle: ['Gasóleo, emisiones, sequía y nitratos', 'Diesel, emissions, drought and nitrates', 'Gazole, émissions, sécheresse et nitrates', 'Gasolio, emissioni, siccità e nitrati'],
+  envSub: ['10 países: lo que pide el agricultor al ministerio de agricultura y medio ambiente', '10 countries: what farmers ask their agriculture and environment ministries', '10 pays : ce que l’agriculteur demande aux ministères', '10 paesi: quello che l’agricoltore chiede ai ministeri'],
+  envDiesel: ['Gasóleo', 'Diesel', 'Gazole', 'Gasolio'],
+  envGhg: ['Emisiones', 'Emissions', 'Émissions', 'Emissioni'],
+  envDrought: ['Sequía', 'Drought', 'Sécheresse', 'Siccità'],
+  envNitrates: ['Nitratos', 'Nitrates', 'Nitrates', 'Nitrati'],
+  envOpen: ['Ver el detalle', 'See the details', 'Voir le détail', 'Vedi il dettaglio'],
+  envSource: ['Fuente: {0}', 'Source: {0}', 'Source : {0}', 'Fonte: {0}'],
+  envAt: ['Último dato: {0}', 'Latest data: {0}', 'Dernière donnée : {0}', 'Ultimo dato: {0}'],
+  envShowAll: ['Ver las {0}', 'Show all {0}', 'Voir les {0}', 'Vedi tutte le {0}'],
 };
 
 const IDX: Record<Lang, number> = { es: 0, en: 1, fr: 2, it: 3 };

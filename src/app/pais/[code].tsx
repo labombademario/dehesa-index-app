@@ -77,6 +77,7 @@ export default function Pais() {
           })}
         </Card>
       </> : null}
+      {['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL'].includes(c.code) ? <Card><Row first title={'⛽💧 ' + t('envTitle')} right="›" onPress={() => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } })} /></Card> : null}
       {prof ? <Button kind="secondary" label={t('explore')} onPress={() => router.push({ pathname: '/explorar', params: { cc: c.code } })} /> : null}
       <Button label={t('fullProfile')} onPress={() => Linking.openURL(c.url)} />
     </Screen>
