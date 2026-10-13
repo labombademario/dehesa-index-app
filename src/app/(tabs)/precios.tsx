@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
+import { LJ } from '../../lib/lonjasNames';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Row, SectionTitle, Segmented, Sparkline, Button, OfficialBadge, s } from '../../components/ui';
 import { C, R, changeColor } from '../../lib/theme';
@@ -82,6 +83,12 @@ export default function Prices() {
           {mine.length ? <>
             <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag(user.market)} {countryName(user.market, L)}</Text>
             <Card>{mine.map(row)}</Card>
+            {LJ.CTRY[user.market]?.includes('cereales') ? (
+              // desde 2026/27 la Comisión publica los cereales por mercado: todos los de este país, cada uno con su nombre
+              <Card><Row first title={tx(L, { es: 'Cereales: todos los mercados', en: 'Cereals: every market', fr: 'Céréales : tous les marchés', it: 'Cereali: tutti i mercati' }) + ' · ' + countryName(user.market, L)}
+                sub={tx(L, { es: 'Precio de cada mercado (Comisión Europea), sin medias', en: 'Each market’s price (European Commission), no averages', fr: 'Prix de chaque marché (Commission européenne), sans moyennes', it: 'Prezzo di ogni mercato (Commissione europea), senza medie' })}
+                right="›" onPress={() => router.push({ pathname: '/lonjas', params: { c: user.market } })} /></Card>
+            ) : null}
           </> : null}
           {reg === 'eu' ? <>
             {/* España y, aparte, las referencias de toda la UE o del mercado mundial (avena UE, Brent, urea…): no van bajo «España» */}

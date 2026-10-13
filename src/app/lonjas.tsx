@@ -1,5 +1,5 @@
 // Lonjas y mercados locales (como lonjas.html de la web): precios semanales por provincia, zona o puerto que publica la Comisión Europea
-// para cereales, aceite de oliva y oleaginosas en España, Italia, Portugal, Grecia, Alemania y Francia. Nada se promedia ni se mezcla.
+// para cereales (todos los países de la UE con mercados, desde 2026/27), aceite de oliva y oleaginosas. Nada se promedia ni se mezcla.
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -37,7 +37,9 @@ export default function Lonjas() {
   useEffect(() => { if (!fams.includes(fam)) setFam(fams[0]); }, [cc]);
   useEffect(() => { if (data[fam] === undefined) webJson('data/eu/' + fam + '.json', 6 * 3600e3).then(d => setData(o => ({ ...o, [fam]: d }))); }, [fam]);
   const wd = (w: string) => { const x = LJ.WORDS[w]; return x ? x.split('|')[li] || x.split('|')[0] : w; };
-  const title = (s: Ser) => { const e = (LJ.SER[fam] ?? []).find(x => s.id.startsWith(x[0])); return e ? e[1][li] : s.parts.map(wd).join(' · '); };
+  // cereales: producto + fase comercial (desde 2026/27 cada país publica sus mercados en fases distintas)
+  const cerTitle = (parts: string[]) => { const p = LJ.CPROD[parts[0]]; if (!p) return null; const st = LJ.CSTAGE.find(x => String(parts[1] ?? '').startsWith(x[0])); return p[li] + (st ? ', ' + st[1][li] : ''); };
+  const title = (s: Ser) => { if (fam === 'cereales') { const c = cerTitle(s.parts); if (c) return c; } const e = (LJ.SER[fam] ?? []).find(x => s.id.startsWith(x[0])); return e ? e[1][li] : s.parts.map(wd).join(' · '); };
   const marketsOf = (s: Ser) => {
     const rs = s.regions.filter(r => r.c === cc); let ref = ''; rs.forEach(r => { if (r.last[0] > ref) ref = r.last[0]; });
     let nat: Reg | null = null; const by: Record<string, Reg> = {};
@@ -47,7 +49,8 @@ export default function Lonjas() {
   };
   const list = useMemo(() => {
     const d = data[fam]; if (!d) return [] as Ser[];
-    const order = (LJ.SER[fam] ?? []).map(x => x[0]), rank = (s: Ser) => { const i = order.findIndex(o => s.id.startsWith(o)); return i < 0 ? 99 : i; };
+    const PORD = ['Milling wheat', 'Feed maize', 'Feed barley', 'Durum wheat', 'Feed wheat', 'Malting barley', 'Milling rye', 'Feed rye', 'Feed oats', 'Milling oats', 'Triticale', 'Wheat bran'];
+    const order = (LJ.SER[fam] ?? []).map(x => x[0]), rank = (s: Ser) => { if (fam === 'cereales') { const k = PORD.indexOf(s.parts[0]); return k < 0 ? 99 : k; } const i = order.findIndex(o => s.id.startsWith(o)); return i < 0 ? 99 : i; };
     return d.series.filter(s => marketsOf(s).cur.length).sort((a, b) => rank(a) - rank(b) || marketsOf(b).cur.length - marketsOf(a).cur.length);
   }, [data, fam, cc]);
   const s = list.find(x => x.id === sid) ?? list[0];
@@ -97,7 +100,7 @@ export default function Lonjas() {
       <Stack.Screen options={{ title: tx(L, { es: 'Lonjas', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze locali' }) }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{tx(L, { es: 'Lonjas y mercados locales', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze e mercati locali' })}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{tx(L, { es: 'Precio semanal de cada provincia, zona o puerto que publica la Comisión Europea. No se promedia ni se mezcla. Toca un mercado para ver su gráfico.', en: 'Weekly price for each province, area or port published by the European Commission. Nothing is averaged or mixed. Tap a market to see its chart.', fr: 'Prix hebdomadaire de chaque province, zone ou port publié par la Commission européenne. Rien n’est moyenné ni mélangé. Touchez un marché pour voir son graphique.', it: 'Prezzo settimanale di ogni provincia, zona o porto pubblicato dalla Commissione europea. Niente viene mediato o mescolato. Tocca un mercato per vedere il grafico.' })}</Text>
-      <Chips items={Object.keys(LJ.CTRY).map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setSid(null); }} />
+      <Chips items={Object.keys(LJ.CTRY).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)).map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setSid(null); }} />
       {fams.length > 1 ? <Chips items={fams.map(f => ({ value: f, label: tx(L, (FAM as any)[f]) }))} value={fams.includes(fam) ? fam : fams[0]} onChange={v => { setFam(v); setSid(null); }} /> : null}
       {data[fam] === undefined ? <Note>{t('loading')}</Note> : !s || !M ? <Note>{tx(L, { es: 'No hay mercados con precio para esta selección.', en: 'No markets with a price for this selection.', fr: 'Aucun marché avec un prix pour cette sélection.', it: 'Nessun mercato con prezzo per questa selezione.' })}</Note> : <>
         {list.length > 1 ? <Chips items={list.map(x => ({ value: x.id, label: title(x) }))} value={s.id} onChange={setSid} /> : null}
