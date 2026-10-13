@@ -13,7 +13,7 @@ export default function Buscar() {
   const [q, setQ] = useState('');
   const [idx, setIdx] = useState<SearchRow[] | null>(null);
   const [opening, setOpening] = useState(false);
-  useEffect(() => { loadSearchIndex().then(setIdx); }, []);
+  useEffect(() => { loadSearchIndex(L).then(setIdx); }, [L]);
   const k = norm(q.trim());
   const cname = (code: string) => {
     const c = data.countries.find(x => x.code === code);
@@ -32,9 +32,8 @@ export default function Buscar() {
     if (idx) {
       const words = k.split(/\s+/).filter(Boolean), cn: Record<string, string> = {};
       for (const r of idx) {
-        const tr = r[4] ? r[4].split('|') : [];
-        const hay = norm(r[2] + ' ' + tr.join(' ') + ' ' + (cn[r[0]] ??= norm(cname(r[0]))));
-        if (words.every(w => hay.includes(w))) { series.push({ row: r, label: tr[li] || r[2] }); if (series.length >= 40) break; }
+        const hay = norm(r[2] + ' ' + r[4] + ' ' + (cn[r[0]] ??= norm(cname(r[0]))));
+        if (words.every(w => hay.includes(w))) { series.push({ row: r, label: r[4] || r[2] }); if (series.length >= 40) break; }
       }
     }
     return { prices, countries, sections, news, series };

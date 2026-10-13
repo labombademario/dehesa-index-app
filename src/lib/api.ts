@@ -56,12 +56,13 @@ export async function refresh(): Promise<AppData> {
   const manifest = await getJson(BASE + 'manifest.json?t=' + Date.now());
   const hashes: Partial<Record<FileKey, string>> = {};
   const bodies: Partial<Record<FileKey, any>> = {};
-  for (const f of FILES) {
+  // los ficheros que cambiaron se bajan a la vez (antes uno detrás de otro: cinco esperas seguidas al abrir la app)
+  await Promise.all(FILES.map(async f => {
     const h = manifest.files?.[f + '.json']?.hash as string | undefined;
-    if (h && prev?.hashes[f] === h && prev.bodies[f]) { bodies[f] = prev.bodies[f]; hashes[f] = h; continue; }
+    if (h && prev?.hashes[f] === h && prev.bodies[f]) { bodies[f] = prev.bodies[f]; hashes[f] = h; return; }
     bodies[f] = await getJson(BASE + f + '.json?h=' + (h ?? Date.now()));
     hashes[f] = bodies[f].hash ?? h;
-  }
+  }));
   const c: Cached = { hashes, bodies, fetchedAt: new Date().toISOString() };
   try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch { /* sin espacio: seguimos con lo descargado */ }
   return toData(bodies, c.fetchedAt);
@@ -208,17 +209,23 @@ export async function loadSummary(): Promise<SummaryData | null> {
   return sumMem;
 }
 
-// Indice de busqueda de series (data/app/v1/search.json): [pais, id, etiqueta, grupo, "es|en|fr|it"]. Solo en memoria (pesa ~2 MB).
+// Indice de busqueda de series: [pais, id, etiqueta, grupo, traducción]. Solo en memoria.
 export type SearchRow = [string, string, string, string, string];
 let searchMem: SearchRow[] | null = null;
-export async function loadSearchIndex(): Promise<SearchRow[] | null> {
-  if (searchMem) return searchMem;
+let searchLang: string | null = null;
+/** Índice del idioma de la app (search-<lang>.json: etiqueta original + su traducción en ese idioma, ~1/3 menos que search.json).
+ *  Si el servidor aún no lo tiene, el índice completo de siempre. En la fila, [4] es solo la traducción de ese idioma (o ''). */
+export async function loadSearchIndex(lang: string): Promise<SearchRow[] | null> {
+  if (searchMem && searchLang === lang) return searchMem;
   try {
     const m = await getJson(BASE + 'manifest.json?t=' + Date.now());
+    const hl = m.searchL?.[lang]?.hash as string | undefined;
+    if (hl) { const d = await getJson(BASE + 'search-' + lang + '.json?h=' + hl, 40000); searchMem = d.rows as SearchRow[]; searchLang = lang; return searchMem; }
     const h = m.search?.hash as string | undefined;
     if (!h) return null;
     const d = await getJson(BASE + 'search.json?h=' + h, 40000);
-    searchMem = d.rows as SearchRow[];
+    const li = ['es', 'en', 'fr', 'it'].indexOf(lang);
+    searchMem = (d.rows as SearchRow[]).map(r => [r[0], r[1], r[2], r[3], r[4] ? (r[4].split('|')[li] || '') : ''] as SearchRow); searchLang = lang;
   } catch { /* sin red */ }
   return searchMem;
 }
