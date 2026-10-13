@@ -54,6 +54,15 @@ export default function Prices() {
           </View>
         </Pressable>
       ) : null}
+      <Pressable onPress={() => router.push('/frutas')} accessibilityRole="button" accessibilityLabel={t('fvTitle')}
+        style={{ backgroundColor: C.surface, borderRadius: R.card, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: C.border }}>
+        <Text style={{ fontSize: 26 }} accessibilityElementsHidden importantForAccessibility="no">🍅🍊🥬</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: C.text }}>{t('fvTitle')}</Text>
+          <Text style={{ fontSize: 13, color: C.textMuted }}>{t('fvSub', 52)}</Text>
+        </View>
+        <Text style={{ fontSize: 20, color: C.textMuted }}>›</Text>
+      </Pressable>
       <Button kind="secondary" label={t('compare')} onPress={() => router.push('/comparar')} />
       <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={C.textMuted} returnKeyType="search"
         accessibilityLabel={t('search')} style={[s.input, { borderRadius: 28, paddingHorizontal: 16, backgroundColor: C.surfaceAlt, borderWidth: 0 }]} />

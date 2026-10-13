@@ -11,6 +11,7 @@ export default function Mine() {
     { k: 'cesta', name: t('basket'), hint: t('basketHint', user.basket.length), icon: 'M3 7h18l-2 12H5zM8 7l4-4 4 4', go: () => router.push('/cesta') },
     { k: 'avisos', name: t('alerts'), hint: t('alertsHint', user.alerts.filter(a => a.on).length), icon: 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4', go: () => router.push('/avisos') },
     { k: 'granja', name: t('farm'), hint: t('farmHint'), icon: 'M3 21V10l9-6 9 6v11M9 21v-6h6v6', go: () => router.push('/explotacion') },
+    { k: 'siembra', name: t('swTitle'), hint: t('swSub'), icon: 'M12 21V11M12 11c0-4 3-7 7-7 0 4-3 7-7 7zM12 14c0-3-2.5-5.5-6-5.5 0 3.5 2.5 5.5 6 5.5z', go: () => router.push('/siembra') },
     { k: 'local', name: t('myMarket'), hint: t('myMarketHint'), icon: 'M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z', go: () => Linking.openURL('https://dehesaindex.com/mi-mercado.html') },
   ];
   return (
