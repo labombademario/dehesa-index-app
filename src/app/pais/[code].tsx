@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { tx } from '../../lib/tx';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
@@ -77,6 +78,10 @@ export default function Pais() {
           })}
         </Card>
       </> : null}
+      {(['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code) || ['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code)) ? <Card>
+        {['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code) ? <Row first title={'📰 ' + tx(L, { es: 'La semana en este país', en: 'The week in this country', fr: 'La semaine dans ce pays', it: 'La settimana in questo paese' })} right="›" onPress={() => router.push({ pathname: '/semana', params: { c: c.code } })} /> : null}
+        {['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code) ? <Row first={!['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code)} title={'🏛️ ' + tx(L, { es: 'Lonjas y mercados locales', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze e mercati locali' })} right="›" onPress={() => router.push({ pathname: '/lonjas', params: { c: c.code } })} /> : null}
+      </Card> : null}
       {['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL'].includes(c.code) ? <Card><Row first title={'⛽💧 ' + t('envTitle')} right="›" onPress={() => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } })} /></Card> : null}
       {prof ? <Button kind="secondary" label={t('explore')} onPress={() => router.push({ pathname: '/explorar', params: { cc: c.code } })} /> : null}
       <Button label={t('fullProfile')} onPress={() => Linking.openURL(c.url)} />
