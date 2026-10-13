@@ -89,6 +89,11 @@ export default function Prices() {
                 sub={tx(L, { es: 'Precio de cada mercado (Comisión Europea), sin medias', en: 'Each market’s price (European Commission), no averages', fr: 'Prix de chaque marché (Commission européenne), sans moyennes', it: 'Prezzo di ogni mercato (Commissione europea), senza medie' })}
                 right="›" onPress={() => router.push({ pathname: '/lonjas', params: { c: user.market } })} /></Card>
             ) : null}
+            {user.market === 'US' ? (
+              <Card><Row first title={tx(L, { es: 'Precios locales de grano por estado', en: 'Local grain prices by state', fr: 'Prix locaux des grains par État', it: 'Prezzi locali dei cereali per stato' })}
+                sub={tx(L, { es: 'Ofertas al contado de USDA, mercado a mercado', en: 'USDA cash bids, market by market', fr: 'Prix au comptant de l’USDA, marché par marché', it: 'Prezzi a pronti USDA, mercato per mercato' })}
+                right="›" onPress={() => router.push('/localesus')} /></Card>
+            ) : null}
           </> : null}
           {reg === 'eu' ? <>
             {/* España y, aparte, las referencias de toda la UE o del mercado mundial (avena UE, Brent, urea…): no van bajo «España» */}
