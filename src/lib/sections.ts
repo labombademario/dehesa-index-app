@@ -23,3 +23,6 @@ export const NATIVE: Record<string, { cc: string; g?: string; q?: string }> = {
   canada: { cc: 'CA', g: 'crops' },
   insumos: { cc: 'US', g: 'prices_paid' },
 };
+
+// secciones de la web que ya tienen pantalla propia en la app (app/sec/[id].tsx, datos en data/app/v1/sec)
+export const SEC: Record<string, string> = { cultivos: 'cultivos', oferta: 'oferta', clima: 'clima', aranceles: 'aranceles', costes: 'cuentas', insumos: 'insumos', canada: 'granos-ca', ganaderia: 'ganaderia-us', exportaciones: 'exportaciones-us' };

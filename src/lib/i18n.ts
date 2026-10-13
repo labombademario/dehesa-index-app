@@ -414,6 +414,7 @@ const S: Record<string, Row> = {
   fvFSer: ['Serie: {0}', 'Series: {0}', 'Série : {0}', 'Serie: {0}'],
   fvHidden: ['{0} productos no tienen precio publicado en {1} y no se muestran.', '{0} products have no published price in {1} and are not shown.', '{0} produits n’ont pas de prix publié en {1} et ne sont pas affichés.', '{0} prodotti non hanno un prezzo pubblicato in {1} e non sono mostrati.'],
   fvSourcesX: ['Fuente: Comisión Europea (portal de datos agroalimentarios).', 'Source: European Commission (agri-food data portal).', 'Source : Commission européenne (portail de données agroalimentaires).', 'Fonte: Commissione europea (portale dei dati agroalimentari).'],
+  openInApp: ['Ver en la app', 'See in the app', 'Voir dans l’app', 'Vedi nell’app'],
 };
 
 const IDX: Record<Lang, number> = { es: 0, en: 1, fr: 2, it: 3 };

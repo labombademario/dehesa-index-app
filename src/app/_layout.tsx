@@ -45,6 +45,7 @@ function RootStack() {
       <Stack.Screen name="vino" options={{ title: '' }} />
       <Stack.Screen name="madera" options={{ title: '' }} />
       <Stack.Screen name="semana/index" options={{ title: '' }} />
+      <Stack.Screen name="sec/[id]" options={{ title: '' }} />
       <Stack.Screen name="seccion/[id]" options={{ title: '' }} />
       <Stack.Screen name="pais/[code]" options={{ title: t('tabCountries') }} />
       <Stack.Screen name="explorar" options={{ title: '' }} />
