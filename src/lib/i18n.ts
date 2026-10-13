@@ -391,7 +391,7 @@ const S: Record<string, Row> = {
   sqSource: ['Fuente: MITECO, Observatorio Nacional de la Sequía. Mapa: demarcaciones del MITECO (vía AEMA) y ríos de Natural Earth.', 'Source: MITECO, National Drought Observatory. Map: MITECO basin districts (via EEA) and Natural Earth rivers.', 'Source : MITECO, Observatoire national de la sécheresse. Carte : districts du MITECO (via AEE) et fleuves Natural Earth.', 'Fonte: MITECO, Osservatorio nazionale della siccità. Mappa: distretti del MITECO (tramite AEA) e fiumi Natural Earth.'],
   // paquete por país (12 oct)
   envTitle: ['Gasóleo, emisiones, sequía y nitratos', 'Diesel, emissions, drought and nitrates', 'Gazole, émissions, sécheresse et nitrates', 'Gasolio, emissioni, siccità e nitrati'],
-  envSub: ['10 países: lo que pide el agricultor al ministerio de agricultura y medio ambiente', '10 countries: what farmers ask their agriculture and environment ministries', '10 pays : ce que l’agriculteur demande aux ministères', '10 paesi: quello che l’agricoltore chiede ai ministeri'],
+  envSub: ['11 países: lo que pide el agricultor al ministerio de agricultura y medio ambiente', '11 countries: what farmers ask their agriculture and environment ministries', '11 pays : ce que l’agriculteur demande aux ministères', '11 paesi: quello che l’agricoltore chiede ai ministeri'],
   envDiesel: ['Gasóleo', 'Diesel', 'Gazole', 'Gasolio'],
   envGhg: ['Emisiones', 'Emissions', 'Émissions', 'Emissioni'],
   envDrought: ['Sequía', 'Drought', 'Sécheresse', 'Siccità'],
