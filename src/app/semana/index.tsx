@@ -25,7 +25,7 @@ export default function Semana() {
   const L = user.lang, t = SW.T[L] ?? SW.T.es;
   const [idx, setIdx] = useState<Record<string, Wk[]> | null>(null);
   const { c: pc } = useLocalSearchParams<{ c?: string }>();
-  const [cc, setCc] = useState(pc && CCS.includes(String(pc)) ? String(pc) : user.market === 'US' ? 'US' : 'ES');
+  const [cc, setCc] = useState(pc && CCS.includes(String(pc)) ? String(pc) : CCS.includes(user.market) ? user.market : 'ES');
   const [wk, setWk] = useState<string | null>(null);
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);
   const [, setGl] = useState(false);

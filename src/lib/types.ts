@@ -6,6 +6,8 @@ export interface Price {
   id: string;
   product: string;
   region: 'eu' | 'us' | 'uk' | 'ca';
+  /** país de la UE cuando el precio es de ese país (data/app/v1/eu/<CC>.json); sin él, España como referencia */
+  cc?: string;
   name: T4;
   place: T4;
   unit: T4;

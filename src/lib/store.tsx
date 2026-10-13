@@ -1,5 +1,6 @@
 // Estado de la app: datos (con caché) y lo del usuario (idioma, perfil, cesta, avisos, explotación), guardado en el teléfono.
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { webJson } from './fv';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
 import type { AppData, Lang, Price } from './types';
@@ -11,7 +12,9 @@ import { useColorScheme } from 'react-native';
 import { USER_KEY, runCheck, syncBackgroundTask } from './notify';
 
 export type Profile = 'cereal' | 'dairy' | 'pig' | 'buyer';
-export type Market = 'ES' | 'US' | 'CA';
+/** 'US', 'CA' o el código del país de la UE (ES, IT, FR, DE...). España usa los precios generales; el resto, los suyos (data/app/v1/eu/<CC>.json). */
+export type Market = string;
+export const isEu = (m: Market) => m !== 'US' && m !== 'CA';
 export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha: string; yld: string; cost: string }
 export interface UserState {
   v: 1;
@@ -28,11 +31,17 @@ export interface UserState {
 }
 
 // Cesta inicial por perfil y mercado: claves región:producto de data/app/v1/prices.json
-export const PRESETS: Record<Market, Record<Profile, string[]>> = {
+const PRESETS: Record<'ES' | 'US' | 'CA', Record<Profile, string[]>> = {
   ES: { cereal: ['eu:trigo', 'eu:maiz', 'eu:cebada', 'eu:urea', 'eu:diesel'], dairy: ['eu:leche', 'eu:maiz', 'eu:harina_soja', 'eu:diesel'], pig: ['eu:cerdo', 'eu:maiz', 'eu:cebada', 'eu:harina_soja'], buyer: ['eu:trigo', 'eu:maiz', 'eu:cerdo', 'eu:leche', 'eu:cordero', 'eu:oliva'] },
   US: { cereal: ['us:maiz', 'us:trigo', 'us:diesel', 'eu:urea'], dairy: ['us:leche', 'us:maiz', 'us:harina_soja', 'us:diesel'], pig: ['us:cerdo', 'us:maiz', 'us:harina_soja', 'us:diesel'], buyer: ['us:maiz', 'us:trigo', 'us:leche', 'us:cerdo', 'us:vaca'] },
   CA: { cereal: ['ca:trigo', 'ca:canola_elevador', 'ca:cebada', 'ca:trigo_cwrs_ab'], dairy: ['ca:leche', 'ca:cebada', 'ca:maiz'], pig: ['ca:cerdo', 'ca:cerdo_ab', 'ca:cebada', 'ca:maiz'], buyer: ['ca:trigo', 'ca:canola_elevador', 'ca:cerdo', 'ca:leche'] },
 };
+// Otros países de la UE: solo productos de ESE país ('@' = el país elegido); nada de España ni de otro país
+const EU_PRESET: Record<Profile, string[]> = { cereal: ['@:trigo', '@:maiz', '@:cebada', '@:trigo_duro'], dairy: ['@:leche', '@:mantequilla', '@:maiz', '@:cebada'], pig: ['@:cerdo', '@:lechon', '@:maiz', '@:cebada'], buyer: ['@:trigo', '@:maiz', '@:cerdo', '@:leche', '@:vaca', '@:cordero', '@:pollo', '@:oliva'] };
+export function presetFor(market: Market, profile: Profile): string[] {
+  if (market === 'ES' || market === 'US' || market === 'CA') return PRESETS[market][profile];
+  return EU_PRESET[profile].map(k => k.replace('@', market));
+}
 export const BASKET_MAX = 8;
 
 function deviceLang(): Lang {
@@ -45,7 +54,7 @@ export function defaults(): UserState {
     milk: { cows: '120', kg: '9500', cost: '38' }, pig: { n: '2000', kg: '88', cost: '1.55' } };
 }
 export function resolvePreset(prices: Price[], keys: string[]): string[] {
-  return keys.map(k => { const [r, p] = k.split(':'); return prices.find(x => x.region === r && x.product === p)?.id; }).filter((x): x is string => !!x);
+  return keys.map(k => { const [r, p] = k.split(':'); return /^[A-Z]{2}$/.test(r) ? prices.find(x => x.cc === r && x.product === p)?.id : prices.find(x => x.region === r && !x.cc && x.product === p)?.id; }).filter((x): x is string => !!x);
 }
 
 interface Ctx {
@@ -59,6 +68,8 @@ interface Ctx {
   price: (id: string) => Price | undefined;
   ready: boolean;
   mode: Mode;
+  /** Carga los precios de un país de la UE (para la bienvenida y los ajustes) */
+  loadEu: (cc: string) => Promise<void>;
 }
 const C = createContext<Ctx | null>(null);
 
@@ -68,6 +79,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [offline, setOffline] = useState(false);
+  const [eu, setEu] = useState<Record<string, Price[]>>({});
+  const loadEu = useCallback(async (cc: string) => {
+    if (!cc || cc === 'ES' || !isEu(cc)) return;
+    const d = await webJson('data/app/v1/eu/' + cc + '.json', 6 * 3600e3);
+    if (d?.prices) setEu(o => ({ ...o, [cc]: d.prices as Price[] }));
+  }, []);
   const system = useColorScheme();
   const mode: Mode = user.theme === 'dark' ? 'dark' : user.theme === 'light' ? 'light' : system === 'dark' ? 'dark' : 'light';
   applyTheme(mode); // antes de pintar los hijos, para que lean la paleta nueva
@@ -98,11 +115,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  useEffect(() => { if (ready) loadEu(user.market); }, [ready, user.market, loadEu]);
+  const merged = useMemo<AppData>(() => { const extra = Object.values(eu).flat(); return extra.length ? { ...data, prices: data.prices.concat(extra.filter(x => !data.prices.some(y => y.id === x.id))) } : data; }, [data, eu]);
   const value = useMemo<Ctx>(() => ({
-    data, refreshing, offline, reload, user, setUser, ready, mode,
+    data: merged, loadEu, refreshing, offline, reload, user, setUser, ready, mode,
     t: (key, ...vars) => translate(user.lang, key, ...vars),
-    price: (id: string) => data.prices.find(p => p.id === id),
-  }), [data, refreshing, offline, reload, user, setUser, ready, mode]);
+    price: (id: string) => merged.prices.find(p => p.id === id),
+  }), [merged, loadEu, refreshing, offline, reload, user, setUser, ready, mode]);
   return <C.Provider value={value}>{children}</C.Provider>;
 }
 

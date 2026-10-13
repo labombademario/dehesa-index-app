@@ -16,7 +16,7 @@ export default function Frutas() {
   const L = user.lang;
   const [doc, setDoc] = useState<FvDoc | null>(null);
   const [done, setDone] = useState(false);
-  const [cc, setCc] = useState(user.market === 'ES' ? 'ES' : 'ES');
+  const [cc, setCc] = useState(user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES');
   const [g, setG] = useState<G>('all');
   const [q, setQ] = useState('');
   useEffect(() => { loadFv().then(d => { setDoc(d); setDone(true); }); }, []);

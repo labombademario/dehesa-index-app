@@ -27,7 +27,7 @@ export default function Lonjas() {
   const L = user.lang, li = LI[L];
   const { width } = useWindowDimensions();
   const { c: pc } = useLocalSearchParams<{ c?: string }>();
-  const [cc, setCc] = useState<string>(pc && LJ.CTRY[String(pc)] ? String(pc) : 'ES');
+  const [cc, setCc] = useState<string>(pc && LJ.CTRY[String(pc)] ? String(pc) : LJ.CTRY[user.market] ? user.market : 'ES');
   const [fam, setFam] = useState<string>('cereales');
   const [data, setData] = useState<Record<string, { series: Ser[] } | null>>({});
   const [sid, setSid] = useState<string | null>(null);

@@ -7,6 +7,8 @@ import { C, R, changeColor } from '../../lib/theme';
 import { num, pct, date } from '../../lib/format';
 import { norm } from '../../lib/logic';
 import type { Price } from '../../lib/types';
+import { countryName } from '../../lib/fv';
+import { flag } from '../../lib/tx';
 
 type Reg = Price['region'];
 
@@ -21,7 +23,9 @@ export default function Prices() {
     if (!k) return [];
     return data.prices.filter(p => norm(`${p.name[L]} ${p.place[L]} ${p.name.es} ${p.product}`).includes(k)).slice(0, 30);
   }, [q, data.prices, L]);
-  const list = data.prices.filter(p => p.region === reg);
+  // Europa: primero los precios del país del usuario (si no es España) y luego España, que es la referencia de la UE en la web; nunca se mezclan
+  const mine = reg === 'eu' && user.market !== 'ES' ? data.prices.filter(p => p.cc === user.market) : [];
+  const list = data.prices.filter(p => p.region === reg && !p.cc);
   const row = (p: Price, i: number) => (
     <Pressable key={p.id} onPress={() => router.push(`/serie/${p.id}`)} accessibilityRole="button" android_ripple={{ color: C.surfaceAlt }}
       style={[s.row, i > 0 && s.rowDivider]}>
@@ -73,6 +77,11 @@ export default function Prices() {
         <>
           <SectionTitle>{t('byRegion')}</SectionTitle>
           <Segmented value={reg} onChange={setReg} options={[{ value: 'eu', label: t('regionEu') }, { value: 'us', label: t('regionUs') }, { value: 'ca', label: t('regionCa') }, { value: 'uk', label: t('regionUk') }]} />
+          {mine.length ? <>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag(user.market)} {countryName(user.market, L)}</Text>
+            <Card>{mine.map(row)}</Card>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag('ES')} {countryName('ES', L)}</Text>
+          </> : null}
           <Card>{list.map(row)}</Card>
         </>
       )}
