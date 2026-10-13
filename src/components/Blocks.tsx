@@ -10,7 +10,7 @@ import { num, date as fmtDate } from '../lib/format';
 import type { Lang } from '../lib/types';
 
 export type T4 = Record<Lang, string>;
-export interface BStat { label: T4; value: number | null; unit: string | T4; dec: number; sub?: { d?: string } }
+export interface BStat { label: T4; value: number | null; unit: string | T4; dec: number; sub?: { d?: string | T4 } }
 export interface BChart { label: T4; unit: string | T4; series: { label: T4; points: [string, number][] }[] }
 export interface BBars { title: T4; unit: string | T4; dec: number; items: { label: T4; value: number; sub?: T4 }[] }
 export interface Block { id: string; cc?: string; title: T4; asOf?: string; stats?: BStat[]; charts?: BChart[]; bars?: BBars[]; note?: T4; source?: { name: string; url: string }; link?: string; missing?: boolean }
@@ -62,14 +62,15 @@ export function BlockView({ b, onLink, linkLabel }: { b: Block; onLink?: (href: 
   const L = user.lang;
   const { width } = useWindowDimensions();
   const cw = Math.min(width, 700) - 32 - 28;
-  const fill = (s: BStat) => s.label[L].replace('{d}', s.sub?.d ? (isDate(s.sub.d) ? fmtDate(s.sub.d, L) : s.sub.d) : '');
+  const sd = (s: BStat) => (s.sub?.d == null ? '' : typeof s.sub.d === 'string' ? s.sub.d : s.sub.d[L] ?? s.sub.d.es);
+  const fill = (s: BStat) => { const d = sd(s); return s.label[L].replace('{d}', d ? (isDate(d) ? fmtDate(d, L) : d) : ''); };
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ fontSize: 20, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{b.title[L]}</Text>
       {b.asOf ? <Text style={{ fontSize: 12.5, color: C.textMuted }}>{t('envAt', isDate(b.asOf) ? fmtDate(b.asOf, L) : b.asOf)}</Text> : null}
       {b.stats && b.stats.length ? <Card>{b.stats.filter(s => s.value != null || s.label[L].includes('{d}')).map((s, k) => {
         const unit = u(s.unit, L), inLabel = s.label[L].includes('{d}');
-        return <Row key={k} first={k === 0} title={fill(s)} right={s.value == null ? '—' : num(s.value, L, s.dec) + (unit ? (unit === '%' && L === 'en' ? '%' : ' ' + unit) : '')} rightSub={!inLabel && s.sub?.d ? s.sub.d : undefined} />;
+        return <Row key={k} first={k === 0} title={fill(s)} right={s.value == null ? '—' : num(s.value, L, s.dec) + (unit ? (unit === '%' && L === 'en' ? '%' : ' ' + unit) : '')} rightSub={!inLabel && sd(s) ? sd(s) : undefined} />;
       })}</Card> : null}
       {b.link && onLink ? <Pressable onPress={() => onLink(b.link!)} accessibilityRole="button"><Text style={{ color: C.accent, fontWeight: '600' }}>{linkLabel ?? t('envOpen')} ›</Text></Pressable> : null}
       {(b.charts ?? []).map((c, k) => <ChartCard key={b.id + 'c' + k} c={c} L={L} width={cw} />)}
