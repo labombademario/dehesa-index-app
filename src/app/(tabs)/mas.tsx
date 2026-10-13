@@ -28,6 +28,7 @@ export default function More() {
         <Row title={'🏛️ ' + tx(L, { es: 'Lonjas y mercados locales', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze e mercati locali' })} sub={tx(L, { es: 'Cereales, aceite y oleaginosas por provincia', en: 'Cereals, olive oil and oilseeds by province', fr: 'Céréales, huile d’olive et oléagineux par province', it: 'Cereali, olio e semi oleosi per provincia' })} right="›" onPress={() => router.push('/lonjas')} />
         <Row title={'🏷️ ' + tx(L, { es: 'Denominaciones de origen', en: 'Designations of origin', fr: 'Appellations d’origine', it: 'Denominazioni di origine' })} sub={tx(L, { es: 'Vinos y quesos protegidos en la UE', en: 'Wines and cheeses protected in the EU', fr: 'Vins et fromages protégés dans l’UE', it: 'Vini e formaggi protetti nell’UE' })} right="›" onPress={() => router.push('/denominaciones')} />
         <Row title={'🍷 ' + tx(L, { es: 'Vino a granel', en: 'Bulk wine', fr: 'Vin en vrac', it: 'Vino sfuso' })} sub={tx(L, { es: 'España (semanal) y Francia (mensual)', en: 'Spain (weekly) and France (monthly)', fr: 'Espagne (hebdomadaire) et France (mensuel)', it: 'Spagna (settimanale) e Francia (mensile)' })} right="›" onPress={() => router.push('/vino')} />
+        <Row title={'💶 ' + tx(L, { es: 'Costes y rentas de las explotaciones', en: 'Farm costs and income', fr: 'Coûts et revenus des exploitations', it: 'Costi e redditi delle aziende' })} sub={tx(L, { es: 'España, por comunidad, tipo y tamaño (RECAN)', en: 'Spain, by region, type and size (RECAN)', fr: 'Espagne, par région, type et taille (RECAN)', it: 'Spagna, per regione, tipo e dimensione (RECAN)' })} right="›" onPress={() => router.push('/recan')} />
         <Row title={'🌲 ' + tx(L, { es: 'Madera', en: 'Timber', fr: 'Bois', it: 'Legname' })} sub={tx(L, { es: 'Precio en Alemania y cortas por país', en: 'German prices and removals by country', fr: 'Prix en Allemagne et récolte par pays', it: 'Prezzi in Germania e tagli per paese' })} right="›" onPress={() => router.push('/madera')} />
       </Card>
       {secs.length ? <>
@@ -40,7 +41,7 @@ export default function More() {
         return (
           <React.Fragment key={g}>
             <SectionTitle>{t(GROUP_KEY[g])}</SectionTitle>
-            <Card>{g === 'data' ? <Row first title="PAC / CAP" sub={t('pacTitle')} right="›" onPress={() => router.push('/pac')} /> : null}{items.map((x, i) => <Row key={x.id} first={i === 0 && g !== 'data'} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => (secFor(x.id, user.market) ? router.push({ pathname: '/sec/[id]', params: { id: secFor(x.id, user.market)! } }) : router.push(`/seccion/${x.id}`))} />)}</Card>
+            <Card>{g === 'data' ? <Row first title="PAC / CAP" sub={t('pacTitle')} right="›" onPress={() => router.push('/pac')} /> : null}{items.map((x, i) => <Row key={x.id} first={i === 0 && g !== 'data'} title={x.name[L]} sub={x.figure ? x.figure.label[L] : undefined} right={x.figure ? figureText(x, L) : '›'} onPress={() => (x.id === 'recan' ? router.push('/recan') : secFor(x.id, user.market) ? router.push({ pathname: '/sec/[id]', params: { id: secFor(x.id, user.market)! } }) : router.push(`/seccion/${x.id}`))} />)}</Card>
           </React.Fragment>
         );
       })}
