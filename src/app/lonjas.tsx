@@ -11,6 +11,7 @@ import { C, changeColor } from '../lib/theme';
 import { num, date as fmtDate } from '../lib/format';
 import { webJson, countryName } from '../lib/fv';
 import { LJ } from '../lib/lonjasNames';
+import { SourceCite } from '../components/SourceCite';
 import { tx, fill, flag } from '../lib/tx';
 
 type Reg = { c: string; m?: string; last: [string, number]; prev?: [string, number] | null; yoy?: [string, number] | null };
@@ -113,7 +114,7 @@ export default function Lonjas() {
           <Card>{M.old.map((x, i) => row(x, i, true))}</Card>
         </> : null}
       </>}
-      <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, { es: 'Fuente: Comisión Europea, portal de datos agroalimentarios (Decisión 2011/833/UE).', en: 'Source: European Commission, agri-food data portal (Decision 2011/833/EU).', fr: 'Source : Commission européenne, portail de données agroalimentaires (décision 2011/833/UE).', it: 'Fonte: Commissione europea, portale dei dati agroalimentari (decisione 2011/833/UE).' })}</Text>
+      <SourceCite sourceId="eu_agrifood" />
     </Screen>
   );
 }

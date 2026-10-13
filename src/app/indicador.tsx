@@ -8,6 +8,7 @@ import { num, numAuto, pct } from '../lib/format';
 import { countryFromMemory, catalogFromMemory, loadSeriesHistory } from '../lib/api';
 import type { CountrySeries } from '../lib/types';
 import { RangeChart } from '../components/RangeChart';
+import { SourceCite } from '../components/SourceCite';
 
 export default function Indicador() {
   const { cc, id } = useLocalSearchParams<{ cc: string; id: string }>();
@@ -40,6 +41,7 @@ export default function Indicador() {
         <Row title={t('lastData')} right={sr.period} />
         <Row title={t('frequency')} right={t(sr.frequency)} />
       </Card>
+      <SourceCite sourceId={sr.sourceId} period={sr.period} />
       {country ? <Button kind="secondary" label={t('openOnWeb')} onPress={() => Linking.openURL(country.url)} /> : null}
     </Screen>
   );

@@ -11,6 +11,7 @@ import { RangeChart } from '../components/RangeChart';
 import { C } from '../lib/theme';
 import { num, pct, date as fmtDate } from '../lib/format';
 import { webJson } from '../lib/fv';
+import { SourceCite } from '../components/SourceCite';
 import { tx, type T4 } from '../lib/tx';
 
 type Man = { generatedAt: string; latestObservation: string; states: Record<string, { name: string; commodities: Record<string, { shard: string; latest: string }> }> };
@@ -105,6 +106,7 @@ export default function LocalesUS() {
           {list.length > 25 && !more ? <Row first title={tx(L, { es: 'Ver los ' + list.length + ' mercados', en: 'Show all ' + list.length + ' markets', fr: 'Voir les ' + list.length + ' marchés', it: 'Mostra i ' + list.length + ' mercati' })} right="›" onPress={() => setMore(true)} /> : null}
           {hidden > 0 ? <Row first title={all ? tx(L, { es: 'Ocultar mercados sin cotización reciente', en: 'Hide markets without a recent quote', fr: 'Masquer les marchés sans cotation récente', it: 'Nascondi i mercati senza quotazione recente' }) : tx(L, { es: 'Mostrar ' + hidden + ' mercados sin cotización reciente', en: 'Show ' + hidden + ' markets without a recent quote', fr: 'Afficher ' + hidden + ' marchés sans cotation récente', it: 'Mostra ' + hidden + ' mercati senza quotazione recente' })} right="›" onPress={() => setAll(!all)} /> : null}
         </>}
+        <SourceCite sourceId="usda_ams_mars" period={man.latestObservation} />
         <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, {
           es: 'Fuente: USDA AMS Market News. Datos de dominio público de EE. UU.; crédito: U.S. Department of Agriculture. Cada fila es un mercado y una especificación: no se mezclan ni se calcula ninguna media.',
           en: 'Source: USDA AMS Market News. US public-domain data; credit: U.S. Department of Agriculture. Each row is one market and one specification: nothing is mixed and no average is calculated.',

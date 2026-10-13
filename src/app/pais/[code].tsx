@@ -6,6 +6,7 @@ import { useApp, staleSuffix } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { num, numAuto, pct } from '../../lib/format';
+import { SourceCite } from '../../components/SourceCite';
 import type { Price, CountryProfile } from '../../lib/types';
 import { loadCountry, countryFromMemory } from '../../lib/api';
 import { CountryMapView } from '../../components/CountryMapView';
@@ -78,6 +79,7 @@ export default function Pais() {
             );
           })}
         </Card>
+        {Array.from(new Set(prof.groups.flatMap(g => g.series.map(sr => sr.sourceId)))).map(id => <SourceCite key={id} sourceId={id} period={prof.latestPeriod} />)}
       </> : null}
       {(['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code) || ['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code)) ? <Card>
         {['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code) ? <Row first title={'📰 ' + tx(L, { es: 'La semana en este país', en: 'The week in this country', fr: 'La semaine dans ce pays', it: 'La settimana in questo paese' })} right="›" onPress={() => router.push({ pathname: '/semana', params: { c: c.code } })} /> : null}
