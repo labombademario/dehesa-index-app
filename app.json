@@ -16,7 +16,8 @@
           "es",
           "fr",
           "it"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
