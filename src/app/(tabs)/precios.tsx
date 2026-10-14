@@ -10,6 +10,7 @@ import { norm } from '../../lib/logic';
 import type { Price } from '../../lib/types';
 import { countryName } from '../../lib/fv';
 import { flag, tx } from '../../lib/tx';
+import { byCategory, CAT_LABEL } from '../../lib/categories';
 
 type Reg = Price['region'];
 
@@ -95,15 +96,13 @@ export default function Prices() {
                 right="›" onPress={() => router.push('/localesus')} /></Card>
             ) : null}
           </> : null}
-          {reg === 'eu' ? <>
-            {/* España y, aparte, las referencias de toda la UE o del mercado mundial (avena UE, Brent, urea…): no van bajo «España» */}
-            <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>{flag('ES')} {countryName('ES', L)}</Text>
-            <Card>{list.filter(isSpain).map(row)}</Card>
-            {list.some(p => !isSpain(p)) ? <>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: C.text }}>🌍 {tx(L, { es: 'Referencias de la UE y del mercado mundial', en: 'EU and world-market references', fr: 'Références de l’UE et du marché mondial', it: 'Riferimenti UE e del mercato mondiale' })}</Text>
-              <Card>{list.filter(p => !isSpain(p)).map(row)}</Card>
-            </> : null}
-          </> : <Card>{list.map(row)}</Card>}
+          {/* por categorías, como en la web; en Europa primero lo de España, y cada fila dice de dónde es el precio */}
+          {byCategory(reg === 'eu' ? [...list.filter(isSpain), ...list.filter(p => !isSpain(p))] : list).map(g => (
+            <View key={g.cat} style={{ gap: 8 }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: C.text }} accessibilityRole="header">{CAT_LABEL[g.cat][L]}</Text>
+              <Card>{g.items.map(row)}</Card>
+            </View>
+          ))}
         </>
       )}
     </Screen>
