@@ -8,7 +8,16 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dehesaindex.app"
+      "bundleIdentifier": "com.dehesaindex.app",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "CFBundleLocalizations": [
+          "en",
+          "es",
+          "fr",
+          "it"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
