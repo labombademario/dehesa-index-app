@@ -31,6 +31,8 @@ export interface UserState {
   crops: CropLine[];
   milk: { cows: string; kg: string; cost: string };
   pig: { n: string; kg: string; cost: string };
+  /** países fijados en «Mis países» (si nunca se ha tocado, solo el del mercado elegido) */
+  favCountries?: string[];
 }
 
 // Cesta inicial por perfil y mercado: claves región:producto de data/app/v1/prices.json

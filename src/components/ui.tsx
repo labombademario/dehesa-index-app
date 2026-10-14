@@ -32,7 +32,7 @@ export function BrandBar() {
   );
 }
 
-export function Screen({ children, title, subtitle, right, scroll = true, refresh }: { children: React.ReactNode; title?: string; subtitle?: string; right?: React.ReactNode; scroll?: boolean; refresh?: boolean }) {
+export function Screen({ children, title, subtitle, right, scroll = true, refresh, scrollRef, sticky }: { children: React.ReactNode; title?: string; subtitle?: string; right?: React.ReactNode; scroll?: boolean; refresh?: boolean; scrollRef?: React.RefObject<ScrollView | null>; sticky?: React.ReactNode }) {
   const { refreshing, reload } = useApp();
   const head = title ? (
     <View style={s.headRow}>
@@ -44,13 +44,15 @@ export function Screen({ children, title, subtitle, right, scroll = true, refres
     </View>
   ) : null;
   if (!scroll) return <View style={s.screen}>{head}{children}</View>;
+  // «sticky»: una barra que se queda pegada arriba al desplazar. Se busca su posición entre los hijos reales del ScrollView por su clave.
+  const kids = React.Children.toArray([refresh ? <BrandBar key="brand" /> : null, head ? <React.Fragment key="head">{head}</React.Fragment> : null, <DataStatus key="status" />,
+    sticky ? <View key="sticky">{sticky}</View> : null, <React.Fragment key="body">{children}</React.Fragment>]);
+  const stickyIdx = sticky ? kids.findIndex(k => (k as React.ReactElement).key === '.$sticky') : -1;
   return (
-    <ScrollView style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen} contentInsetAdjustmentBehavior="automatic"
+    <ScrollView ref={scrollRef} style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen} contentInsetAdjustmentBehavior="automatic"
+      stickyHeaderIndices={stickyIdx >= 0 ? [stickyIdx] : undefined}
       refreshControl={refresh ? <RefreshControl refreshing={refreshing} onRefresh={reload} tintColor={C.accent} colors={[C.accent]} /> : undefined}>
-      {refresh ? <BrandBar /> : null}
-      {head}
-      <DataStatus />
-      {children}
+      {kids}
     </ScrollView>
   );
 }

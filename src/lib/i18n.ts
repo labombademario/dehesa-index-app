@@ -57,6 +57,11 @@ const S: Record<string, Row> = {
   noteEs: ['Nota de la fuente (en español):', 'Source note (in Spanish):', 'Note de la source (en espagnol) :', 'Nota della fonte (in spagnolo):'],
   // países
   coverageHint: ['Qué parte de precios, producción y comercio de cada país tiene Dehesa con fuente oficial.', 'How much of each country’s prices, production and trade Dehesa has from official sources.', 'Part des prix, de la production et du commerce de chaque pays couverte par des sources officielles.', 'Quota di prezzi, produzione e commercio di ogni paese coperta da fonti ufficiali.'],
+  myCountries: ['Mis países', 'My countries', 'Mes pays', 'I miei paesi'],
+  myCountriesEmpty: ['Toca ☆ en un país para fijarlo aquí.', 'Tap ☆ on a country to pin it here.', 'Touchez ☆ sur un pays pour l’épingler ici.', 'Tocca ☆ su un paese per fissarlo qui.'],
+  favAdd: ['Fijar en Mis países', 'Pin to My countries', 'Épingler dans Mes pays', 'Fissa in I miei paesi'],
+  favRemove: ['Quitar de Mis países', 'Remove from My countries', 'Retirer de Mes pays', 'Rimuovi da I miei paesi'],
+  countrySearch: ['Buscar país: Francia, Chile…', 'Search country: France, Chile…', 'Rechercher un pays : France, Chili…', 'Cerca paese: Francia, Cile…'],
   regEu: ['Unión Europea', 'European Union', 'Union européenne', 'Unione europea'],
   regEurope: ['Resto de Europa', 'Rest of Europe', 'Reste de l’Europe', 'Resto d’Europa'],
   regNA: ['Norteamérica', 'North America', 'Amérique du Nord', 'Nord America'],
