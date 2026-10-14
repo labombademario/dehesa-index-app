@@ -18,6 +18,7 @@ const S: Record<string, Row> = {
   monthly: ['Mensual', 'Monthly', 'Mensuelle', 'Mensile'],
   daily: ['Diaria', 'Daily', 'Quotidienne', 'Giornaliera'],
   quarterly: ['Trimestral', 'Quarterly', 'Trimestrielle', 'Trimestrale'],
+  youtube: ['Nuestro canal de YouTube', 'Our YouTube channel', 'Notre chaîne YouTube', 'Il nostro canale YouTube'],
   openWeb: ['Ver todo en la web', 'See everything on the website', 'Tout voir sur le site', 'Vedi tutto sul sito'],
   offline: ['Sin conexión: datos guardados del {0}', 'Offline: data saved on {0}', 'Hors ligne : données enregistrées le {0}', 'Offline: dati salvati il {0}'],
   bundled: ['Datos incluidos en la app; conéctate para actualizarlos', 'Data bundled with the app; connect to update', 'Données incluses dans l’app ; connectez-vous pour les mettre à jour', 'Dati inclusi nell’app; connettiti per aggiornarli'],
