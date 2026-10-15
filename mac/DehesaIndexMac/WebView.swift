@@ -73,7 +73,7 @@ struct WebView: NSViewRepresentable {
             let html = """
             <meta name="viewport" content="width=device-width,initial-scale=1">
             <body style="font-family:-apple-system,sans-serif;display:flex;min-height:90vh;align-items:center;justify-content:center;text-align:center;color:#555;background:#F7F4EC">
-            <div><h2>Sin conexión · No connection</h2><p>Comprueba tu conexión a internet y pulsa ⌘R para recargar.<br>Check your internet connection and press ⌘R to reload.</p></div></body>
+            <div><h2>\(L10n.t("Sin conexión", "No connection", "Pas de connexion", "Nessuna connessione"))</h2><p>\(L10n.t("Comprueba tu conexión a internet y pulsa ⌘R para recargar.", "Check your internet connection and press ⌘R to reload.", "Vérifiez votre connexion internet et appuyez sur ⌘R pour recharger.", "Controlla la connessione a internet e premi ⌘R per ricaricare."))</p></div></body>
             """
             webView.loadHTMLString(html, baseURL: nil)
         }
