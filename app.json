@@ -57,6 +57,13 @@
         }
       ],
       "expo-background-task",
+      [
+        "expo-calendar",
+        {
+          "writeOnlyAccess": true,
+          "writeOnlyCalendarPermission": "Dehesa Index adds the official release dates you choose to your calendar."
+        }
+      ],
       "./plugins/with-ios-scene-lifecycle"
     ],
     "scheme": "dehesaindex",
