@@ -12,15 +12,8 @@ import type { CountryMap, MapMetric } from '../lib/types';
 const RAMPS = { green: ['#e8f1e4', '#bfdcb8', '#8cc08c', '#4f9a62', '#1f6b43'], warm: ['#fdecc8', '#f9c97a', '#ef9b4a', '#d4622d', '#a32d1f'] };
 const nodata = () => (mode === 'dark' ? '#3A3D2C' : '#e4e4e4');
 
-/** Mismos cortes que la web: cuantiles sobre los valores publicados, hasta 5 clases */
-export function classify(vals: number[]) {
-  const sorted = vals.slice().sort((a, b) => a - b);
-  const n = Math.min(5, Math.max(1, new Set(vals).size));
-  const br: number[] = [];
-  for (let i = 1; i < n; i++) br.push(sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * i / n))]);
-  const cls = (x: number) => { let c = 0; for (const b of br) if (x >= b) c++; return Math.min(c, n - 1); };
-  return { n, br, cls, min: sorted[0], max: sorted[sorted.length - 1] };
-}
+export { classify } from '../lib/classify';
+import { classify } from '../lib/classify';
 export function metricColor(m: MapMetric, x: number | undefined, k: ReturnType<typeof classify>): string {
   if (x == null) return nodata();
   const ramp = RAMPS[m.ramp];

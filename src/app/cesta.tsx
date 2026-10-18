@@ -11,7 +11,7 @@ export default function Cesta() {
   const L = user.lang;
   const [editing, setEditing] = useState(false);
   const items = user.basket.map(id => price(id)).filter((p): p is NonNullable<typeof p> => !!p);
-  const move = (i: number) => setUser(u => { const b = [...u.basket]; [b[i - 1], b[i]] = [b[i], b[i - 1]]; return { basket: b }; });
+  const move = (i: number) => setUser(u => { const b = [...u.basket], a = b.indexOf(items[i].id), c = b.indexOf(items[i - 1].id); if (a < 0 || c < 0) return {}; [b[c], b[a]] = [b[a], b[c]]; return { basket: b }; });   // el índice es de la cesta visible (sin los ids sin precio), no de u.basket
   const remove = (id: string) => setUser(u => ({ basket: u.basket.filter(x => x !== id) }));
   return (
     <Screen>

@@ -6,10 +6,11 @@ import { useApp, type CropLine } from '../lib/store';
 import { Screen, Card, Row, Button, Note, Segmented, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { cropMargin, herdMargin, ratio } from '../lib/logic';
-import { num, eur, date } from '../lib/format';
+import { num, eur, date, parseNum } from '../lib/format';
 import type { Lang, Price } from '../lib/types';
 
-const n = (v: string) => { const x = parseFloat(v.replace(/\s/g, '').replace(',', '.')); return isFinite(x) ? x : 0; };
+let NL: Lang = 'es';   // idioma activo: «1.150» son 1150 en es/fr/it
+const n = (v: string) => parseNum(v, NL) ?? 0;
 type Tab = 'crops' | 'livestock' | 'ratios';
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -37,7 +38,7 @@ const CROP: Record<string, { es: string; en: string; fr: string; it: string }> =
 
 export default function Explotacion() {
   const { data, user, setUser, t } = useApp();
-  const L = user.lang;
+  const L = user.lang; NL = L;
   const [tab, setTab] = useState<Tab>(user.profile === 'dairy' || user.profile === 'pig' ? 'livestock' : 'crops');
   // Primero el precio del país del usuario (media nacional de la Comisión); si no lo publica, la referencia de España con su lugar a la vista
   const mine = (product: string): Price | undefined => (user.market !== 'ES' ? data.prices.find(p => p.cc === user.market && p.product === product) : undefined);

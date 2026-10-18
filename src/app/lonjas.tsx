@@ -8,7 +8,7 @@ import { Screen, Card, Note, SectionTitle } from '../components/ui';
 import { Chips } from '../components/Chips';
 import { RangeChart } from '../components/RangeChart';
 import { C, changeColor } from '../lib/theme';
-import { num, date as fmtDate } from '../lib/format';
+import { num, pct, date as fmtDate } from '../lib/format';
 import { webJson, countryName } from '../lib/fv';
 import { LJ } from '../lib/lonjasNames';
 import { SourceCite } from '../components/SourceCite';
@@ -84,9 +84,9 @@ export default function Lonjas() {
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={{ fontSize: 15.5, fontWeight: '700', color: muted ? C.textMuted : C.text, fontVariant: ['tabular-nums'] }}>{num(x.r.last[1], L, dec)} <Text style={{ fontSize: 11.5, fontWeight: '400', color: C.textMuted }}>{s!.unit}</Text></Text>
             <Text style={{ fontSize: 12, fontVariant: ['tabular-nums'] }}>
-              <Text style={{ color: w == null ? C.textMuted : changeColor(w) }}>{w == null ? '–' : (w > 0 ? '+' : '') + num(w, L, 1) + ' %'}</Text>
+              <Text style={{ color: w == null ? C.textMuted : changeColor(w) }}>{w == null ? '–' : pct(w, L)}</Text>
               <Text style={{ color: C.textMuted }}> {tx(L, { es: 'sem.', en: 'wk', fr: 'sem.', it: 'sett.' })} · </Text>
-              <Text style={{ color: y == null ? C.textMuted : changeColor(y) }}>{y == null ? '–' : (y > 0 ? '+' : '') + num(y, L, 1) + ' %'}</Text>
+              <Text style={{ color: y == null ? C.textMuted : changeColor(y) }}>{y == null ? '–' : pct(y, L)}</Text>
               <Text style={{ color: C.textMuted }}> {tx(L, { es: 'año', en: 'yr', fr: 'an', it: 'anno' })}</Text>
             </Text>
           </View>

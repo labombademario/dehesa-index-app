@@ -37,7 +37,7 @@ export default function Semana() {
   const w = weeks.find(x => x.week === wk) ?? weeks[0];
   useEffect(() => { if (!w) { setDoc(idx ? null : undefined); return; } setDoc(undefined); webJson('data/blog/countries/' + cc + '/' + w.week + '.json', w.complete ? 7 * 24 * 3600e3 : 3 * 3600e3).then(d => setDoc(d ?? null)); }, [cc, w?.week, idx]);
   const num = (v: number | null | undefined) => { if (v == null || isNaN(v)) return '–'; const a = Math.abs(v), d = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 1 ? 2 : 3; return Number(v).toLocaleString(L, { maximumFractionDigits: d }); };
-  const pct = (v: number | null | undefined) => { if (v == null || isNaN(v)) return '–'; const s = (v > 0 ? '+' : v < 0 ? '−' : '') + num(Math.abs(Math.round(v * 10) / 10)) + ' %'; return L === 'en' ? s.replace(' %', '%') : s; };
+  const pct = (v: number | null | undefined) => { if (v == null || isNaN(v)) return '–'; const r = Math.round(v * 10) / 10, s = (r > 0 ? '+' : r < 0 ? '−' : '') + num(Math.abs(r)) + ' %'; return L === 'en' ? s.replace(' %', '%') : s; };
   const per = (p?: string) => (p && /^\d{4}-\d\d-\d\d$/.test(p) ? fmtDate(p, L) : p ?? '');
   const lab = (l: string) => tl(l, L);
   const cname = (c: string) => SW.NAME[c]?.[L] ?? c, tab = (c: string) => (SW.TAB[c] ?? SW.NAME[c])?.[L] ?? c;

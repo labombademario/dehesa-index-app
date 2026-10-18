@@ -65,3 +65,26 @@ test('notificaciones: avisa una vez y se rearma al dejar de cumplirse', () => {
   assert.deepEqual(r.fire.map(x => x.rule.id), ['a']);
   assert.equal(newlyHit(rules, [], []).fire.length, 0);  // precio desaparecido: nada
 });
+
+import { parseNum } from './format.ts';
+import { classify } from './classify.ts';
+
+test('parseNum: separador de miles propio del idioma y texto no numérico', () => {
+  assert.equal(parseNum('1.150', 'es'), 1150); assert.equal(parseNum('1.150', 'fr'), 1150); assert.equal(parseNum('1.150', 'it'), 1150);
+  assert.equal(parseNum('1.150', 'en'), 1.15); assert.equal(parseNum('1,150', 'en'), 1150); assert.equal(parseNum('1,5', 'es'), 1.5);
+  assert.equal(parseNum('1.234,5', 'es'), 1234.5); assert.equal(parseNum('1,234.5', 'en'), 1234.5); assert.equal(parseNum('1.234.567', 'es'), 1234567);
+  assert.equal(parseNum('270', 'es'), 270); assert.equal(parseNum('2.5', 'es'), 2.5); assert.equal(parseNum(' 1 250 ', 'es'), 1250);
+  assert.equal(parseNum('abc', 'es'), null); assert.equal(parseNum('12abc', 'es'), null); assert.equal(parseNum('', 'es'), null); assert.equal(parseNum('1,2,3x', 'en'), null);
+});
+
+test('mapa: con empates los cortes no se repiten y 0 y 5 caen en clases distintas', () => {
+  const k = classify([0, 0, 0, 0, 5]); assert.notEqual(k.cls(0), k.cls(5));
+  const k2 = classify([0, 0, 0, 0, 0, 0, 0, 3, 4, 5]); assert.equal(new Set(k2.br).size, k2.br.length); assert.ok(k2.cls(0) < k2.cls(3) && k2.cls(3) < k2.cls(5));
+  assert.equal(classify([7, 7, 7]).n, 1);
+});
+
+test('avisos: un precio aún sin cargar no hace olvidar que ya se avisó', () => {
+  const rule: any = { id: 'a1', priceId: 'eu_fr_trigo', cond: 'ge', value: 200, on: true };
+  const r1 = newlyHit([rule], [], ['a1']); assert.deepEqual(r1.hit, ['a1']); assert.equal(r1.fire.length, 0);
+  const r2 = newlyHit([rule], [P('eu_fr_trigo', 250, 1)], r1.hit); assert.equal(r2.fire.length, 0);
+});

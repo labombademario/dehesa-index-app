@@ -5,10 +5,12 @@ import { useApp, staleSuffix } from '../lib/store';
 import { Screen, Card, Button, Note, Segmented, SectionTitle, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { evaluateAlert, type AlertRule } from '../lib/logic';
-import { num } from '../lib/format';
+import { num, parseNum } from '../lib/format';
+import type { Lang } from '../lib/types';
 import { ensurePermission, markSeen, notificationsEnabled } from '../lib/notify';
 
-const parse = (v: string) => { const n = parseFloat(v.replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : null; };
+let PL: Lang = 'es';
+const parse = (v: string) => parseNum(v, PL);
 
 // Umbral con los decimales que escribió el usuario (antes «sube a 1,000 €/t», que se leía como mil)
 const ud = (v: number) => (Number.isInteger(v) ? 0 : Math.min(3, String(v).split('.')[1]?.length ?? 0));
@@ -16,7 +18,7 @@ const ud = (v: number) => (Number.isInteger(v) ? 0 : Math.min(3, String(v).split
 export default function Avisos() {
   const { nuevo } = useLocalSearchParams<{ nuevo?: string }>();
   const { data, user, setUser, price, t } = useApp();
-  const L = user.lang;
+  const L = user.lang; PL = L;
   const [form, setForm] = useState<{ priceId: string; cond: AlertRule['cond']; value: string; touched?: boolean } | null>(null);
   const [err, setErr] = useState(false);
   const [notifOk, setNotifOk] = useState<boolean | null>(null);

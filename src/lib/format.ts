@@ -19,6 +19,22 @@ export function num(v: number, lang: Lang, dec?: number): string {
   return new Intl.NumberFormat(LOCALE[lang], { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
 }
 
+/**
+ * Número escrito por una persona -> número. Entiende el separador de miles propio del idioma:
+ * «1.150» en es/fr/it son 1150 (en inglés 1.15); «1,150» en inglés son 1150; «1.234,5» y «1,234.5» son 1234,5.
+ * Devuelve null si no es un número (antes «abc» valía 0 y «12abc» valía 12).
+ */
+export function parseNum(v: string, lang: Lang = 'es'): number | null {
+  let s = String(v ?? '').replace(/[\s\u00a0\u202f€$%]/g, '');
+  if (!s) return null;
+  const dots = (s.match(/\./g) || []).length, commas = (s.match(/,/g) || []).length;
+  if (dots && commas) { const dec = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ','; const th = dec === '.' ? ',' : '.'; if (s.split(th).length > 1 && s.lastIndexOf(th) > s.lastIndexOf(dec)) return null; s = s.split(th).join('').replace(dec, '.'); }
+  else if (commas) { if (commas > 1 || (lang === 'en' && /^[-+]?\d{1,3},\d{3}$/.test(s))) s = s.split(',').join(''); else s = s.replace(',', '.'); }
+  else if (dots) { if (dots > 1 || (lang !== 'en' && /^[-+]?\d{1,3}\.\d{3}$/.test(s))) s = s.split('.').join(''); }
+  if (!/^[-+]?\d+(\.\d+)?$/.test(s)) return null;
+  const x = parseFloat(s); return isFinite(x) ? x : null;
+}
+
 /** +0,5 % · −1,7 % · 0,0 % (signo menos tipográfico) */
 export function pct(v: number | null | undefined, lang: Lang): string {
   if (v == null || !isFinite(v)) return '—';

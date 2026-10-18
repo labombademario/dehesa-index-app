@@ -49,7 +49,8 @@ export default function Comparar() {
   // un precio que deja de publicarse tras una actualización se descarta (antes: find(...)! y la pantalla se caía)
   const series = sel.flatMap((id, i) => {
     const p = data.prices.find(x => x.id === id); if (!p) return [];
-    return [{ id, p, color: colors()[i % 4], all: hist[id] ?? p.points }];
+    const all = hist[id] ?? p.points; if (!all || !all.length) return [];   // serie sin puntos: no se dibuja (antes lanzaba un error)
+    return [{ id, p, color: colors()[i % 4], all }];
   });
   const lastTs = series.length ? Math.max(...series.map(x => ts(x.all[x.all.length - 1][0]))) : 0;
   const cur = RANGES.find(r => r.k === range) ?? RANGES[1];

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, router } from 'expo-router';
 import { useApp, defaults, isEu, presetFor, resolvePreset, srcName } from '../lib/store';
 import { webJson } from '../lib/fv';
@@ -34,7 +35,7 @@ export default function Ajustes() {
   };
   const wipe = () => Alert.alert(t('wipe'), t('wipeConfirm'), [
     { text: t('cancel'), style: 'cancel' },
-    { text: t('delete'), style: 'destructive', onPress: () => { setUser({ ...defaults(), lang: user.lang }); router.replace('/bienvenida'); } },
+    { text: t('delete'), style: 'destructive', onPress: () => { setUser({ ...defaults(), lang: user.lang }); AsyncStorage.multiRemove(['dehesa:siembra:v1', 'dehesa:alerts-hit:v1']).catch(() => {}); router.replace('/bienvenida'); } },
   ]);
   return (
     <Screen>

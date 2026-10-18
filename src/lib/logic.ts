@@ -19,7 +19,8 @@ export function newlyHit(rules: AlertRule[], prices: Price[], prevHit: string[])
   const prev = new Set(prevHit), hit: string[] = [], fire: { rule: AlertRule; price: Price }[] = [];
   for (const rule of rules) {
     const price = prices.find(p => p.id === rule.priceId);
-    if (evaluateAlert(rule, price).kind !== 'hit' || !price) continue;
+    if (!price) { if (prev.has(rule.id)) hit.push(rule.id); continue; }   // precio aún sin cargar (p. ej. país UE): no se olvida que ya se avisó
+    if (evaluateAlert(rule, price).kind !== 'hit') continue;
     hit.push(rule.id);
     if (!prev.has(rule.id)) fire.push({ rule, price });
   }

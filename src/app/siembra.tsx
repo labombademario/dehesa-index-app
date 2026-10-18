@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../lib/store';
 import { Screen, Card, Note, SectionTitle, Segmented } from '../components/ui';
 import { C } from '../lib/theme';
-import { num } from '../lib/format';
+import { num, parseNum } from '../lib/format';
 import { webJson } from '../lib/fv';
 import { sowRows, sowPlan, type SowDoc, type SowRow } from '../lib/sowing';
 import type { Lang } from '../lib/types';
@@ -31,12 +31,13 @@ export default function Siembra() {
   useEffect(() => { let alive = true; setDoc(null); setDocDone(false); webJson('data/sowing/' + st.c.toLowerCase() + '.json', 12 * 3600e3).then((d: any) => { if (alive) { setDoc(d); setDocDone(true); } }).catch(() => { if (alive) setDocDone(true); }); return () => { alive = false; }; }, [st.c]);
   const rname = (code: string) => { const R = doc?.regions[code]; if (!R) return code; if (R.names) return R.names[L] ?? R.name; if (st.c === 'US') return US[code] ?? code; return R.name ? title(R.name) : code; };
   const regs = useMemo(() => (doc ? Object.keys(doc.regions).sort((a, b) => rname(a).localeCompare(rname(b), L)) : []), [doc, L]);
-  const rows = useMemo(() => (doc && st.r && doc.regions[st.r] ? sowRows(doc, st.r, st.costs) : []), [doc, st.r, st.costs]);
+  const costsN = useMemo(() => { const o: Record<string, string> = {}; Object.keys(st.costs).forEach(k => { const x = parseNum(st.costs[k], L); if (x != null) o[k] = String(x); }); return o; }, [st.costs, L]);   // «1.250» son 1250 en es/fr/it
+  const rows = useMemo(() => (doc && st.r && doc.regions[st.r] ? sowRows(doc, st.r, costsN) : []), [doc, st.r, costsN]);
   const au = doc?.areaUnit === 'acre' ? 'acres' : 'ha', uS = doc?.areaUnit === 'acre' ? 'acre' : 'ha', ru = rows[0]?.C.revUnit ?? '';
   const anyCost = rows.some(x => x.margin != null), best = anyCost ? rows.find(x => x.margin != null) : rows[0];
   const pctS = (v: number) => (v > 0 && v < 0.005 ? '<1' : num(v * 100, L, 0)) + ' %';
-  const setCost = (k: string, v: string) => setSt(s => { const c = { ...s.costs }; if (v === '') delete c[s.c + ':' + k]; else c[s.c + ':' + k] = v.replace(',', '.'); return { ...s, costs: c }; });
-  const tot = +st.area.replace(',', '.'), plan = tot > 0 && rows.length ? sowPlan(rows, tot) : null, cy = new Date().getFullYear();
+  const setCost = (k: string, v: string) => setSt(s => { const c = { ...s.costs }; if (v === '') delete c[s.c + ':' + k]; else c[s.c + ':' + k] = v; return { ...s, costs: c }; });
+  const tot = parseNum(st.area, L) ?? 0, plan = tot > 0 && rows.length ? sowPlan(rows, tot) : null, cy = new Date().getFullYear();
   const card = (x: SowRow) => {
     const nm = x.C.name[L] ?? x.C.name.es, hasM = x.margin != null, main = hasM ? x.margin! : x.rev, vLo = hasM ? x.marLo! : x.revLo, vHi = hasM ? x.marHi! : x.revHi;
     const b0 = Math.min(0, vLo), b1 = Math.max(vHi, 1), sc = (v: number) => (v - b0) / (b1 - b0) * 100;
