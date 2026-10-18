@@ -1,0 +1,38 @@
+# Compila el paquete Android (AAB) de produccion. Se firma con la clave de subida fuera de GitHub
+# (la clave no esta en el repositorio ni en secretos); aqui solo se compila con la firma de depuracion de Expo.
+name: Android build (AAB)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android-build
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 17
+      - run: npm ci
+      - run: npx expo prebuild --platform android --clean --no-install
+      - name: Compilar AAB
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon -x lint
+      - name: Publicar en la rama android-builds (un solo commit)
+        run: |
+          V=$(node -p "require('./app.json').expo.version")
+          C=$(node -p "require('./app.json').expo.android.versionCode")
+          mkdir -p /tmp/out && cp android/app/build/outputs/bundle/release/app-release.aab /tmp/out/dehesa-index-$V-$C-unsigned.aab
+          ls -l /tmp/out
+          cd /tmp/out && git init -q -b android-builds && git add . \
+            && git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -q -m "AAB $V ($C) ${GITHUB_SHA::7}" \
+            && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" android-builds

@@ -32,7 +32,8 @@
       "package": "com.dehesaindex.app",
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
-      ]
+      ],
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
