@@ -10,6 +10,8 @@ import { RangeChart } from '../../components/RangeChart';
 import { C } from '../../lib/theme';
 import { num, date as fmtDate, pct } from '../../lib/format';
 import { loadFv, loadEuSeries, loadPerc, loadCrops, loadFarm, countryName, stageName, variantName, type FvProduct, type CropsDoc, type FarmDoc } from '../../lib/fv';
+import { CountrySelect } from '../../components/CountryPicker';
+import { flag } from '../../lib/tx';
 
 type Pts = [string, number][];
 const DAY = 864e5;
@@ -95,14 +97,7 @@ export default function Fruta() {
       <Text style={{ fontSize: 28, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{P.emoji} {nm}</Text>
       {ccs.length ? <>
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('fvCountry')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-          {ccs.map(k => (
-            <Pressable key={k} onPress={() => setCc(k)} accessibilityRole="button" accessibilityState={{ selected: k === cc }}
-              style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: k === cc ? C.accent : C.surfaceAlt }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: k === cc ? C.accentInk : C.text }}>{countryName(k, L)}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        <CountrySelect items={ccs.map(k => ({ value: k, label: countryName(k, L), flag: flag(k) }))} value={cc} onChange={setCc} title={t('fvCountry')} />
         <SectionTitle>{t('fvWeek')}</SectionTitle>
         {!ref ? <Note>{t('fvNoEuC', countryName(cc, L))}</Note> : ref && last ? <Card>
           <Row first title={t('fvWeekOf', nm, countryName(cc, L), v.label, stageName(ref.stage, L), fmtDate(last[0], L))} right={num(last[1], L, 2) + ' €/kg'} />

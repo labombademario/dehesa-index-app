@@ -13,6 +13,7 @@ import { SW } from '../../lib/semanaText';
 import { loadGloss } from '../../lib/gloss';
 import { tl } from '../../lib/labelTl';
 import { flag } from '../../lib/tx';
+import { CountrySelect } from '../../components/CountryPicker';
 
 const CCS = ['ES', 'FR', 'IT', 'DE', 'US'];
 type Wk = { week: string; from: string; to: string; complete: boolean; updates: number; news: number };
@@ -84,7 +85,7 @@ export default function Semana() {
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{t.h1}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t.sub}</Text>
       {!idx ? <Note>{t.loading}</Note> : <>
-        <Chips items={CCS.map(c => ({ value: c, label: tab(c), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setWk(null); setOpen({}); }} />
+        <CountrySelect items={CCS.map(c => ({ value: c, label: tab(c), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setWk(null); setOpen({}); }} />
         {weeks.length > 1 ? <Chips items={weeks.map(x => ({ value: x.week, label: fmtDate(x.from, L) + (x.complete ? '' : ' ·') }))} value={w?.week ?? ''} onChange={v => { setWk(v); setOpen({}); }} /> : null}
         {!w ? <Note>{t.none}</Note> : doc === undefined ? <Note>{t.loading}</Note> : doc === null ? <Note>{t.err}</Note> : <>
           <Card style={{ padding: 16, gap: 8 }}>

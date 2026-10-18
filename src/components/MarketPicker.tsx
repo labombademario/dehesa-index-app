@@ -6,6 +6,7 @@ import { C } from '../lib/theme';
 import { useApp, isEu, type Market } from '../lib/store';
 import { webJson, countryName } from '../lib/fv';
 import { flag, tx } from '../lib/tx';
+import { groupCodes, GROUP_LABEL } from '../lib/countryGroups';
 
 // Lista por defecto si aún no se ha descargado data/app/v1/eu/index.json (sin conexión en el primer arranque)
 const EU_DEFAULT = ['ES', 'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LV', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK'];
@@ -23,8 +24,11 @@ export function MarketPicker({ value, onChange }: { value: Market; onChange: (m:
         options={[{ value: 'eu', label: t('regionEu') }, { value: 'us', label: t('regionUs') }, { value: 'ca', label: t('regionCa') }]} />
       {reg === 'eu' ? <>
         <Text style={{ fontSize: 14, fontWeight: '600', color: C.textMuted }}>{tx(L, { es: '¿En qué país?', en: 'Which country?', fr: 'Dans quel pays ?', it: 'In quale paese?' })}</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} accessibilityRole="radiogroup">
-          {list.map(cc => {
+        {groupCodes(list, x => x).map(g => (
+          <View key={g.k} style={{ gap: 8 }}>
+          <Text style={{ fontSize: 12.5, fontWeight: '700', color: C.textMuted }} accessibilityRole="header">{GROUP_LABEL[g.k][L]}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} accessibilityRole="radiogroup">
+          {g.items.map(cc => {
             const on = value === cc;
             return (
               <Pressable key={cc} onPress={() => onChange(cc)} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={countryName(cc, L)}
@@ -35,6 +39,8 @@ export function MarketPicker({ value, onChange }: { value: Market; onChange: (m:
             );
           })}
         </View>
+          </View>
+        ))}
       </> : null}
     </View>
   );

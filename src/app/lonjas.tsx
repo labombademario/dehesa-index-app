@@ -13,6 +13,7 @@ import { webJson, countryName } from '../lib/fv';
 import { LJ } from '../lib/lonjasNames';
 import { SourceCite } from '../components/SourceCite';
 import { tx, fill, flag } from '../lib/tx';
+import { CountrySelect } from '../components/CountryPicker';
 
 type Reg = { c: string; m?: string; last: [string, number]; prev?: [string, number] | null; yoy?: [string, number] | null };
 type Ser = { id: string; parts: string[]; unit: string; regions: Reg[] };
@@ -101,7 +102,7 @@ export default function Lonjas() {
       <Stack.Screen options={{ title: tx(L, { es: 'Lonjas', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze locali' }) }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{tx(L, { es: 'Lonjas y mercados locales', en: 'Local markets', fr: 'Marchés locaux', it: 'Piazze e mercati locali' })}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{tx(L, { es: 'Precio semanal de cada provincia, zona o puerto que publica la Comisión Europea. No se promedia ni se mezcla. Toca un mercado para ver su gráfico.', en: 'Weekly price for each province, area or port published by the European Commission. Nothing is averaged or mixed. Tap a market to see its chart.', fr: 'Prix hebdomadaire de chaque province, zone ou port publié par la Commission européenne. Rien n’est moyenné ni mélangé. Touchez un marché pour voir son graphique.', it: 'Prezzo settimanale di ogni provincia, zona o porto pubblicato dalla Commissione europea. Niente viene mediato o mescolato. Tocca un mercato per vedere il grafico.' })}</Text>
-      <Chips items={Object.keys(LJ.CTRY).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)).map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setSid(null); }} />
+      <CountrySelect items={Object.keys(LJ.CTRY).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)).map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={v => { setCc(v); setSid(null); }} />
       {fams.length > 1 ? <Chips items={fams.map(f => ({ value: f, label: tx(L, (FAM as any)[f]) }))} value={fams.includes(fam) ? fam : fams[0]} onChange={v => { setFam(v); setSid(null); }} /> : null}
       {data[fam] === undefined ? <Note>{t('loading')}</Note> : !s || !M ? <Note>{tx(L, { es: 'No hay mercados con precio para esta selección.', en: 'No markets with a price for this selection.', fr: 'Aucun marché avec un prix pour cette sélection.', it: 'Nessun mercato con prezzo per questa selezione.' })}</Note> : <>
         {list.length > 1 ? <Chips items={list.map(x => ({ value: x.id, label: title(x) }))} value={s.id} onChange={setSid} /> : null}

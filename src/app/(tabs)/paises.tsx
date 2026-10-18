@@ -7,18 +7,10 @@ import { Screen, Card, Note, s } from '../../components/ui';
 import { C } from '../../lib/theme';
 import { norm } from '../../lib/logic';
 import { flag } from '../../lib/tx';
+import { groupCodes, GROUP_LABEL } from '../../lib/countryGroups';
 import type { Country } from '../../lib/types';
 
-// Regiones en el orden en que se muestran; los códigos que no estén aquí caen en «Otros»
-const GROUPS: { k: string; label: string; codes: string }[] = [
-  { k: 'eu', label: 'regEu', codes: 'EU AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE' },
-  { k: 'europe', label: 'regEurope', codes: 'UK CH NO IS RS UA TR MD' },
-  { k: 'na', label: 'regNA', codes: 'US CA MX' },
-  { k: 'sa', label: 'regSA', codes: 'AR CL BR UY PY CO PE BO EC' },
-  { k: 'oce', label: 'regOce', codes: 'AU NZ' },
-  { k: 'asia', label: 'regAsia', codes: 'JP KR CN IN ID TH VN PH MY' },
-  { k: 'africa', label: 'regAfrica', codes: 'ZA MA EG KE NG' },
-];
+// Norma del sitio: Zona euro · Resto de Europa · América · Resto del mundo (src/lib/countryGroups.ts)
 
 // Color de la cobertura: verde desde 75 %, ámbar entre 50 y 75, rojo por debajo
 const AMBER = '#B7791F';
@@ -62,16 +54,7 @@ export default function Countries() {
     const k = norm(q.trim());
     return k ? data.countries.filter(c => norm(`${c.name[L]} ${c.name.es} ${c.name.en} ${c.code}`).includes(k)) : [];
   }, [q, data.countries, L]);
-  const groups = useMemo(() => {
-    const known = new Set<string>();
-    const out = GROUPS.map(g => {
-      const set = new Set(g.codes.split(' ')); set.forEach(x => known.add(x));
-      return { ...g, list: data.countries.filter(c => set.has(c.code)) };
-    });
-    const rest = data.countries.filter(c => !known.has(c.code));
-    if (rest.length) out.push({ k: 'other', label: 'regOther', codes: '', list: rest });
-    return out.filter(g => g.list.length);
-  }, [data.countries]);
+  const groups = useMemo(() => groupCodes(data.countries, c => c.code).map(g => ({ k: g.k, label: GROUP_LABEL[g.k][L], list: g.items })), [data.countries, L]);
   return (
     <Screen refresh title={t('tabCountries')}>
       <Note>{t('coverageHint')}</Note>
@@ -89,10 +72,10 @@ export default function Countries() {
           return (
             <Card key={g.k}>
               <Pressable onPress={() => setOpen(o => ({ ...o, [g.k]: !o[g.k] }))} accessibilityRole="button" accessibilityState={{ expanded: on }}
-                accessibilityLabel={`${t(g.label)}, ${t('regCount', String(g.list.length))}`} android_ripple={{ color: C.surfaceAlt }}
+                accessibilityLabel={`${g.label}, ${t('regCount', String(g.list.length))}`} android_ripple={{ color: C.surfaceAlt }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, minHeight: 52 }}>
                 <Text style={{ fontSize: 16, color: C.textMuted, width: 14 }}>{on ? '▾' : '▸'}</Text>
-                <Text style={[s.rowTitle, { flex: 1, fontSize: 16 }]}>{t(g.label)}</Text>
+                <Text style={[s.rowTitle, { flex: 1, fontSize: 16 }]}>{g.label}</Text>
                 <Text style={{ fontSize: 13, color: C.textMuted }}>{t('regCount', String(g.list.length))}</Text>
               </Pressable>
               {on ? g.list.map(c => <View key={c.code} style={s.rowDivider}><CountryRow c={c} first /></View>) : null}

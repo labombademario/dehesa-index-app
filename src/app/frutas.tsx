@@ -8,6 +8,8 @@ import { C, changeColor } from '../lib/theme';
 import { num, date as fmtDate } from '../lib/format';
 import { loadFv, countryName, stageName, type FvDoc, type FvProduct } from '../lib/fv';
 import { norm } from '../lib/logic';
+import { CountrySelect } from '../components/CountryPicker';
+import { flag } from '../lib/tx';
 
 type G = 'all' | 'veg' | 'fruit' | 'nut';
 
@@ -41,17 +43,7 @@ export default function Frutas() {
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t('fvIntro')}</Text>
       {!doc ? <Note>{done ? t('noDataNow') : t('loading')}</Note> : <>
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('fvCountry')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-          {ccs.map(c => {
-            const on = c === cc;
-            return (
-              <Pressable key={c} onPress={() => setCc(c)} accessibilityRole="button" accessibilityState={{ selected: on }}
-                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: on ? C.accent : C.surfaceAlt }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: on ? C.accentInk : C.text }}>{countryName(c, L)}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        <CountrySelect items={ccs.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={setCc} title={t('fvCountry')} />
         <Segmented options={[{ value: 'all', label: t('fvAll') }, { value: 'veg', label: t('fvVeg') }, { value: 'fruit', label: t('fvFruit') }, { value: 'nut', label: t('fvNut') }]} value={g} onChange={setG} />
         <TextInput value={q} onChangeText={setQ} placeholder={t('fvFind')} placeholderTextColor={C.textMuted} clearButtonMode="while-editing" autoCorrect={false}
           style={{ height: 42, borderRadius: 10, paddingHorizontal: 12, backgroundColor: C.surfaceAlt, color: C.text, fontSize: 15 }} accessibilityLabel={t('fvFind')} />

@@ -10,6 +10,7 @@ import { C } from '../lib/theme';
 import { webJson, countryName } from '../lib/fv';
 import { norm } from '../lib/logic';
 import { tx, fill, flag } from '../lib/tx';
+import { CountrySelect } from '../components/CountryPicker';
 
 type GI = { n: string[]; t: 'PDO' | 'PGI' | 'GI'; y?: number; f?: string; u?: string };
 type Kind = 'wine' | 'cheese';
@@ -42,7 +43,7 @@ export default function Denominaciones() {
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{tx(L, { es: 'Denominaciones de origen', en: 'Designations of origin', fr: 'Appellations d’origine', it: 'Denominazioni di origine' })}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{tx(L, { es: 'Vinos y quesos con nombre protegido en la UE (registrados y vigentes).', en: 'Wines and cheeses with a name protected in the EU (registered and in force).', fr: 'Vins et fromages au nom protégé dans l’UE (enregistrés et en vigueur).', it: 'Vini e formaggi con nome protetto nell’UE (registrati e in vigore).' })}</Text>
       {!idx ? <Note>{idxDone ? t('noDataNow') : t('loading')}</Note> : <>
-        <Chips items={ccs.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={setCc} />
+        <CountrySelect items={ccs.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={setCc} />
         <Segmented options={[{ value: 'wine' as Kind, label: '🍷 ' + tx(L, { es: 'Vinos', en: 'Wines', fr: 'Vins', it: 'Vini' }) + (idx[cc] ? ' (' + idx[cc].wine + ')' : '') }, { value: 'cheese' as Kind, label: '🧀 ' + tx(L, { es: 'Quesos', en: 'Cheeses', fr: 'Fromages', it: 'Formaggi' }) + (idx[cc] ? ' (' + idx[cc].cheese + ')' : '') }]} value={kind} onChange={setKind} />
         <Segmented options={[{ value: 'all' as const, label: tx(L, { es: 'Todas', en: 'All', fr: 'Toutes', it: 'Tutte' }) }, { value: 'PDO' as const, label: tx(L, TYPE.PDO) }, { value: 'PGI' as const, label: tx(L, TYPE.PGI) }]} value={ty} onChange={setTy} />
         <TextInput value={q} onChangeText={setQ} placeholder={tx(L, { es: 'Buscar', en: 'Search', fr: 'Rechercher', it: 'Cerca' })} placeholderTextColor={C.textMuted} clearButtonMode="while-editing" autoCorrect={false}

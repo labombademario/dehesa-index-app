@@ -11,6 +11,7 @@ import { C } from '../lib/theme';
 import { num, pct, date as fmtDate } from '../lib/format';
 import { webJson, countryName } from '../lib/fv';
 import { tx, fill, flag, type T4 } from '../lib/tx';
+import { CountrySelect } from '../components/CountryPicker';
 
 type Prices = { months: string[]; series: Record<string, (number | null)[]>; last: string; base: string };
 type Removals = { years: number[]; countries: Record<string, { series: Record<string, (number | null)[]>; estimated: number[]; last: number }> };
@@ -61,7 +62,7 @@ export default function Madera() {
         </> : null}
         {rm ? <>
           <SectionTitle>{tx(L, { es: 'Cortas de madera en rollo', en: 'Roundwood removals', fr: 'Récolte de bois rond', it: 'Tagli di legname tondo' })}</SectionTitle>
-          <Chips items={Object.keys(rm.countries).map(x => ({ value: x, label: countryName(x, L), flag: flag(x) }))} value={cc} onChange={setCc} />
+          <CountrySelect items={Object.keys(rm.countries).map(x => ({ value: x, label: countryName(x, L), flag: flag(x) }))} value={cc} onChange={setCc} />
           {c ? <>
             <Card>{['TOTAL.RW', 'CONIF.RW', 'NCONIF.RW', 'TOTAL.RW_IN', 'TOTAL.RW_FW'].filter(x => v(x, yi) != null).map((x, i) => {
               const a = v(x, yi), b = v(x, yi - 1);
