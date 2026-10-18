@@ -13,6 +13,7 @@ export function googleCalendarUrl(e: CalendarEvent, notes: string): string {
 
 /** Abre el formulario de evento del sistema ya relleno. Devuelve 'saved' | 'canceled' | 'denied' | 'unavailable'. */
 export async function addToPhoneCalendar(e: CalendarEvent, notes: string): Promise<string> {
+  if (Platform.OS === 'android') return 'unavailable';   // Android: sin permisos de calendario (Google Play los revisa); el llamador abre Google Calendar con el evento relleno
   try {
     const Cal = await import('expo-calendar');
     const p = await Cal.requestCalendarPermissions(true);
