@@ -72,6 +72,7 @@ const S: Record<string, Row> = {
   regAfrica: ['África', 'Africa', 'Afrique', 'Africa'],
   regOther: ['Otros', 'Other', 'Autres', 'Altri'],
   regCount: ['{0} países', '{0} countries', '{0} pays', '{0} paesi'],
+  regCount1: ['1 país', '1 country', '1 pays', '1 paese'],
   coverage: ['Cobertura de datos', 'Data coverage', 'Couverture des données', 'Copertura dei dati'],
   coverageText: ['El {0} % de lo que sigue Dehesa (precio, producción y comercio) tiene dato oficial para {1}.', '{0}% of what Dehesa tracks (price, production and trade) has official data for {1}.', '{0} % de ce que suit Dehesa (prix, production et commerce) a une donnée officielle pour {1}.', 'Il {0}% di ciò che segue Dehesa (prezzo, produzione e commercio) ha un dato ufficiale per {1}.'],
   fullProfile: ['Ver la ficha completa en la web', 'See the full profile on the website', 'Voir la fiche complète sur le site', 'Vedi la scheda completa sul sito'],

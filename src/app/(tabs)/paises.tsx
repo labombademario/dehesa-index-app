@@ -72,11 +72,11 @@ export default function Countries() {
           return (
             <Card key={g.k}>
               <Pressable onPress={() => setOpen(o => ({ ...o, [g.k]: !o[g.k] }))} accessibilityRole="button" accessibilityState={{ expanded: on }}
-                accessibilityLabel={`${g.label}, ${t('regCount', String(g.list.length))}`} android_ripple={{ color: C.surfaceAlt }}
+                accessibilityLabel={`${g.label}, ${(g.list.length === 1 ? t('regCount1') : t('regCount', String(g.list.length)))}`} android_ripple={{ color: C.surfaceAlt }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, minHeight: 52 }}>
                 <Text style={{ fontSize: 16, color: C.textMuted, width: 14 }}>{on ? '▾' : '▸'}</Text>
                 <Text style={[s.rowTitle, { flex: 1, fontSize: 16 }]}>{g.label}</Text>
-                <Text style={{ fontSize: 13, color: C.textMuted }}>{t('regCount', String(g.list.length))}</Text>
+                <Text style={{ fontSize: 13, color: C.textMuted }}>{(g.list.length === 1 ? t('regCount1') : t('regCount', String(g.list.length)))}</Text>
               </Pressable>
               {on ? g.list.map(c => <View key={c.code} style={s.rowDivider}><CountryRow c={c} first /></View>) : null}
             </Card>
