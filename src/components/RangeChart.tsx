@@ -36,10 +36,13 @@ export function RangeChart({ points, load, unit, label, width }: { points: Pts; 
   const opts = useMemo(() => {
     if (all.length < 2) return [] as { k: string; m: number }[];
     const last = ts(all[all.length - 1][0]), first = ts(all[0][0]);
-    return RANGES.filter(r => r.m === 0 || (addMonths(last, r.m) >= first - 31 * 864e5 && all.filter(p => ts(p[0]) >= addMonths(last, r.m)).length >= 2)) as { k: string; m: number }[];
+    // series anuales («2024»): sin 6M ni 1A, que solo enseñan dos puntos
+    const annual = /^\d{4}$/.test(all[all.length - 1][0]);
+    return RANGES.filter(r => !(annual && r.m <= 12)).filter(r => r.m === 0 || (addMonths(last, r.m) >= first - 31 * 864e5 && all.filter(p => ts(p[0]) >= addMonths(last, r.m)).length >= 2)) as { k: string; m: number }[];
   }, [all]);
   const [sel, setSel] = useState<string | null>(null);
-  const cur = opts.find(o => o.k === sel) ?? opts.find(o => o.k === '1y') ?? opts[opts.length - 1];
+  const annual = all.length > 0 && /^\d{4}$/.test(all[all.length - 1][0]);
+  const cur = opts.find(o => o.k === sel) ?? (annual ? opts.find(o => o.k === '10y') : opts.find(o => o.k === '1y')) ?? opts[opts.length - 1];
   const shown = useMemo(() => {
     if (!cur || cur.m === 0) return all;
     const cut = addMonths(ts(all[all.length - 1][0]), cur.m);
@@ -47,7 +50,8 @@ export function RangeChart({ points, load, unit, label, width }: { points: Pts; 
   }, [all, cur]);
   const vals = shown.map(p => p[1]);
   const mn = vals.length ? Math.min(...vals) : 0, mx = vals.length ? Math.max(...vals) : 0;
-  const change = vals.length > 1 && vals[0] !== 0 ? (vals[vals.length - 1] - vals[0]) / Math.abs(vals[0]) * 100 : null;
+  // una serie que ya es un porcentaje (variación, anomalía) no tiene «cambio en el periodo» con sentido
+  const change = !/%/.test(unit) && vals.length > 1 && vals[0] !== 0 ? (vals[vals.length - 1] - vals[0]) / Math.abs(vals[0]) * 100 : null;
   const name = (k: string) => k === 'max' ? t('rangeMax') : k.endsWith('m') ? `${k.slice(0, -1)}${t('rangeM')}` : `${k.slice(0, -1)}${t('rangeY')}`;
   return (
     <Card style={{ padding: 14, gap: 8 }}>
@@ -65,7 +69,7 @@ export function RangeChart({ points, load, unit, label, width }: { points: Pts; 
       {loading ? <Text style={{ fontSize: 12, color: C.textMuted }}>{t('rangeLoading')}</Text> : null}
       {vals.length > 1 ? <>
         <ScrubChart points={shown} width={width} unit={unit} L={L} label={`${label}: ${numAuto(vals[0], L)} → ${numAuto(vals[vals.length - 1], L)} ${unit}`} />
-        <Text style={{ fontSize: 12.5, color: C.textMuted }}>{t('rangeChange')}: <Text style={{ fontWeight: '700', color: C.text }}>{pct(change, L)}</Text></Text>
+        {change == null ? null : <Text style={{ fontSize: 12.5, color: C.textMuted }}>{t('rangeChange')}: <Text style={{ fontWeight: '700', color: C.text }}>{pct(change, L)}</Text></Text>}
       </> : null}
     </Card>
   );

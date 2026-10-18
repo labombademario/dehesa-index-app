@@ -25,6 +25,6 @@ export const NATIVE: Record<string, { cc: string; g?: string; q?: string }> = {
 };
 
 // secciones de la web que ya tienen pantalla propia en la app (app/sec/[id].tsx, datos en data/app/v1/sec)
-export const SEC: Record<string, string> = { cultivos: 'cultivos', oferta: 'oferta', clima: 'clima', aranceles: 'aranceles', costes: 'cuentas', insumos: 'insumos', canada: 'granos-ca', ganaderia: 'ganaderia-us', exportaciones: 'exportaciones-us', informacion: 'analisis', observatorio: 'analisis' };
+export const SEC: Record<string, string> = { rendimientos: 'rendimientos', cultivos: 'cultivos', oferta: 'oferta', clima: 'clima', aranceles: 'aranceles', costes: 'cuentas', insumos: 'insumos', canada: 'granos-ca', ganaderia: 'ganaderia-us', exportaciones: 'exportaciones-us', informacion: 'analisis', observatorio: 'observatorio' };
 /** La sección de la app que corresponde a una de la web, según el mercado del usuario (España tiene ganadería propia) */
 export function secFor(id: string, market: string): string | undefined { if (id === 'ganaderia' && market === 'ES') return 'ganaderia-es'; if (id === 'recan') return undefined; return SEC[id]; }

@@ -5,6 +5,7 @@ import { Linking, Pressable, Text, View, useWindowDimensions } from 'react-nativ
 import { useApp } from '../lib/store';
 import { Card, Row, Segmented } from './ui';
 import { RangeChart } from './RangeChart';
+import { Chips } from './Chips';
 import { C } from '../lib/theme';
 import { num, date as fmtDate } from '../lib/format';
 import type { Lang } from '../lib/types';
@@ -25,7 +26,7 @@ function ChartCard({ c, L, width }: { c: BChart; L: Lang; width: number }) {
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ fontSize: 14, fontWeight: '600', color: C.text }}>{c.label[L]}</Text>
-      {c.series.length > 1 ? <Segmented options={c.series.map((x, k) => ({ value: String(k), label: x.label[L] }))} value={String(i)} onChange={v => setI(+v)} /> : null}
+      {c.series.length > 3 ? <Chips items={c.series.map((x, k) => ({ value: String(k), label: x.label[L] }))} value={String(i)} onChange={v => setI(+v)} /> : c.series.length > 1 ? <Segmented options={c.series.map((x, k) => ({ value: String(k), label: x.label[L] }))} value={String(i)} onChange={v => setI(+v)} /> : null}
       {s.points.length > 1 ? <RangeChart key={c.label.es + i} points={s.points} unit={u(c.unit, L)} label={c.label[L]} width={width} /> : null}
     </View>
   );
