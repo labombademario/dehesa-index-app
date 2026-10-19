@@ -18,7 +18,9 @@ export type Market = string;
 // Países de la UE con precios propios en data/app/v1/eu (más España); un código fuera de la lista (UK, CH, AR…) no pide ese fichero
 export const EU_CCS = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 'FI', 'FR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK'];
 export const isEu = (m: Market) => EU_CCS.includes(m);
-export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha: string; yld: string; cost: string }
+// fert / lk / undo: abono incluido en el coste por ha, ligado (si el agricultor quiere) a un precio del monitor de insumos. La referencia (lk.v) se fija al apuntar el importe; nada cambia solo.
+export interface FertLink { id: string; v: number; period: string }
+export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha: string; yld: string; cost: string; fert?: string; lk?: FertLink; undo?: { cost: string; fert: string; lk: FertLink } }
 export interface UserState {
   v: 1;
   lang: Lang;

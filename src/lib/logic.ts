@@ -59,3 +59,16 @@ export function movers(prices: Price[], ids: string[], n = 3): Price[] {
 export function norm(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
+
+/**
+ * Abono vinculado a un precio de referencia (monitor de insumos): escenario «por variación».
+ * Parte de lo que el agricultor apuntó (fertHa €/ha) y de la referencia fijada en ese momento (ref); si la referencia actual (cur) es otra,
+ * el abono cambiaría en la misma proporción. Solo calcula: no cambia ningún importe.
+ */
+export function fertScenario(fertHa: number, ref: number, cur: number): { pct: number; deltaHa: number; newFert: number } | null {
+  if (!(fertHa > 0) || !(ref > 0) || !(cur > 0)) return null;
+  const pct = (cur / ref - 1) * 100;
+  if (Math.abs(pct) < 0.05) return null;
+  const deltaHa = fertHa * (cur / ref - 1);
+  return { pct, deltaHa, newFert: fertHa + deltaHa };
+}

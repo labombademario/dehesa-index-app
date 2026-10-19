@@ -5,23 +5,28 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../lib/store';
-import { Screen, Card, Note, SectionTitle, Segmented } from '../components/ui';
+import { Screen, Card, Note, SectionTitle } from '../components/ui';
+import { CountrySelect } from '../components/CountryPicker';
+import { SowMap } from '../components/SowMap';
+import { countryName } from '../lib/fv';
+import { flag } from '../lib/tx';
 import { C } from '../lib/theme';
 import { num, parseNum } from '../lib/format';
 import { webJson } from '../lib/fv';
 import { sowRows, sowPlan, type SowDoc, type SowRow } from '../lib/sowing';
 import type { Lang } from '../lib/types';
 
-type CC = 'US' | 'CA' | 'ES' | 'FR';
+// Los 21 países con fichero data/sowing/<pais>.json (los mismos que siembra.html de la web)
+const SOW_CC = ['ES', 'FR', 'DE', 'IT', 'PL', 'PT', 'NL', 'DK', 'SE', 'FI', 'EL', 'BG', 'HR', 'HU', 'CZ', 'SK', 'SI', 'LT', 'RO', 'US', 'CA'];
+type CC = string;
 const KEY = 'dehesa:siembra:v1';
 const US: Record<string, string> = { AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming' };
-const CNAME: Record<CC, Record<Lang, string>> = { US: { es: 'EE. UU.', en: 'US', fr: 'É.-U.', it: 'USA' }, CA: { es: 'Canadá', en: 'Canada', fr: 'Canada', it: 'Canada' }, ES: { es: 'España', en: 'Spain', fr: 'Espagne', it: 'Spagna' }, FR: { es: 'Francia', en: 'France', fr: 'France', it: 'Francia' } };
 function title(s: string): string { return s.toLowerCase().replace(/(^|[\s-])\S/g, m => m.toUpperCase()); }
 
 export default function Siembra() {
   const { user, t, ready } = useApp();
   const L = user.lang;
-  const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: user.market === 'US' ? 'US' : user.market === 'CA' ? 'CA' : user.market === 'FR' ? 'FR' : 'ES', r: '', area: '', costs: {} });
+  const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: SOW_CC.includes(user.market) ? user.market : 'ES', r: '', area: '', costs: {} });
   const [doc, setDoc] = useState<SowDoc | null>(null);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { AsyncStorage.getItem(KEY).then(raw => { if (raw) { try { setSt(s => ({ ...s, ...JSON.parse(raw) })); } catch { /* */ } } setLoaded(true); }); }, []);
@@ -32,6 +37,8 @@ export default function Siembra() {
   const rname = (code: string) => { const R = doc?.regions[code]; if (!R) return code; if (R.names) return R.names[L] ?? R.name; if (st.c === 'US') return US[code] ?? code; return R.name ? title(R.name) : code; };
   const regs = useMemo(() => (doc ? Object.keys(doc.regions).sort((a, b) => rname(a).localeCompare(rname(b), L)) : []), [doc, L]);
   const costsN = useMemo(() => { const o: Record<string, string> = {}; Object.keys(st.costs).forEach(k => { const x = parseNum(st.costs[k], L); if (x != null) o[k] = String(x); }); return o; }, [st.costs, L]);   // «1.250» son 1250 en es/fr/it
+  // una región es elegible solo si tiene algún cultivo con datos suficientes (superficie mínima, serie reciente, precio): si no, sale en gris y deshabilitada
+  const okMap = useMemo(() => { const o: Record<string, boolean> = {}; if (doc) Object.keys(doc.regions).forEach(k => { o[k] = sowRows(doc, k, {}).length > 0; }); return o; }, [doc]);
   const rows = useMemo(() => (doc && st.r && doc.regions[st.r] ? sowRows(doc, st.r, costsN) : []), [doc, st.r, costsN]);
   const au = doc?.areaUnit === 'acre' ? 'acres' : 'ha', uS = doc?.areaUnit === 'acre' ? 'acre' : 'ha', ru = rows[0]?.C.revUnit ?? '';
   const anyCost = rows.some(x => x.margin != null), best = anyCost ? rows.find(x => x.margin != null) : rows[0];
@@ -76,13 +83,14 @@ export default function Siembra() {
       <Stack.Screen options={{ title: t('swTitle') }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{t('swTitle')}</Text>
       <Text style={{ fontSize: 14, color: C.textMuted, lineHeight: 20 }}>{t('swSub')}</Text>
-      <Segmented options={(['ES', 'FR', 'US', 'CA'] as CC[]).map(c => ({ value: c, label: CNAME[c][L] }))} value={st.c} onChange={c => setSt(s => ({ ...s, c, r: '' }))} />
+      <CountrySelect items={SOW_CC.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={st.c} onChange={c => setSt(s => ({ ...s, c, r: '' }))} title={t('swCountry')} />
       {!doc ? <Note>{docDone ? t('noDataNow') : t('loading')}</Note> : <>
+        <SowMap cc={st.c} codes={regs} ok={k => !!okMap[k]} selected={st.r} onPick={r => setSt(s => ({ ...s, r }))} nameOf={rname} />
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('swRegion')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {regs.map(r => (
-            <Pressable key={r} onPress={() => setSt(s => ({ ...s, r }))} accessibilityRole="button" accessibilityState={{ selected: r === st.r }}
-              style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: r === st.r ? C.accent : C.surfaceAlt }}>
+            <Pressable key={r} onPress={okMap[r] ? () => setSt(s => ({ ...s, r })) : undefined} accessibilityRole="button" accessibilityState={{ selected: r === st.r, disabled: !okMap[r] }} accessibilityLabel={rname(r) + (okMap[r] ? '' : ' (' + t('swNod') + ')')}
+              style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: r === st.r ? C.accent : C.surfaceAlt, opacity: okMap[r] ? 1 : 0.45 }}>
               <Text style={{ fontSize: 13, fontWeight: '600', color: r === st.r ? C.accentInk : C.text }}>{rname(r)}</Text>
             </Pressable>
           ))}

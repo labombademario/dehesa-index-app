@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { tx } from '../lib/tx';
 import { useApp, type CropLine } from '../lib/store';
+import { webJson } from '../lib/fv';
 import { Screen, Card, Row, Button, Note, Segmented, s } from '../components/ui';
 import { C } from '../lib/theme';
-import { cropMargin, herdMargin, ratio } from '../lib/logic';
+import { cropMargin, herdMargin, ratio, fertScenario } from '../lib/logic';
 import { num, eur, date, parseNum } from '../lib/format';
 import type { Lang, Price } from '../lib/types';
 
@@ -34,6 +35,57 @@ function Result({ L, t, income, cost, margin, extra }: { L: Lang; t: (k: string,
   );
 }
 
+// Abono del coste por ha, vinculado (si el agricultor quiere) a un precio del monitor de insumos (MAPA, € / 100 kg sin IVA).
+// «Por variación»: la referencia se fija al apuntar el importe; el escenario muestra cuánto cambiaría si el abono siguiera a la referencia. Nada cambia solo.
+type MonItem = { id: string; name: Record<Lang, string>; value: number; last: string };
+function FertLink({ c, items, L, t, onPatch }: { c: CropLine; items: MonItem[]; L: Lang; t: (k: string, ...v: (string | number)[]) => string; onPatch: (p: Partial<CropLine>) => void }) {
+  const [open, setOpen] = useState(!!c.lk);
+  const cur = c.lk ? items.find(x => x.id === c.lk!.id) : undefined;
+  const fertHa = n(c.fert ?? ''), sc = c.lk && cur ? fertScenario(fertHa, c.lk.v, cur.value) : null;
+  const fix = (x: MonItem) => ({ id: x.id, v: x.value, period: x.last });
+  const euro = (v: number) => num(v, L, 0);
+  return (
+    <View style={{ gap: 8, borderTopWidth: 1, borderTopColor: C.divider, paddingTop: 8 }}>
+      <Pressable onPress={() => setOpen(o => !o)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={{ minHeight: 32, justifyContent: 'center' }}>
+        <Text style={{ fontSize: 13.5, fontWeight: '600', color: C.accent }}>{open ? '▾ ' : '▸ '}{t('fxLkTitle')}</Text>
+      </Pressable>
+      {open ? <>
+        <Field label={t('fxLkFert')} value={c.fert ?? ''} onChange={fert => onPatch({ fert, undo: undefined, lk: c.lk && cur ? fix(cur) : c.lk })} />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {[{ id: '', name: { es: t('fxLkNone'), en: t('fxLkNone'), fr: t('fxLkNone'), it: t('fxLkNone') }, value: 0, last: '' } as MonItem].concat(items).map(x => {
+            const on = (c.lk?.id ?? '') === x.id;
+            return (
+              <Pressable key={x.id || 'none'} onPress={() => onPatch(x.id ? { lk: fix(x), undo: undefined } : { lk: undefined, undo: undefined })} accessibilityRole="button" accessibilityState={{ selected: on }}
+                style={{ paddingHorizontal: 12, height: 34, borderRadius: 17, justifyContent: 'center', backgroundColor: on ? C.accent : C.surfaceAlt }}>
+                <Text style={{ fontSize: 12.5, fontWeight: '600', color: on ? C.accentInk : C.text }}>{x.name[L]}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+        {c.lk && cur ? <Text style={s.rowSub}>{t('fxLkSet', cur.name[L], num(c.lk.v, L, 2), c.lk.period)}</Text> : null}
+        {c.lk && cur && !sc && fertHa > 0 ? <Text style={s.rowSub}>{t('fxLkSame')}</Text> : null}
+        {sc && c.lk && cur ? <>
+          <Text style={{ fontSize: 13.5, color: C.text, lineHeight: 19, backgroundColor: C.surfaceAlt, padding: 10, borderRadius: 8 }}>
+            {t(sc.pct > 0 ? 'fxLkUp' : 'fxLkDown', num(Math.abs(sc.pct), L, 1), num(c.lk.v, L, 2), num(cur.value, L, 2), euro(sc.newFert), euro(Math.abs(sc.deltaHa)), euro(Math.abs(sc.deltaHa) * n(c.ha)), num(n(c.ha), L, 0))}
+          </Text>
+          <Pressable onPress={() => onPatch({ undo: { cost: c.cost, fert: c.fert ?? '', lk: c.lk! }, cost: String(Math.round(n(c.cost) + sc.deltaHa)), fert: String(Math.round(sc.newFert)), lk: fix(cur) })} accessibilityRole="button"
+            style={{ alignSelf: 'flex-start', paddingHorizontal: 14, height: 38, borderRadius: 19, justifyContent: 'center', backgroundColor: C.accent }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: C.accentInk }}>{t('fxLkUse')}</Text>
+          </Pressable>
+        </> : null}
+        {c.undo ? <>
+          <Text style={s.rowSub}>{t('fxLkUsed', euro(n(c.undo.cost)), euro(n(c.cost)))}</Text>
+          <Pressable onPress={() => onPatch({ cost: c.undo!.cost, fert: c.undo!.fert, lk: c.undo!.lk, undo: undefined })} accessibilityRole="button"
+            style={{ alignSelf: 'flex-start', paddingHorizontal: 14, height: 38, borderRadius: 19, justifyContent: 'center', backgroundColor: C.surfaceAlt }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: C.text }}>{t('fxLkUndo')}</Text>
+          </Pressable>
+        </> : null}
+        <Text style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 16 }}>{t('fxLkNote')}</Text>
+      </> : null}
+    </View>
+  );
+}
+
 const CROP: Record<string, { es: string; en: string; fr: string; it: string }> = { trigo: { es: 'Trigo', en: 'Wheat', fr: 'Blé', it: 'Frumento' }, maiz: { es: 'Maíz', en: 'Maize', fr: 'Maïs', it: 'Mais' }, cebada: { es: 'Cebada', en: 'Barley', fr: 'Orge', it: 'Orzo' } };
 
 export default function Explotacion() {
@@ -50,6 +102,9 @@ export default function Explotacion() {
   const pair = (a: string, b: string): [Price | undefined, Price | undefined] => (mine(a) && mine(b) ? [mine(a), mine(b)] : [es(a), es(b)]);
   const priceRef = (p: Price | undefined) => p ? t('priceRef', `${num(p.value, L)} ${p.unit[L]}`, `${p.place[L]}, ${p.stale ? t('staleData', date(p.date, L)) : date(p.date, L)}`) : t('noPrice');
 
+  // precios de abonos del monitor de insumos (MAPA); se bajan una vez y se guardan 12 h
+  const [mon, setMon] = useState<MonItem[]>([]);
+  useEffect(() => { let alive = true; webJson('data/views/input-monitor.json', 12 * 3600e3).then((d: any) => { if (alive && d?.groups) setMon(d.groups.filter((g: any) => ['nitrogen', 'pk', 'compound'].includes(g.id)).flatMap((g: any) => g.items).filter((x: any) => x && x.id && x.value > 0 && x.name)); }).catch(() => {}); return () => { alive = false; }; }, []);
   const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? { ...c, ...patch } : c) }));
   const products: CropLine['product'][] = ['trigo', 'maiz', 'cebada'];
 
@@ -79,6 +134,7 @@ export default function Explotacion() {
                 <Field label={t('yield')} value={c.yld} onChange={yld => setCrop(c.id, { yld })} />
                 <Field label={t('costHa')} value={c.cost} onChange={cost => setCrop(c.id, { cost })} />
               </View>
+              {euMarket && mon.length ? <FertLink c={c} items={mon} L={L} t={t} onPatch={patch => setCrop(c.id, patch)} /> : null}
               {p ? <Result L={L} t={t} income={m.income} cost={m.cost} margin={m.margin} extra={<>
                 {m.perHa != null ? <Text style={s.rowSub}>{t('perHa', eur(m.perHa, L))}</Text> : null}
                 {m.breakEven != null ? <Text style={s.rowSub}>{t('breakEven')}: {num(m.breakEven, L, 0)} {p.unit[L]}</Text> : null}

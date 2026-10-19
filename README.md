@@ -12,6 +12,12 @@ App de [dehesaindex.com](https://dehesaindex.com) hecha con Expo (React Native +
 
 Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 
+## Novedades de la compilación 3 (19 oct)
+- **Qué sembrar**: los 21 países de la web, con selector de país y un mapa para elegir la región; las regiones sin cultivos con datos suficientes salen en gris y no se pueden elegir.
+- **Mi explotación**: el abono incluido en el coste por ha se puede vincular, de forma opcional, a un precio del monitor de insumos (MAPA). Se muestra un escenario por variación; el importe solo cambia con «Usar este escenario» y se puede deshacer.
+- **Insumos**: monitor de los países de la UE, de la UE y de los fertilizantes en el mercado mundial (Banco Mundial).
+- **Uruguay**: mapa de departamentos con ganado, tierra y bosque plantado.
+
 ## Avisos con la app cerrada
 Sin servidor. `src/lib/notify.ts` define una tarea de segundo plano (expo-background-task) que el sistema lanza cada 4 h como mínimo: descarga los datos, compara con los avisos y lanza una notificación local (expo-notifications) solo cuando un aviso pasa a cumplirse. La tarea se registra solo si hay avisos activos. El permiso se pide al crear el primer aviso. iOS decide cuándo ejecuta la tarea (a menudo por la noche o al cargar), así que el aviso puede llegar con horas de retraso. No funciona en Expo Go: hace falta una build de desarrollo (`npx expo run:android` / EAS).
 

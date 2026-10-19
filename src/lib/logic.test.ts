@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm, newlyHit } from './logic.ts';
+import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm, newlyHit, fertScenario } from './logic.ts';
 import { num, pct, date, decimalsFor } from './format.ts';
 
 const P = (id: string, value: number, changePct: number | null, yearAgo: number | null = null): any =>
@@ -87,4 +87,12 @@ test('avisos: un precio aún sin cargar no hace olvidar que ya se avisó', () =>
   const rule: any = { id: 'a1', priceId: 'eu_fr_trigo', cond: 'ge', value: 200, on: true };
   const r1 = newlyHit([rule], [], ['a1']); assert.deepEqual(r1.hit, ['a1']); assert.equal(r1.fire.length, 0);
   const r2 = newlyHit([rule], [P('eu_fr_trigo', 250, 1)], r1.hit); assert.equal(r2.fire.length, 0);
+});
+
+test('abono vinculado: el escenario sigue la variación de la referencia y no inventa nada', () => {
+  const up = fertScenario(200, 80, 100)!; assert.equal(Math.round(up.pct * 10) / 10, 25); assert.ok(Math.abs(up.deltaHa - 50) < 1e-9); assert.ok(Math.abs(up.newFert - 250) < 1e-9);
+  const down = fertScenario(200, 100, 80)!; assert.ok(Math.abs(down.deltaHa + 40) < 1e-9); assert.ok(Math.abs(down.newFert - 160) < 1e-9);
+  assert.equal(fertScenario(200, 100, 100), null);      // sin dato nuevo: sin escenario
+  assert.equal(fertScenario(200, 100, 100.02), null);   // variación despreciable
+  assert.equal(fertScenario(0, 100, 120), null); assert.equal(fertScenario(200, 0, 120), null); assert.equal(fertScenario(NaN, 100, 120), null);
 });
