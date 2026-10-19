@@ -17,6 +17,8 @@ export interface BBars { title: T4; unit: string | T4; dec: number; items: { lab
 export interface Block { id: string; cc?: string; title: T4; asOf?: string; stats?: BStat[]; charts?: BChart[]; bars?: BBars[]; note?: T4; source?: { name: string; url: string }; link?: string; missing?: boolean }
 
 const u = (x: string | T4, L: Lang) => (typeof x === 'string' ? x : x[L] ?? x.es);
+// Un objeto dentro de <Text> cierra la app: cualquier texto que no sea cadena se descarta en vez de pintarse
+const str = (v: unknown, L: Lang): string => (typeof v === 'string' ? v : v && typeof v === 'object' && typeof (v as any)[L] === 'string' ? (v as any)[L] : v && typeof v === 'object' && typeof (v as any).es === 'string' ? (v as any).es : '');
 const isDate = (s?: string) => !!s && /^\d{4}-\d{2}(-\d{2})?$/.test(s);
 
 function ChartCard({ c, L, width }: { c: BChart; L: Lang; width: number }) {
@@ -45,7 +47,7 @@ function BarsCard({ b, L }: { b: BBars; L: Lang }) {
         {items.map((x, k) => (
           <View key={k} style={{ paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: k ? 1 : 0, borderTopColor: C.border }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-              <Text style={{ fontSize: 14, color: C.text, flex: 1 }}>{x.label[L] ?? x.label.es}</Text>
+              <Text style={{ fontSize: 14, color: C.text, flex: 1 }}>{str(x.label[L] ?? x.label.es, L)}</Text>
               <Text style={{ fontSize: 14, color: C.text, fontWeight: '600', fontVariant: ['tabular-nums'] }}>{x.sub ? x.sub[L] : num(x.value, L, b.dec)}{x.sub || !unit ? '' : ' ' + unit}</Text>
             </View>
             <View style={{ height: 5, borderRadius: 3, backgroundColor: C.surfaceAlt, marginTop: 5 }}><View style={{ height: 5, borderRadius: 3, backgroundColor: x.value < 0 ? C.negative : C.accent, opacity: 0.7, width: `${Math.max(2, Math.abs(x.value) / mx * 100)}%` }} /></View>
