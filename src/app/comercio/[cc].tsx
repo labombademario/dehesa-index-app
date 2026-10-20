@@ -21,12 +21,12 @@ export default function Comercio() {
   const [done, setDone] = useState(false);
   useEffect(() => { webJson('data/app/v1/trade/' + code + '.json', 6 * 3600e3).then(d => { setDoc(d); setDone(true); }); }, [code]);
   const name = countryName(code, L);
-  const b = doc?.blocks[0];
+  const bs = doc?.blocks ?? [];
   return (
     <Screen>
       <Stack.Screen options={{ title: name }} />
       <Text style={{ fontSize: 26, fontWeight: '700', color: C.text, fontFamily: 'serif' }} accessibilityRole="header">{name}</Text>
-      {!b ? <Note>{done ? t('noDataNow') : t('loading')}</Note> : <BlockView b={{ ...b, asOf: b.asOfT?.[L] ?? b.asOf }} />}
+      {!bs.length ? <Note>{done ? t('noDataNow') : t('loading')}</Note> : bs.map(b => <BlockView key={b.id} b={{ ...b, asOf: b.asOfT?.[L] ?? b.asOf }} />)}
     </Screen>
   );
 }

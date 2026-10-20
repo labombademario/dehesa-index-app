@@ -24,6 +24,10 @@ function Chips({ options, value, onChange }: { options: { v: string; label: stri
   );
 }
 
+// Banderas en los filtros, como en la web (js/noticias.js, 19-oct-2026)
+const REGION_EMO: Record<string, string> = { all: '🌐 ', us: '🇺🇸 ', eu: '🇪🇺 ', uk: '🇬🇧 ', ca: '🇨🇦 ', global: '🌍 ' };
+const flagOf = (cc: string) => (/^[A-Z]{2}$/.test(cc) ? String.fromCodePoint(cc.charCodeAt(0) + 127397, cc.charCodeAt(1) + 127397) + ' ' : '');
+
 export default function Noticias() {
   const { data, user, t } = useApp();
   const L = user.lang;
@@ -38,14 +42,14 @@ export default function Noticias() {
   };
 
   const regionOpts = useMemo(() => {
-    const all = [{ v: 'all', label: t('newsAll'), n: data.news.length }];
-    return all.concat(REGIONS.map(([v, k]) => ({ v, label: t(k), n: data.news.filter(x => x.region === v).length })).filter(o => o.n > 0));
+    const all = [{ v: 'all', label: REGION_EMO.all + t('newsAll'), n: data.news.length }];
+    return all.concat(REGIONS.map(([v, k]) => ({ v, label: (REGION_EMO[v] ?? '') + t(k), n: data.news.filter(x => x.region === v).length })).filter(o => o.n > 0));
   }, [data.news, L]);
 
   const countryOpts = useMemo(() => {
     const inRegion = data.news.filter(x => region === 'all' || x.region === region);
     const codes = Array.from(new Set(inRegion.map(x => x.country).filter(Boolean))).sort((a, b) => cname(a).localeCompare(cname(b), L));
-    return [{ v: 'all', label: t('newsAllM') } as { v: string; label: string; n?: number }].concat(codes.map(c => ({ v: c, label: cname(c), n: inRegion.filter(x => x.country === c).length })));
+    return [{ v: 'all', label: t('newsAllM') } as { v: string; label: string; n?: number }].concat(codes.map(c => ({ v: c, label: flagOf(c === 'EL' ? 'GR' : c === 'UK' ? 'GB' : c) + cname(c), n: inRegion.filter(x => x.country === c).length })));
   }, [data.news, data.countries, region, L]);
 
   const list = data.news.filter(x => (region === 'all' || x.region === region) && (country === 'all' || x.country === country));

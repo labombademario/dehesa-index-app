@@ -428,6 +428,8 @@ const S: Record<string, Row> = {
   envGhg: ['Emisiones', 'Emissions', 'Émissions', 'Emissioni'],
   envDrought: ['Sequía', 'Drought', 'Sécheresse', 'Siccità'],
   envNitrates: ['Nitratos', 'Nitrates', 'Nitrates', 'Nitrati'],
+  envEconomy: ['Economía', 'Economics', 'Économie', 'Economia'],
+  envTariffs: ['Aranceles', 'Tariffs', 'Tarifs', 'Dazi'],
   envOpen: ['Ver el detalle', 'See the details', 'Voir le détail', 'Vedi il dettaglio'],
   envSource: ['Fuente: {0}', 'Source: {0}', 'Source : {0}', 'Fonte: {0}'],
   envAt: ['Último dato: {0}', 'Latest data: {0}', 'Dernière donnée : {0}', 'Ultimo dato: {0}'],
