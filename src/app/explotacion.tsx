@@ -6,7 +6,7 @@ import { useApp, type CropLine } from '../lib/store';
 import { webJson } from '../lib/fv';
 import { Screen, Card, Row, Button, Note, Segmented, s } from '../components/ui';
 import { C } from '../lib/theme';
-import { cropMargin, herdMargin, ratio, fertScenario } from '../lib/logic';
+import { cropMargin, herdMargin, ratio, fertScenario, farmTotals, farmSensitivity, type FarmLine } from '../lib/logic';
 import { num, eur, date, parseNum } from '../lib/format';
 import type { Lang, Price } from '../lib/types';
 
@@ -106,6 +106,8 @@ export default function Explotacion() {
   const [mon, setMon] = useState<MonItem[]>([]);
   useEffect(() => { let alive = true; webJson('data/views/input-monitor.json', 12 * 3600e3).then((d: any) => { if (alive && d?.groups) setMon(d.groups.filter((g: any) => ['nitrogen', 'pk', 'compound'].includes(g.id)).flatMap((g: any) => g.items).filter((x: any) => x && x.id && x.value > 0 && x.name)); }).catch(() => {}); return () => { alive = false; }; }, []);
   const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? { ...c, ...patch } : c) }));
+  const [vary, setVary] = useState<'price' | 'yield' | 'cost'>('price');
+  const [step, setStep] = useState('10');
   const products: CropLine['product'][] = ['trigo', 'maiz', 'cebada'];
 
   const milk = eu('leche'), pig = eu('cerdo');
@@ -146,6 +148,30 @@ export default function Explotacion() {
           );
         })}
         <Button kind="secondary" label={t('addCrop')} onPress={() => setUser(u => ({ crops: [...u.crops, { id: 'c' + Date.now().toString(36), product: 'cebada', ha: '10', yld: '5', cost: '900' }] }))} />
+        {(() => {
+          const lines: FarmLine[] = user.crops.map(c => ({ ha: n(c.ha), yld: n(c.yld), cost: n(c.cost), price: eu(c.product)?.value ?? 0 }));
+          const tot = farmTotals(lines);
+          const Tt = (es: string, en: string, fr: string, it: string) => tx(L, { es, en, fr, it });
+          if (!tot.n) return <Note>{Tt('Rellena superficie, rendimiento y costes de al menos un cultivo con precio de referencia para ver el resumen.', 'Fill in area, yield and costs for at least one crop with a reference price to see the summary.', 'Renseignez surface, rendement et coûts d’au moins une culture avec prix de référence pour voir le résumé.', 'Inserisci superficie, resa e costi di almeno una coltura con prezzo di riferimento per vedere il riepilogo.')}</Note>;
+          const sn = farmSensitivity(lines, vary, +step);
+          return <>
+            <Text style={[s.rowTitle, { fontSize: 17 }]}>{Tt('Resumen de la explotación', 'Farm summary', 'Résumé de l’exploitation', 'Riepilogo dell’azienda')}</Text>
+            <Card style={{ padding: 14, gap: 4 }}>
+              <Text style={s.rowSub}>{Tt('Ingresos', 'Revenue', 'Recettes', 'Ricavi')} {eur(tot.income, L)} · {t('costs')} {eur(tot.cost, L)}</Text>
+              <Text style={{ fontSize: 22, fontWeight: '700', color: tot.margin >= 0 ? C.positive : C.negative }}>{t('margin')} {eur(tot.margin, L)}</Text>
+              <Text style={s.rowSub}>{Tt(`Suma de ${tot.n} cultivo(s) con precio de referencia; los que no lo tienen no entran.`, `Sum of ${tot.n} crop(s) with a reference price; those without one are left out.`, `Somme de ${tot.n} culture(s) avec prix de référence ; celles sans prix sont exclues.`, `Somma di ${tot.n} coltura/e con prezzo di riferimento; quelle senza non entrano.`)}</Text>
+            </Card>
+            <Text style={[s.rowTitle, { fontSize: 17 }]}>{Tt('Sensibilidad', 'Sensitivity', 'Sensibilité', 'Sensibilità')}</Text>
+            <Segmented value={vary} onChange={setVary} options={[{ value: 'price', label: Tt('Precio', 'Price', 'Prix', 'Prezzo') }, { value: 'yield', label: Tt('Rendimiento', 'Yield', 'Rendement', 'Resa') }, { value: 'cost', label: Tt('Costes', 'Costs', 'Coûts', 'Costi') }]} />
+            <Segmented value={step} onChange={setStep} options={[{ value: '5', label: '±5 %' }, { value: '10', label: '±10 %' }, { value: '20', label: '±20 %' }]} />
+            <Card>
+              <Row first title={'−' + step + ' %'} right={eur(sn.down, L)} rightColor={sn.down >= 0 ? C.positive : C.negative} />
+              <Row title={Tt('Actual', 'Current', 'Actuel', 'Attuale')} right={eur(sn.now, L)} rightColor={sn.now >= 0 ? C.positive : C.negative} />
+              <Row title={'+' + step + ' %'} right={eur(sn.up, L)} rightColor={sn.up >= 0 ? C.positive : C.negative} />
+            </Card>
+            <Text style={s.rowSub}>{Tt('Se aplica a todos los cultivos a la vez y solo a las líneas con margen calculable. No es una previsión.', 'Applied to all crops at once and only to lines with a computable margin. It is not a forecast.', 'Appliquée à toutes les cultures à la fois et seulement aux lignes avec marge calculable. Ce n’est pas une prévision.', 'Applicata a tutte le colture insieme e solo alle righe con margine calcolabile. Non è una previsione.')}</Text>
+          </>;
+        })()}
         <Note>{t('notForecast')}</Note>
       </> : null}
 

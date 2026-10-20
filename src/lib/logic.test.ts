@@ -96,3 +96,11 @@ test('abono vinculado: el escenario sigue la variación de la referencia y no in
   assert.equal(fertScenario(200, 100, 100.02), null);   // variación despreciable
   assert.equal(fertScenario(0, 100, 120), null); assert.equal(fertScenario(200, 0, 120), null); assert.equal(fertScenario(NaN, 100, 120), null);
 });
+
+import { farmTotals, farmSensitivity } from './logic.ts';
+test('explotación: total y sensibilidad conjunta', () => {
+  const L = [{ ha: 10, yld: 5, cost: 900, price: 250 }, { ha: 5, yld: 4, cost: 800, price: 0 }];   // la 2.ª no tiene precio: no entra
+  const t = farmTotals(L); assert.equal(t.n, 1); assert.equal(t.income, 12500); assert.equal(t.cost, 9000); assert.equal(t.margin, 3500);
+  const s = farmSensitivity(L, 'price', 10); assert.equal(Math.round(s.now), 3500); assert.equal(Math.round(s.up), 4750); assert.equal(Math.round(s.down), 2250);
+  assert.equal(Math.round(farmSensitivity(L, 'cost', 10).up), 2600);
+});

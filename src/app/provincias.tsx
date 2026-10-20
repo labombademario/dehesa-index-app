@@ -2,7 +2,7 @@
 // Lee data/app/v1/prov/ES.json (scripts/build-app-prov.mjs). No se calcula ni se estima nada en la app.
 import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle, Segmented } from '../components/ui';
 import { RangeChart } from '../components/RangeChart';
@@ -18,6 +18,20 @@ type Prov = { id: string; name: string; climate: Clim | null; live: Record<strin
 type Doc = { baseline: string; climateAsOf: string; climateSource: { name: string; url: string }; liveSource: { name: string; url: string }; jcylSource?: { name: string; url: string; license: string; lastPeriod: string }; provinces: Prov[] };
 const SP: Record<string, [string, string, string, string]> = { bovino: ['🐄 Vacuno', '🐄 Cattle', '🐄 Bovins', '🐄 Bovini'], ovino: ['🐑 Ovino', '🐑 Sheep', '🐑 Ovins', '🐑 Ovini'], caprino: ['🐐 Caprino', '🐐 Goats', '🐐 Caprins', '🐐 Caprini'], porcino: ['🐖 Porcino', '🐖 Pigs', '🐖 Porcins', '🐖 Suini'] };
 const LI = { es: 0, en: 1, fr: 2, it: 3 } as const;
+type CropsIdx = { groups?: Record<string, { campaigns?: number[] }> };
+const GRP: Record<string, [string, string, string, string]> = { cereales: ['cereales', 'cereals', 'céréales', 'cereali'], leguminosas: ['leguminosas', 'pulses', 'légumineuses', 'leguminose'], tuberculos: ['tubérculos', 'tubers', 'tubercules', 'tuberi'], industriales: ['cultivos industriales', 'industrial crops', 'cultures industrielles', 'colture industriali'], hortalizas: ['hortalizas', 'vegetables', 'légumes', 'ortaggi'], citricos: ['cítricos', 'citrus', 'agrumes', 'agrumi'], frutales: ['frutales', 'fruit trees', 'arbres fruitiers', 'frutta da albero'], olivar: ['olivar', 'olive groves', 'oliveraies', 'oliveti'], vinedo: ['viñedo', 'vineyards', 'vignobles', 'vigneti'], otros_lenosos: ['otros leñosos', 'other woody crops', 'autres ligneux', 'altre legnose'] };
+// Línea de campaña: se calcula con data/spain-crops/index.json (MAPA). Cuando el MAPA publica más grupos cambia sola y desaparece cuando están todos.
+function campaignLine(ix: CropsIdx | null, L: 'es' | 'en' | 'fr' | 'it', fallback: string): string | null {
+  const G = ix?.groups; if (!G) return fallback;
+  const keys = Object.keys(G); let mx = 0, prev = 0;
+  keys.forEach(k => (G[k].campaigns ?? []).forEach(c => { if (c > mx) mx = c; }));
+  if (!mx) return fallback;
+  const have = keys.filter(k => (G[k].campaigns ?? []).includes(mx));
+  if (have.length === keys.length) return null;
+  keys.forEach(k => (G[k].campaigns ?? []).forEach(c => { if (c < mx && c > prev) prev = c; }));
+  const i = LI[L], g = have.map(k => (GRP[k] ? GRP[k][i] : k)).join(', ');
+  return [`Campaña ${mx}: solo los grupos que el MAPA ya ha publicado (${g}); el resto está en la campaña ${prev || mx - 1}.`, `Campaign ${mx}: only the groups MAPA has already published (${g}); the rest is in campaign ${prev || mx - 1}.`, `Campagne ${mx} : seulement les groupes déjà publiés par le MAPA (${g}) ; le reste est dans la campagne ${prev || mx - 1}.`, `Campagna ${mx}: solo i gruppi già pubblicati dal MAPA (${g}); il resto è nella campagna ${prev || mx - 1}.`][i];
+}
 const iso = (p: string) => (p.length === 7 ? p + '-01' : p);
 const r1 = (v: number) => Math.round(v * 10) / 10;
 // Meses de un año a partir del histórico compacto: mismo cálculo que la web (media mm/día × días del mes; diferencia con la media redondeada)
@@ -44,8 +58,10 @@ export default function Provincias() {
   const [sel, setSel] = useState<string | null>(p0 ? String(p0) : null);
   const [sp, setSp] = useState('bovino');
   const [yr, setYr] = useState<string>('last');
+  const [cropsIx, setCropsIx] = useState<CropsIdx | null>(null);
   const T = (es: string, en: string, fr: string, it: string) => tx(L, { es, en, fr, it });
   useEffect(() => { webJson('data/app/v1/prov/ES.json', 6 * 3600e3).then(d => { setDoc(d); setDone(true); }); }, []);
+  useEffect(() => { webJson('data/spain-crops/index.json', 12 * 3600e3).then(setCropsIx); }, []);
   const list = useMemo(() => { const k = norm(q.trim()); return (doc?.provinces ?? []).filter(x => !k || norm(x.name).includes(k)); }, [doc, q]);
   const pv = doc?.provinces.find(x => x.id === sel) ?? null;
   const species = pv ? Object.keys(SP).filter(k => pv.live[k]) : [];
@@ -56,6 +72,7 @@ export default function Provincias() {
   const years = useMemo(() => { if (!H) return [] as number[]; const y0 = +H.from.slice(0, 4), y1 = y0 + Math.floor((+H.from.slice(5, 7) - 1 + H.p.length - 1) / 12); const a: number[] = []; for (let y = y1; y >= y0; y--) a.push(y); return a; }, [H]);
   const yrRows = H && yr !== 'last' ? climYear(H, +yr) : null;
   const yrFull = yrRows && yrRows.length === 12 && yrRows.every(x => x.p != null && x.t != null);
+  const campLine = campaignLine(cropsIx, L, T('Campaña de cultivos: aún sin datos cargados.', 'Crop campaign: no data loaded yet.', 'Campagne des cultures : pas encore de données chargées.', 'Campagna delle colture: nessun dato ancora caricato.'));
   const title = T('Provincias de España', 'Provinces of Spain', 'Provinces d’Espagne', 'Province della Spagna');
   return (
     <Screen>
@@ -122,6 +139,19 @@ export default function Provincias() {
           <RangeChart key={pv.id + spCur} points={live.map(x => [iso(x[0]), x[1]] as [string, number])} unit={T('cabezas', 'head', 'têtes', 'capi')} label={SP[spCur][LI[L]]} width={cw} />
           <Pressable onPress={() => Linking.openURL(doc.liveSource.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{T('Fuente: ', 'Source: ', 'Source : ', 'Fonte: ') + doc.liveSource.name}</Text></Pressable>
         </> : null}
+        <SectionTitle>{T('Lo que aún no tenemos para tu zona', 'What we do not have yet for your area', 'Ce que nous n’avons pas encore pour votre zone', 'Ciò che non abbiamo ancora per la tua zona')}</SectionTitle>
+        <Card>
+          <Row first title={T('Lonjas provinciales independientes', 'Independent provincial auction halls', 'Lonjas provinciales indépendantes', 'Borse merci provinciali indipendenti')}
+            sub={T('No las incorporamos. Mostramos los mercados por provincia de la Comisión Europea y, en Castilla y León, los precios en origen de la Junta; el resto de precios que seguimos son nacionales, europeos o mundiales.', 'Not included. We show the province-level markets from the European Commission and, in Castilla y León, the Junta’s farm-gate prices; the other prices we follow are national, European or world.', 'Non incluses. Nous montrons les marchés par province de la Commission européenne et, en Castille-et-León, les prix à la production de la Junta ; les autres prix suivis sont nationaux, européens ou mondiaux.', 'Non incluse. Mostriamo i mercati per provincia della Commissione europea e, in Castilla y León, i prezzi alla produzione della Junta; gli altri prezzi che seguiamo sono nazionali, europei o mondiali.')}
+            right="›" onPress={() => router.push('/lonjas')} />
+          <Row title={T('Seguro agrario (Agroseguro)', 'Crop insurance (Agroseguro)', 'Assurance agricole (Agroseguro)', 'Assicurazione agraria (Agroseguro)')}
+            sub={T('Solo cifras nacionales y pendientes de contraste; no por provincia.', 'National figures only, still pending verification; not by province.', 'Chiffres nationaux seulement, encore à vérifier ; pas par province.', 'Solo cifre nazionali, ancora da verificare; non per provincia.')}
+            right="›" onPress={() => Linking.openURL('https://dehesaindex.com/precios.html?tab=seguro')} />
+          <Row title={T('Sequía por provincia', 'Drought by province', 'Sécheresse par province', 'Siccità per provincia')}
+            sub={T('No hay cifra oficial por provincia; solo la sequía por cuenca hidrográfica.', 'There is no official figure by province; only drought by river basin.', 'Il n’existe pas de chiffre officiel par province ; seulement par bassin hydrographique.', 'Non esiste un dato ufficiale per provincia; solo per bacino idrografico.')}
+            right="›" onPress={() => router.push('/sequia')} />
+          {campLine ? <Row title={T('Campaña de cultivos', 'Crop campaign', 'Campagne des cultures', 'Campagna delle colture')} sub={campLine} /> : null}
+        </Card>
       </>}
     </Screen>
   );

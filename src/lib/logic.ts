@@ -72,3 +72,18 @@ export function fertScenario(fertHa: number, ref: number, cur: number): { pct: n
   const deltaHa = fertHa * (cur / ref - 1);
   return { pct, deltaHa, newFert: fertHa + deltaHa };
 }
+
+export type FarmLine = { ha: number; yld: number; cost: number; price: number };
+/** Total de la explotación: solo con las líneas con precio de referencia y datos (no se suman líneas sin precio) */
+export function farmTotals(lines: FarmLine[]) {
+  const ok = lines.filter(l => l.price > 0 && l.ha > 0 && l.yld > 0);
+  let income = 0, cost = 0;
+  for (const l of ok) { const m = cropMargin(l.ha, l.yld, l.cost, l.price); income += m.income; cost += m.cost; }
+  return { n: ok.length, income, cost, margin: income - cost };
+}
+/** Sensibilidad conjunta: el margen total si UNA variable (precio, rendimiento o coste) cambia ±step % en todas las líneas a la vez. No es una previsión. */
+export function farmSensitivity(lines: FarmLine[], vary: 'price' | 'yield' | 'cost', stepPct: number) {
+  const f = (k: number) => farmTotals(lines.map(l => ({ ...l, price: vary === 'price' ? l.price * k : l.price, yld: vary === 'yield' ? l.yld * k : l.yld, cost: vary === 'cost' ? l.cost * k : l.cost }))).margin;
+  const st = stepPct / 100;
+  return { down: f(1 - st), now: f(1), up: f(1 + st) };
+}

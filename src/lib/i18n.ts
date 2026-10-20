@@ -423,7 +423,7 @@ const S: Record<string, Row> = {
   // paquete por país (12 oct)
   tradeByProduct: ['Comercio agroalimentario por producto', 'Agri-food trade by product', 'Commerce agroalimentaire par produit', 'Commercio agroalimentare per prodotto'],
   envTitle: ['Gasóleo, emisiones, sequía y nitratos', 'Diesel, emissions, drought and nitrates', 'Gazole, émissions, sécheresse et nitrates', 'Gasolio, emissioni, siccità e nitrati'],
-  envSub: ['11 países: lo que pide el agricultor al ministerio de agricultura y medio ambiente', '11 countries: what farmers ask their agriculture and environment ministries', '11 pays : ce que l’agriculteur demande aux ministères', '11 paesi: quello che l’agricoltore chiede ai ministeri'],
+  envSub: ['27 países: 11 con gasóleo, emisiones, sequía y nitratos; el resto, con el gasóleo del Boletín Petrolero de la UE (y tierra y regadío cuando existe)', '27 countries: 11 with diesel, emissions, drought and nitrates; the rest with diesel from the EU Oil Bulletin (and land and irrigation where available)', '27 pays : 11 avec gazole, émissions, sécheresse et nitrates ; les autres avec le gazole du Bulletin pétrolier de l’UE (et terres et irrigation si disponible)', '27 paesi: 11 con gasolio, emissioni, siccità e nitrati; gli altri con il gasolio del Bollettino petrolifero UE (e terra e irrigazione dove disponibile)'],
   envDiesel: ['Gasóleo', 'Diesel', 'Gazole', 'Gasolio'],
   envGhg: ['Emisiones', 'Emissions', 'Émissions', 'Emissioni'],
   envDrought: ['Sequía', 'Drought', 'Sécheresse', 'Siccità'],

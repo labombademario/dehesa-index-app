@@ -55,7 +55,7 @@ export default function Pais() {
   ];
   const hasWeek = ['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code);
   const hasMkts = ['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code);
-  const hasEnv = ['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL', 'PT', 'EU', 'EL'].includes(c.code);
+  const hasEnv = ['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL', 'PT', 'EU', 'EL', 'BG', 'CY', 'CZ', 'DK', 'EE', 'FI', 'HU', 'LT', 'LU', 'LV', 'MT', 'RO', 'SE', 'SI', 'SK'].includes(c.code);
   const tiles: { icon: string; label: string; go: () => void }[] = [
     ...(hasWeek ? [{ icon: '📰', label: T('La semana', 'The week', 'La semaine', 'La settimana'), go: () => router.push({ pathname: '/semana', params: { c: c.code } }) }] : []),
     ...(hasMkts ? [{ icon: '🏛️', label: T('Lonjas', 'Markets', 'Marchés', 'Piazze'), go: () => router.push({ pathname: '/lonjas', params: { c: c.code } }) }] : []),
