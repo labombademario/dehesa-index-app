@@ -55,11 +55,12 @@ export default function Pais() {
   ];
   const hasWeek = ['ES', 'FR', 'IT', 'DE', 'US'].includes(c.code);
   const hasMkts = ['ES', 'IT', 'PT', 'EL', 'DE', 'FR'].includes(c.code);
-  const hasEnv = ['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL', 'PT', 'EU'].includes(c.code);
+  const hasEnv = ['ES', 'FR', 'DE', 'IT', 'PL', 'BE', 'AT', 'HR', 'IE', 'NL', 'PT', 'EU', 'EL'].includes(c.code);
   const tiles: { icon: string; label: string; go: () => void }[] = [
     ...(hasWeek ? [{ icon: '📰', label: T('La semana', 'The week', 'La semaine', 'La settimana'), go: () => router.push({ pathname: '/semana', params: { c: c.code } }) }] : []),
     ...(hasMkts ? [{ icon: '🏛️', label: T('Lonjas', 'Markets', 'Marchés', 'Piazze'), go: () => router.push({ pathname: '/lonjas', params: { c: c.code } }) }] : []),
     ...(hasEnv ? [{ icon: '⛽', label: T('Entorno', 'Environment', 'Contexte', 'Ambiente'), go: () => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } }) }] : []),
+    ...(c.code === 'ES' ? [{ icon: '📍', label: T('Provincias', 'Provinces', 'Provinces', 'Province'), go: () => router.push('/provincias') }] : []),
     ...(tradeOk ? [{ icon: '🚢', label: T('Comercio', 'Trade', 'Commerce', 'Commercio'), go: () => router.push({ pathname: '/comercio/[cc]', params: { cc: c.code } }) }] : []),
     ...(prof ? [{ icon: '🔎', label: T('Explorar', 'Explore', 'Explorer', 'Esplora'), go: () => router.push({ pathname: '/explorar', params: { cc: c.code } }) }] : []),
   ];

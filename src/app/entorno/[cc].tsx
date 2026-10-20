@@ -15,7 +15,7 @@ type T4 = Record<Lang, string>;
 interface Stat { label: T4; value: number | null; unit: string | T4; dec: number; sub?: { d?: string } }
 interface Chart { label: T4; unit: string | T4; series: { label: T4; points: [string, number][] }[] }
 interface Bars { title: T4; unit: string | T4; dec: number; items: { label: T4; value: number; sub?: T4 }[] }
-interface Block { id: 'diesel' | 'ghg' | 'drought' | 'nitrates' | 'economy' | 'tariffs'; title: T4; asOf?: string; stats?: Stat[]; charts?: Chart[]; bars?: Bars[]; note?: T4; source?: { name: string; url: string }; link?: string; missing?: boolean }
+interface Block { id: 'diesel' | 'ghg' | 'drought' | 'nitrates' | 'economy' | 'tariffs' | 'land'; title: T4; asOf?: string; stats?: Stat[]; charts?: Chart[]; bars?: Bars[]; note?: T4; source?: { name: string; url: string }; link?: string; missing?: boolean }
 interface EnvDoc { country: string; blocks: Block[] }
 
 function ChartCard({ c, L, width }: { c: Chart; L: Lang; width: number }) {
@@ -66,7 +66,7 @@ export default function Entorno() {
   useEffect(() => { webJson('data/app/v1/env/' + String(cc).toUpperCase() + '.json', 6 * 3600e3).then(d => { setDoc(d); setDone(true); }); }, [cc]);
   const cw = Math.min(width, 700) - 32 - 28;
   const name = countryName(String(cc).toUpperCase(), L);
-  const lab: Record<string, string> = { diesel: t('envDiesel'), ghg: t('envGhg'), drought: t('envDrought'), nitrates: t('envNitrates'), economy: t('envEconomy'), tariffs: t('envTariffs') };
+  const lab: Record<string, string> = { diesel: t('envDiesel'), ghg: t('envGhg'), drought: t('envDrought'), nitrates: t('envNitrates'), economy: t('envEconomy'), tariffs: t('envTariffs'), land: t('envLand') };
   const b = doc?.blocks.find(x => x.id === sel) ?? (doc && !doc.blocks.some(x => x.id === sel) ? doc.blocks[0] : undefined);   // la UE no tiene gasóleo: se abre el primer bloque que exista
   const fillLab = (s: Stat) => s.label[L].replace('{d}', s.sub?.d ? (/^\d{4}-\d{2}/.test(s.sub.d) ? fmtDate(s.sub.d, L) : s.sub.d) : '');
   return (

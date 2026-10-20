@@ -429,6 +429,7 @@ const S: Record<string, Row> = {
   envDrought: ['Sequía', 'Drought', 'Sécheresse', 'Siccità'],
   envNitrates: ['Nitratos', 'Nitrates', 'Nitrates', 'Nitrati'],
   envEconomy: ['Economía', 'Economics', 'Économie', 'Economia'],
+  envLand: ['Tierra y regadío', 'Land and irrigation', 'Terres et irrigation', 'Terra e irrigazione'],
   envTariffs: ['Aranceles', 'Tariffs', 'Tarifs', 'Dazi'],
   envOpen: ['Ver el detalle', 'See the details', 'Voir le détail', 'Vedi il dettaglio'],
   envSource: ['Fuente: {0}', 'Source: {0}', 'Source : {0}', 'Fonte: {0}'],
