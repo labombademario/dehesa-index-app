@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm, newlyHit, fertScenario } from './logic.ts';
+import { evaluateAlert, cropMargin, herdMargin, ratio, movers, norm, newlyHit, fertScenario, costFromBreakdown } from './logic.ts';
 import { num, pct, date, decimalsFor } from './format.ts';
 
 const P = (id: string, value: number, changePct: number | null, yearAgo: number | null = null): any =>
@@ -103,4 +103,10 @@ test('explotación: total y sensibilidad conjunta', () => {
   const t = farmTotals(L); assert.equal(t.n, 1); assert.equal(t.income, 12500); assert.equal(t.cost, 9000); assert.equal(t.margin, 3500);
   const s = farmSensitivity(L, 'price', 10); assert.equal(Math.round(s.now), 3500); assert.equal(Math.round(s.up), 4750); assert.equal(Math.round(s.down), 2250);
   assert.equal(Math.round(farmSensitivity(L, 'cost', 10).up), 2600);
+});
+
+test('costFromBreakdown suma las categorías con abono y no inventa si todo está vacío', () => {
+  assert.equal(costFromBreakdown(null, [null, null]), null);
+  assert.equal(costFromBreakdown(200, [100.5, null, 50]), 350.5);
+  assert.equal(costFromBreakdown(null, [0]), 0);
 });

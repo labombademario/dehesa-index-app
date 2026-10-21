@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { tx } from '../lib/tx';
-import { useApp, type CropLine } from '../lib/store';
+import { tx, type T4 } from '../lib/tx';
+import { useApp, COST_KEYS, type CropLine, type CostKey } from '../lib/store';
 import { webJson } from '../lib/fv';
 import { Screen, Card, Row, Button, Note, Segmented, s } from '../components/ui';
 import { C } from '../lib/theme';
-import { cropMargin, herdMargin, ratio, fertScenario, farmTotals, farmSensitivity, type FarmLine } from '../lib/logic';
+import { cropMargin, herdMargin, ratio, fertScenario, farmTotals, farmSensitivity, costFromBreakdown, type FarmLine } from '../lib/logic';
 import { num, eur, date, parseNum } from '../lib/format';
 import type { Lang, Price } from '../lib/types';
 
@@ -14,11 +14,11 @@ let NL: Lang = 'es';   // idioma activo: «1.150» son 1150 en es/fr/it
 const n = (v: string) => parseNum(v, NL) ?? 0;
 type Tab = 'crops' | 'livestock' | 'ratios';
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({ label, value, onChange, text, locked }: { label: string; value: string; onChange: (v: string) => void; text?: boolean; locked?: boolean }) {
   return (
     <View style={{ flex: 1, minWidth: 90 }}>
       <Text style={s.label}>{label}</Text>
-      <TextInput style={s.input} value={value} onChangeText={onChange} keyboardType="decimal-pad" accessibilityLabel={label} />
+      <TextInput style={[s.input, locked ? { opacity: 0.6 } : null]} value={value} onChangeText={onChange} editable={!locked} maxLength={text ? 40 : undefined} keyboardType={text ? 'default' : 'decimal-pad'} accessibilityLabel={label} />
     </View>
   );
 }
@@ -88,6 +88,20 @@ function FertLink({ c, items, L, t, onPatch }: { c: CropLine; items: MonItem[]; 
 
 const CROP: Record<string, { es: string; en: string; fr: string; it: string }> = { trigo: { es: 'Trigo', en: 'Wheat', fr: 'Blé', it: 'Frumento' }, maiz: { es: 'Maíz', en: 'Maize', fr: 'Maïs', it: 'Mais' }, cebada: { es: 'Cebada', en: 'Barley', fr: 'Orge', it: 'Orzo' } };
 
+const COST_LBL: Record<CostKey, T4> = {
+  fert: { es: 'Abonos', en: 'Fertiliser', fr: 'Engrais', it: 'Concimi' }, seed: { es: 'Semilla', en: 'Seed', fr: 'Semences', it: 'Sementi' }, prot: { es: 'Fitosanitarios', en: 'Crop protection', fr: 'Phytosanitaires', it: 'Fitosanitari' },
+  feed: { es: 'Alimentación', en: 'Feed', fr: 'Alimentation', it: 'Alimentazione' }, energy: { es: 'Energía', en: 'Energy', fr: 'Énergie', it: 'Energia' }, mach: { es: 'Maquinaria', en: 'Machinery', fr: 'Machines', it: 'Macchinari' },
+  labour: { es: 'Mano de obra', en: 'Labour', fr: 'Main-d’œuvre', it: 'Manodopera' }, rent: { es: 'Arrendamiento', en: 'Rent', fr: 'Fermage', it: 'Affitto' }, other: { es: 'Otros', en: 'Other', fr: 'Autres', it: 'Altri' },
+};
+/** si hay alguna cifra en el desglose, el coste por ha es la suma (con el abono de su campo); si no, se queda el que escribió el agricultor */
+function normCrop(c: CropLine, L: Lang): CropLine {
+  const used = !!c.costs && Object.values(c.costs).some(v => (v ?? '') !== '');
+  if (!used) return c;
+  const f = (v: string | undefined) => (v ?? '') === '' ? null : parseNum(v!, L);
+  const sum = costFromBreakdown(f(c.fert), Object.values(c.costs!).map(f));
+  return sum === null ? c : { ...c, cost: String(sum).replace('.', L === 'en' ? '.' : ',') };
+}
+
 export default function Explotacion() {
   const { data, user, setUser, t } = useApp();
   const L = user.lang; NL = L;
@@ -105,10 +119,14 @@ export default function Explotacion() {
   // precios de abonos del monitor de insumos (MAPA); se bajan una vez y se guardan 12 h
   const [mon, setMon] = useState<MonItem[]>([]);
   useEffect(() => { let alive = true; webJson('data/views/input-monitor.json', 12 * 3600e3).then((d: any) => { if (alive && d?.groups) setMon(d.groups.filter((g: any) => ['nitrogen', 'pk', 'compound'].includes(g.id)).flatMap((g: any) => g.items).filter((x: any) => x && x.id && x.value > 0 && x.name)); }).catch(() => {}); return () => { alive = false; }; }, []);
-  const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? { ...c, ...patch } : c) }));
+  const setCrop = (id: string, patch: Partial<CropLine>) => setUser(u => ({ crops: u.crops.map(c => c.id === id ? normCrop({ ...c, ...patch }, u.lang) : c) }));
+  const [openCosts, setOpenCosts] = useState<Record<string, boolean>>({});
   const [vary, setVary] = useState<'price' | 'yield' | 'cost'>('price');
   const [step, setStep] = useState('10');
-  const products: CropLine['product'][] = ['trigo', 'maiz', 'cebada'];
+  const products: CropLine['product'][] = ['trigo', 'maiz', 'cebada', 'otro'];
+  const T4s = (es: string, en: string, fr: string, it: string) => tx(L, { es, en, fr, it });
+  // precio usado: de referencia, o el propio en «Otro cultivo» (siempre en € por tonelada)
+  const priceOf = (c: CropLine): number => c.product === 'otro' ? n(c.price ?? '') : (eu(c.product)?.value ?? 0);
 
   const milk = eu('leche'), pig = eu('cerdo');
   const ratios = [
@@ -125,21 +143,35 @@ export default function Explotacion() {
 
       {tab === 'crops' ? <>
         {user.crops.map(c => {
-          const p = eu(c.product);
-          const m = cropMargin(n(c.ha), n(c.yld), n(c.cost), p?.value ?? 0);
+          const own = c.product === 'otro', p = own ? undefined : eu(c.product), pv = priceOf(c);
+          const m = cropMargin(n(c.ha), n(c.yld), n(c.cost), pv);
           return (
             <Card key={c.id} style={{ padding: 14, gap: 10 }}>
-              <Segmented value={c.product} onChange={product => setCrop(c.id, { product })} options={products.map(x => ({ value: x, label: eu(x)?.name[L] ?? tx(L, CROP[x]) }))} />
-              <Text style={s.rowSub}>{priceRef(p)}</Text>
+              <Segmented value={c.product} onChange={product => setCrop(c.id, { product })} options={products.map(x => ({ value: x, label: x === 'otro' ? T4s('Otro', 'Other', 'Autre', 'Altro') : (eu(x)?.name[L] ?? tx(L, CROP[x])) }))} />
+              {own ? <>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Field text label={T4s('Nombre del cultivo', 'Crop name', 'Nom de la culture', 'Nome della coltura')} value={c.name ?? ''} onChange={name => setCrop(c.id, { name })} />
+                  <Field label={T4s('Tu precio (€/t)', 'Your price (€/t)', 'Votre prix (€/t)', 'Il tuo prezzo (€/t)')} value={c.price ?? ''} onChange={price => setCrop(c.id, { price })} />
+                </View>
+                <Text style={s.rowSub}>{T4s('Para este cultivo no hay precio de referencia en la app: escribe el tuyo, por tonelada.', 'There is no reference price for this crop in the app: enter your own, per tonne.', 'Pas de prix de référence pour cette culture dans l’app : saisissez le vôtre, par tonne.', 'Per questa coltura l’app non ha un prezzo di riferimento: inserisci il tuo, a tonnellata.')}</Text>
+              </> : <Text style={s.rowSub}>{priceRef(p)}</Text>}
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 <Field label={t('area')} value={c.ha} onChange={ha => setCrop(c.id, { ha })} />
                 <Field label={t('yield')} value={c.yld} onChange={yld => setCrop(c.id, { yld })} />
-                <Field label={t('costHa')} value={c.cost} onChange={cost => setCrop(c.id, { cost })} />
+                <Field label={t('costHa')} value={c.cost} onChange={cost => setCrop(c.id, { cost })} locked={!!c.costs && Object.values(c.costs).some(v => (v ?? '') !== '')} />
               </View>
-              {euMarket && mon.length ? <FertLink c={c} items={mon} L={L} t={t} onPatch={patch => setCrop(c.id, patch)} /> : null}
-              {p ? <Result L={L} t={t} income={m.income} cost={m.cost} margin={m.margin} extra={<>
+              <Pressable onPress={() => setOpenCosts(o => ({ ...o, [c.id]: !o[c.id] }))} accessibilityRole="button" accessibilityState={{ expanded: !!openCosts[c.id] }} hitSlop={8} style={{ minHeight: 32, justifyContent: 'center' }}>
+                <Text style={{ color: C.accent, fontWeight: '600' }}>{openCosts[c.id] ? '▾ ' : '▸ '}{T4s('Desglose de costes por categoría (opcional)', 'Cost breakdown by category (optional)', 'Détail des coûts par catégorie (facultatif)', 'Dettaglio dei costi per categoria (facoltativo)')}</Text></Pressable>
+              {openCosts[c.id] ? <>
+                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                  {COST_KEYS.map(k => <Field key={k} label={tx(L, COST_LBL[k]) + ' (€/ha)'} value={k === 'fert' ? (c.fert ?? '') : (c.costs?.[k] ?? '')} onChange={v => setCrop(c.id, k === 'fert' ? { fert: v, undo: undefined, lk: c.lk } : { costs: { ...(c.costs ?? {}), [k]: v } })} />)}
+                </View>
+                <Text style={s.rowSub}>{T4s('Con alguna cifra aquí, el coste por ha es la suma de las categorías. Vacío todo: vale el coste total que escribas arriba.', 'With any figure here, the cost per ha is the sum of the categories. All empty: the total cost you type above is used.', 'Avec un chiffre ici, le coût par ha est la somme des catégories. Tout vide : le coût total saisi plus haut est utilisé.', 'Con una cifra qui, il costo per ha è la somma delle categorie. Tutto vuoto: vale il costo totale scritto sopra.')}</Text>
+              </> : null}
+              {euMarket && mon.length && !own ? <FertLink c={c} items={mon} L={L} t={t} onPatch={patch => setCrop(c.id, patch)} /> : null}
+              {pv > 0 ? <Result L={L} t={t} income={m.income} cost={m.cost} margin={m.margin} extra={<>
                 {m.perHa != null ? <Text style={s.rowSub}>{t('perHa', eur(m.perHa, L))}</Text> : null}
-                {m.breakEven != null ? <Text style={s.rowSub}>{t('breakEven')}: {num(m.breakEven, L, 0)} {p.unit[L]}</Text> : null}
+                {m.breakEven != null ? <Text style={s.rowSub}>{t('breakEven')}: {num(m.breakEven, L, 0)} {p ? p.unit[L] : '€/t'}</Text> : null}
                 {m.cushionPct != null ? <Text style={s.rowSub}>{t('cushion')}: {num(m.cushionPct, L, 1)} %</Text> : null}
               </>} /> : null}
               {user.crops.length > 1 ? <Pressable onPress={() => setUser(u => ({ crops: u.crops.filter(x => x.id !== c.id) }))} accessibilityRole="button" hitSlop={8} style={{ alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center' }}>
@@ -149,7 +181,33 @@ export default function Explotacion() {
         })}
         <Button kind="secondary" label={t('addCrop')} onPress={() => setUser(u => ({ crops: [...u.crops, { id: 'c' + Date.now().toString(36), product: 'cebada', ha: '10', yld: '5', cost: '900' }] }))} />
         {(() => {
-          const lines: FarmLine[] = user.crops.map(c => ({ ha: n(c.ha), yld: n(c.yld), cost: n(c.cost), price: eu(c.product)?.value ?? 0 }));
+          // «Qué ha cambiado desde tu última visita»: solo cultivos con precio de referencia; nada cambia solo, el punto de partida lo fijas tú
+          const refs = user.crops.map(c => ({ c, p: c.product === 'otro' ? undefined : eu(c.product) })).filter(x => x.p);
+          if (!refs.length) return null;
+          const seen = user.farmSeen ?? {};
+          const rows = refs.filter(x => seen[x.c.id] && Math.abs(seen[x.c.id].v - x.p!.value) > 1e-9).map(x => {
+            const old = seen[x.c.id].v, nw = x.p!.value;
+            const a = cropMargin(n(x.c.ha), n(x.c.yld), n(x.c.cost), old), b = cropMargin(n(x.c.ha), n(x.c.yld), n(x.c.cost), nw);
+            return { x, old, nw, pct: (nw / old - 1) * 100, mOld: a.margin, mNew: b.margin, hasM: n(x.c.ha) > 0 && n(x.c.yld) > 0 && n(x.c.cost) > 0 };
+          });
+          const anySeen = refs.some(x => seen[x.c.id]);
+          const mark = () => setUser(u => { const sn = { ...(u.farmSeen ?? {}) }; refs.forEach(x => { sn[x.c.id] = { v: x.p!.value, d: x.p!.date }; }); return { farmSeen: sn }; });
+          return <>
+            <Text style={[s.rowTitle, { fontSize: 17 }]}>{T4s('Qué ha cambiado desde tu última visita', 'What changed since your last visit', 'Ce qui a changé depuis votre dernière visite', 'Cosa è cambiato dalla tua ultima visita')}</Text>
+            <Card style={{ padding: 14, gap: 6 }}>
+              {rows.length ? rows.map(r => (
+                <View key={r.x.c.id}>
+                  <Text style={s.rowTitle}>{tx(L, CROP[r.x.c.product])}: {num(r.old, L, 2)} → {num(r.nw, L, 2)} {r.x.p!.unit[L]} ({r.pct > 0 ? '+' : ''}{num(r.pct, L, 1)} %)</Text>
+                  {r.hasM ? <Text style={s.rowSub}>{T4s('Tu margen con este cambio', 'Your margin with this change', 'Votre marge avec ce changement', 'Il tuo margine con questo cambio')}: {eur(r.mOld, L)} → {eur(r.mNew, L)}</Text> : null}
+                </View>
+              )) : <Text style={s.rowSub}>{anySeen ? T4s('Los precios de referencia no han cambiado desde el punto de partida.', 'Reference prices have not changed since your starting point.', 'Les prix de référence n’ont pas changé depuis votre point de départ.', 'I prezzi di riferimento non sono cambiati dal tuo punto di partenza.') : T4s('Guarda un punto de partida y la próxima vez verás cuánto ha cambiado el precio de referencia de cada cultivo y tu margen.', 'Save a starting point and next time you will see how each crop’s reference price and your margin moved.', 'Enregistrez un point de départ et, la prochaine fois, vous verrez l’évolution du prix de référence de chaque culture et de votre marge.', 'Salva un punto di partenza e la prossima volta vedrai come si sono mossi il prezzo di riferimento di ogni coltura e il tuo margine.')}</Text>}
+              <Text style={s.rowSub}>{T4s('Es un cálculo con tus cifras y el último precio publicado, no una previsión.', 'A calculation with your figures and the latest published price, not a forecast.', 'Un calcul avec vos chiffres et le dernier prix publié, pas une prévision.', 'Un calcolo con le tue cifre e l’ultimo prezzo pubblicato, non una previsione.')}</Text>
+              <Button kind="secondary" label={anySeen ? T4s('Marcar como visto', 'Mark as seen', 'Marquer comme vu', 'Segna come visto') : T4s('Guardar punto de partida', 'Save starting point', 'Enregistrer le point de départ', 'Salva punto di partenza')} onPress={mark} />
+            </Card>
+          </>;
+        })()}
+        {(() => {
+          const lines: FarmLine[] = user.crops.map(c => ({ ha: n(c.ha), yld: n(c.yld), cost: n(c.cost), price: priceOf(c) }));
           const tot = farmTotals(lines);
           const Tt = (es: string, en: string, fr: string, it: string) => tx(L, { es, en, fr, it });
           if (!tot.n) return <Note>{Tt('Rellena superficie, rendimiento y costes de al menos un cultivo con precio de referencia para ver el resumen.', 'Fill in area, yield and costs for at least one crop with a reference price to see the summary.', 'Renseignez surface, rendement et coûts d’au moins une culture avec prix de référence pour voir le résumé.', 'Inserisci superficie, resa e costi di almeno una coltura con prezzo di riferimento per vedere il riepilogo.')}</Note>;
@@ -159,7 +217,7 @@ export default function Explotacion() {
             <Card style={{ padding: 14, gap: 4 }}>
               <Text style={s.rowSub}>{Tt('Ingresos', 'Revenue', 'Recettes', 'Ricavi')} {eur(tot.income, L)} · {t('costs')} {eur(tot.cost, L)}</Text>
               <Text style={{ fontSize: 22, fontWeight: '700', color: tot.margin >= 0 ? C.positive : C.negative }}>{t('margin')} {eur(tot.margin, L)}</Text>
-              <Text style={s.rowSub}>{Tt(`Suma de ${tot.n} cultivo(s) con precio de referencia; los que no lo tienen no entran.`, `Sum of ${tot.n} crop(s) with a reference price; those without one are left out.`, `Somme de ${tot.n} culture(s) avec prix de référence ; celles sans prix sont exclues.`, `Somma di ${tot.n} coltura/e con prezzo di riferimento; quelle senza non entrano.`)}</Text>
+              <Text style={s.rowSub}>{Tt(`Suma de ${tot.n} cultivo(s) con precio; los que no lo tienen no entran.`, `Sum of ${tot.n} crop(s) with a price; those without one are left out.`, `Somme de ${tot.n} culture(s) avec prix de référence ; celles sans prix sont exclues.`, `Somma di ${tot.n} coltura/e con prezzo di riferimento; quelle senza non entrano.`)}</Text>
             </Card>
             <Text style={[s.rowTitle, { fontSize: 17 }]}>{Tt('Sensibilidad', 'Sensitivity', 'Sensibilité', 'Sensibilità')}</Text>
             <Segmented value={vary} onChange={setVary} options={[{ value: 'price', label: Tt('Precio', 'Price', 'Prix', 'Prezzo') }, { value: 'yield', label: Tt('Rendimiento', 'Yield', 'Rendement', 'Resa') }, { value: 'cost', label: Tt('Costes', 'Costs', 'Coûts', 'Costi') }]} />

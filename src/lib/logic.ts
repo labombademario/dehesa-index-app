@@ -87,3 +87,10 @@ export function farmSensitivity(lines: FarmLine[], vary: 'price' | 'yield' | 'co
   const st = stepPct / 100;
   return { down: f(1 - st), now: f(1), up: f(1 + st) };
 }
+
+/** Coste por ha como suma del desglose (abono incluido); null si no hay ninguna cifra en el desglose */
+export function costFromBreakdown(fert: number | null, parts: (number | null)[]): number | null {
+  const vals = [fert, ...parts].filter((v): v is number => v !== null && Number.isFinite(v) && v >= 0);
+  const used = [fert, ...parts].some(v => v !== null && v !== undefined);
+  return used ? Math.round(vals.reduce((a, v) => a + v, 0) * 100) / 100 : null;
+}

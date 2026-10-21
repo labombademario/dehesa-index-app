@@ -20,7 +20,10 @@ export const EU_CCS = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES
 export const isEu = (m: Market) => EU_CCS.includes(m);
 // fert / lk / undo: abono incluido en el coste por ha, ligado (si el agricultor quiere) a un precio del monitor de insumos. La referencia (lk.v) se fija al apuntar el importe; nada cambia solo.
 export interface FertLink { id: string; v: number; period: string }
-export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada'; ha: string; yld: string; cost: string; fert?: string; lk?: FertLink; undo?: { cost: string; fert: string; lk: FertLink } }
+export const COST_KEYS = ['fert', 'seed', 'prot', 'feed', 'energy', 'mach', 'labour', 'rent', 'other'] as const;
+export type CostKey = typeof COST_KEYS[number];
+// product 'otro': cultivo con nombre y precio propios (sin precio de referencia). costs: desglose por categoría (el abono va en fert); si hay alguna cifra, cost = suma.
+export interface CropLine { id: string; product: 'trigo' | 'maiz' | 'cebada' | 'otro'; name?: string; price?: string; costs?: Partial<Record<Exclude<CostKey, 'fert'>, string>>; ha: string; yld: string; cost: string; fert?: string; lk?: FertLink; undo?: { cost: string; fert: string; lk: FertLink } }
 export interface UserState {
   v: 1;
   lang: Lang;
@@ -31,6 +34,8 @@ export interface UserState {
   basket: string[];
   alerts: AlertRule[];
   crops: CropLine[];
+  /** punto de partida de «qué ha cambiado»: precio de referencia visto por línea de cultivo */
+  farmSeen?: Record<string, { v: number; d: string }>;
   milk: { cows: string; kg: string; cost: string };
   pig: { n: string; kg: string; cost: string };
   /** países fijados en «Mis países» (si nunca se ha tocado, solo el del mercado elegido) */
