@@ -1,5 +1,5 @@
 // Estado de la app: datos (con caché) y lo del usuario (idioma, perfil, cesta, avisos, explotación), guardado en el teléfono.
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { webJson } from './fv';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
@@ -8,7 +8,7 @@ import type { AlertRule } from './logic';
 import { bundled, cached, refresh } from './api';
 import { translate } from './i18n';
 import { applyTheme, type Mode } from './theme';
-import { useColorScheme } from 'react-native';
+import { AppState, useColorScheme } from 'react-native';
 import { date as fmtDay } from './format';
 import { USER_KEY, runCheck, syncBackgroundTask, euCcOf } from './notify';
 
@@ -98,6 +98,14 @@ interface Ctx {
   /** Carga los precios de un país de la UE (para la bienvenida y los ajustes) */
   loadEu: (cc: string) => Promise<void>;
 }
+/** Un perfil guardado a medias o de otra versión no debe tumbar la app: lo que no tiene la forma esperada vuelve a su valor por defecto */
+function sane(u: UserState): UserState {
+  const d = defaults();
+  const arr = <T,>(v: unknown, f: T[]): T[] => Array.isArray(v) ? v as T[] : f;
+  const obj = <T extends object>(v: unknown, f: T): T => v && typeof v === 'object' && !Array.isArray(v) ? { ...f, ...(v as T) } : f;
+  const crops = arr<CropLine>(u.crops, d.crops).filter(c => c && typeof c === 'object' && typeof c.id === 'string' && ['trigo', 'maiz', 'cebada', 'otro'].includes(c.product));
+  return { ...u, basket: arr<string>(u.basket, d.basket), alerts: arr(u.alerts, d.alerts), crops: crops.length ? crops : d.crops, milk: obj(u.milk, d.milk), pig: obj(u.pig, d.pig), farmSeen: u.farmSeen && typeof u.farmSeen === 'object' ? u.farmSeen : undefined };
+}
 const C = createContext<Ctx | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -124,11 +132,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       const c = await cached(); if (c && c.prices.length) setData(c);
-      try { const raw = await AsyncStorage.getItem(USER_KEY); if (raw) setUserState({ ...defaults(), ...JSON.parse(raw) }); } catch { /* datos corruptos: valores por defecto */ }
+      try { const raw = await AsyncStorage.getItem(USER_KEY); if (raw) setUserState(sane({ ...defaults(), ...JSON.parse(raw) })); } catch { /* datos corruptos: valores por defecto */ }
       setReady(true);
       reload();
     })();
   }, [reload]);
+
+  // Guardar el perfil fuera del actualizador de estado y sin escribir en cada tecla: espera 400 ms y, si la app pasa a segundo plano, guarda al momento
+  const userRef = useRef(user); userRef.current = user;
+  useEffect(() => {
+    if (!ready) return;
+    const id = setTimeout(() => { AsyncStorage.setItem(USER_KEY, JSON.stringify(userRef.current)).catch(() => {}); }, 400);
+    return () => clearTimeout(id);
+  }, [user, ready]);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', st => { if (st !== 'active' && ready) AsyncStorage.setItem(USER_KEY, JSON.stringify(userRef.current)).catch(() => {}); });
+    return () => sub.remove();
+  }, [ready]);
 
   // Avisos: comprobar cada vez que llegan datos y mantener la tarea de segundo plano solo si hay avisos activos
   // (con merged, que ya incluye los precios de otros países de la UE cargados: un aviso sobre el trigo de Francia también se comprueba)
@@ -136,9 +156,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const setUser = useCallback((patch: Partial<UserState> | ((u: UserState) => Partial<UserState>)) => {
     setUserState(prev => {
-      const next = { ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) };
-      AsyncStorage.setItem(USER_KEY, JSON.stringify(next)).catch(() => {});
-      return next;
+      return { ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) };
     });
   }, []);
 

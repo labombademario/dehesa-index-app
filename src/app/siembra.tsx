@@ -29,7 +29,7 @@ export default function Siembra() {
   const [st, setSt] = useState<{ c: CC; r: string; area: string; costs: Record<string, string> }>({ c: SOW_CC.includes(user.market) ? user.market : 'ES', r: '', area: '', costs: {} });
   const [doc, setDoc] = useState<SowDoc | null>(null);
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { AsyncStorage.getItem(KEY).then(raw => { if (raw) { try { setSt(s => ({ ...s, ...JSON.parse(raw) })); } catch { /* */ } } setLoaded(true); }); }, []);
+  useEffect(() => { AsyncStorage.getItem(KEY).then(raw => { if (raw) { try { setSt(s => ({ ...s, ...JSON.parse(raw) })); } catch { /* */ } } setLoaded(true); }).catch(() => setLoaded(true)); }, []);
   useEffect(() => { if (loaded && ready) AsyncStorage.setItem(KEY, JSON.stringify(st)).catch(() => {}); }, [st, loaded, ready]);   // antes de leer el perfil no se guarda nada (se guardaba España por defecto)
   const [docDone, setDocDone] = useState(false);
   // la respuesta de un país que ya no está elegido se descarta (al cambiar rápido de país)

@@ -14,13 +14,21 @@ export default function Buscar() {
   const [idx, setIdx] = useState<SearchRow[] | null>(null);
   const [opening, setOpening] = useState(false);
   useEffect(() => { loadSearchIndex(L).then(setIdx); }, [L]);
-  const k = norm(q.trim());
+  // la búsqueda espera a que termines de teclear (180 ms) y el texto de cada fila se normaliza una sola vez, no en cada letra
+  const [dq, setDq] = useState('');
+  useEffect(() => { const id = setTimeout(() => setDq(q), 180); return () => clearTimeout(id); }, [q]);
+  const k = norm(dq.trim());
   const cname = (code: string) => {
     const c = data.countries.find(x => x.code === code);
     if (c) return c.name[L];
     try { const n = new (Intl as any).DisplayNames([L], { type: 'region' }).of(code === 'EL' ? 'GR' : code); if (n) return n; } catch { /* */ }
     return code;
   };
+  const hays = useMemo(() => {
+    if (!idx) return null;
+    const cn: Record<string, string> = {};
+    return idx.map(r => norm(r[2] + ' ' + r[4] + ' ' + (cn[r[0]] ??= norm(cname(r[0])))));
+  }, [idx, L, data.countries]); // eslint-disable-line react-hooks/exhaustive-deps
   const res = useMemo(() => {
     if (k.length < 2) return null;
     const has = (s: string) => norm(s).includes(k);
@@ -29,15 +37,15 @@ export default function Buscar() {
     const sections = data.sections.filter(x => has(x.name[L])).slice(0, 4);
     const news = data.news.filter(n => has(n.title)).slice(0, 4);
     const series: { row: SearchRow; label: string }[] = [];
-    if (idx) {
-      const words = k.split(/\s+/).filter(Boolean), cn: Record<string, string> = {};
-      for (const r of idx) {
-        const hay = norm(r[2] + ' ' + r[4] + ' ' + (cn[r[0]] ??= norm(cname(r[0]))));
-        if (words.every(w => hay.includes(w))) { series.push({ row: r, label: r[4] || r[2] }); if (series.length >= 40) break; }
+    if (idx && hays) {
+      const words = k.split(/\s+/).filter(Boolean);
+      for (let i = 0; i < idx.length; i++) {
+        const hay = hays[i];
+        if (words.every(w => hay.includes(w))) { const r = idx[i]; series.push({ row: r, label: r[4] || r[2] }); if (series.length >= 40) break; }
       }
     }
     return { prices, countries, sections, news, series };
-  }, [k, idx, data, L]);
+  }, [k, idx, hays, data, L]);
   const total = res ? res.prices.length + res.countries.length + res.sections.length + res.news.length + res.series.length : 0;
   const openSeries = async (cc: string, id: string) => {
     setOpening(true);

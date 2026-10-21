@@ -15,7 +15,12 @@ export interface FvProduct {
 export interface FvDoc { generatedAt: string; countries: string[]; products: FvProduct[] }
 
 const mem: Record<string, any> = {};
-async function getCached(path: string, maxAgeMs: number): Promise<any | null> {
+// peticiones en curso: dos pantallas que piden el mismo fichero a la vez lo bajan y lo guardan una sola vez
+const inflight: Record<string, Promise<any | null>> = {};
+function getCached(path: string, maxAgeMs: number): Promise<any | null> {
+  return inflight[path] ??= getCached1(path, maxAgeMs).finally(() => { delete inflight[path]; });
+}
+async function getCached1(path: string, maxAgeMs: number): Promise<any | null> {
   const key = 'dehesa:web:' + path;
   if (mem[path] && Date.now() - mem[path].at < maxAgeMs) return mem[path].body;
   let stored: { at: number; body: any } | null = null;

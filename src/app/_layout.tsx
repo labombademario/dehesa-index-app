@@ -1,14 +1,31 @@
 import React, { useEffect } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { Stack, router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { getLocales } from 'expo-localization';
 import { AppProvider, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 import { installFonts, useBrandFonts } from '../lib/fonts';
 
 installFonts();
+
+/** Si una pantalla falla, se ve este aviso con «Reintentar» en lugar de cerrarse la app (expo-router lo usa como límite de errores de todas las rutas) */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  const lang = (() => { try { return (getLocales()[0]?.languageCode ?? 'es'); } catch { return 'es'; } })();
+  const es = lang === 'es';
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12, backgroundColor: '#FBF9F3' }}>
+      <Text style={{ fontSize: 20, fontWeight: '700', color: '#241F14', textAlign: 'center' }}>{es ? 'Algo ha fallado en esta pantalla' : 'Something went wrong on this screen'}</Text>
+      <Text style={{ color: '#4A4535', textAlign: 'center' }}>{es ? 'Tus datos están a salvo. Reintenta o vuelve atrás.' : 'Your data is safe. Try again or go back.'}</Text>
+      <Text style={{ color: '#6B6550', fontSize: 12, textAlign: 'center' }} numberOfLines={3}>{String(error?.message ?? '')}</Text>
+      <Pressable onPress={() => { retry().catch(() => {}); }} accessibilityRole="button" style={{ backgroundColor: '#1E3328', borderRadius: 10, paddingHorizontal: 20, minHeight: 44, justifyContent: 'center' }}>
+        <Text style={{ color: '#FBF9F3', fontWeight: '600' }}>{es ? 'Reintentar' : 'Retry'}</Text></Pressable>
+    </View>
+  );
+}
 
 // La pantalla de inicio se queda hasta que están cargadas las preferencias (evita ver un instante la bienvenida o Hoy sin datos)
 SplashScreen.preventAutoHideAsync().catch(() => {});
