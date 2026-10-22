@@ -15,6 +15,18 @@ import { CountrySelect } from '../components/CountryPicker';
 
 type Prices = { months: string[]; series: Record<string, (number | null)[]>; last: string; base: string };
 type Removals = { years: number[]; countries: Record<string, { series: Record<string, (number | null)[]>; estimated: number[]; last: number }> };
+type WoodPx = { ppi?: { source?: { name?: string }; unit?: string; countries: Record<string, Record<string, [string, number][]>> }; national?: { SE?: { series: { id: string; pts: [string, number][] }[] } } };
+const PX: Record<string, T4> = {
+  h: { es: 'Precios de la madera', en: 'Timber prices', fr: 'Prix du bois', it: 'Prezzi del legname' },
+  ppi: { es: 'Industria de la madera (precio de productor)', en: 'Wood industry (producer price)', fr: 'Industrie du bois (prix producteur)', it: 'Industria del legno (prezzo alla produzione)' },
+  saw: { es: 'Aserrado (precio de productor)', en: 'Sawmilling (producer price)', fr: 'Sciage (prix producteur)', it: 'Segagione (prezzo alla produzione)' },
+  sawlog: { es: 'Trozas de pino y abeto (kr/m³)', en: 'Pine and spruce sawlogs (SEK/m³)', fr: 'Grumes de pin et d’épicéa (SEK/m³)', it: 'Tronchi di pino e abete (SEK/m³)' },
+  pulp: { es: 'Madera de trituración (kr/m³)', en: 'Pulpwood (SEK/m³)', fr: 'Bois de trituration (SEK/m³)', it: 'Legname da triturazione (SEK/m³)' },
+  y12: { es: 'en 12 meses', en: 'over 12 months', fr: 'sur 12 mois', it: 'in 12 mesi' },
+  yq: { es: 'vs. mismo trimestre del año anterior', en: 'vs. same quarter last year', fr: 'vs. même trimestre un an avant', it: 'vs. stesso trimestre anno prima' },
+  none: { es: 'No tenemos precios de la madera de este país.', en: 'We have no timber prices for this country.', fr: 'Nous n’avons pas de prix du bois pour ce pays.', it: 'Non abbiamo prezzi del legname per questo paese.' },
+  note: { es: 'Índice de precios de productor de la industria (2021 = 100), no el precio de la madera en rollo. Suecia: precios de liquidación de madera en rollo (Skogsstyrelsen, kr/m³ sin corteza). Fuente: Eurostat sts_inpp_m.', en: 'Industry producer price index (2021 = 100), not the roundwood price. Sweden: roundwood settlement prices (Skogsstyrelsen, SEK/m³ under bark). Source: Eurostat sts_inpp_m.', fr: 'Indice des prix à la production de l’industrie (2021 = 100), pas le prix du bois rond. Suède : prix de règlement du bois rond (Skogsstyrelsen, SEK/m³ sans écorce). Source : Eurostat sts_inpp_m.', it: 'Indice dei prezzi alla produzione dell’industria (2021 = 100), non il prezzo del legname tondo. Svezia: prezzi di liquidazione del legname tondo (Skogsstyrelsen, SEK/m³ senza corteccia). Fonte: Eurostat sts_inpp_m.' },
+};
 const P: Record<string, T4> = {
   total: { es: 'Madera en rollo (total)', en: 'Roundwood (total)', fr: 'Bois rond (total)', it: 'Legname tondo (totale)' },
   logs: { es: 'Trozas (madera de sierra)', en: 'Sawlogs', fr: 'Grumes (bois de sciage)', it: 'Tronchi da sega' },
@@ -34,16 +46,25 @@ export default function Madera() {
   const { width } = useWindowDimensions();
   const [pr, setPr] = useState<Prices | null>(null);
   const [rm, setRm] = useState<Removals | null>(null);
+  const [px, setPx] = useState<WoodPx | null>(null);
   const [done, setDone] = useState(false);
   const [k, setK] = useState('total');
   const [cc, setCc] = useState('DE');
-  useEffect(() => { Promise.all([webJson('data/wood-prices-de.json', 12 * 3600e3), webJson('data/wood-removals.json', 24 * 3600e3)]).then(([a, b]) => { setPr(a); setRm(b); setDone(true); if (b?.countries?.[user.market]) setCc(user.market); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { Promise.all([webJson('data/wood-prices-de.json', 12 * 3600e3), webJson('data/wood-removals.json', 24 * 3600e3), webJson('data/eu-wood-prices.json', 12 * 3600e3)]).then(([a, b, w]) => { setPr(a); setRm(b); setPx(w); setDone(true); if (b?.countries?.[user.market]) setCc(user.market); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const cw = Math.min(width, 700) - 32 - 28;
   const pts: [string, number][] = pr ? pr.months.map((m, i) => [m, pr.series[k]?.[i]] as [string, number | null | undefined]).filter((p): p is [string, number] => p[1] != null) : [];
   const last = pts[pts.length - 1], prev = pts[pts.length - 2], yago = last ? pts.find(p => p[0] === (+last[0].slice(0, 4) - 1) + last[0].slice(4)) : undefined;
   const c = rm?.countries[cc], yi = c && rm ? rm.years.indexOf(c.last) : -1;
   const v = (key: string, i: number) => (c && i >= 0 ? c.series[key]?.[i] ?? null : null);
   const tot: [string, number][] = c && rm ? rm.years.map((y, i) => [String(y), c.series['TOTAL.RW']?.[i]] as [string, number | null | undefined]).filter((p): p is [string, number] => p[1] != null) : [];
+  // Último valor y comparación con el mismo periodo un año antes (mensual 'YYYY-MM' o trimestral 'YYYYKn').
+  const yoy = (pts?: [string, number][]) => { if (!pts || !pts.length) return null; const a = pts[pts.length - 1], k = (+a[0].slice(0, 4) - 1) + a[0].slice(4), b = pts.find(p => p[0] === k); return { a, b: b && b[1] ? b : null }; };
+  const sePts = (id: string) => px?.national?.SE?.series.find(x => x.id === id)?.pts;
+  const pxRows: { label: string; pts?: [string, number][]; q: boolean }[] = [
+    { label: tx(L, PX.ppi), pts: px?.ppi?.countries?.[cc]?.C16, q: false },
+    { label: tx(L, PX.saw), pts: px?.ppi?.countries?.[cc]?.C161, q: false },
+    ...(cc === 'SE' ? [{ label: tx(L, PX.sawlog), pts: sePts('se-roundwood-sawlogs-pine-and-spruce'), q: true }, { label: tx(L, PX.pulp), pts: sePts('se-roundwood-pulpwood-total'), q: true }] : []),
+  ].filter(r => r.pts && r.pts.length);
   return (
     <Screen>
       <Stack.Screen options={{ title: tx(L, { es: 'Madera', en: 'Timber', fr: 'Bois', it: 'Legname' }) }} />
@@ -72,6 +93,11 @@ export default function Madera() {
             {c.estimated.length ? <Text style={{ fontSize: 12, color: C.textMuted }}>{fill(tx(L, { es: '* Dato estimado por el país ({0}).', en: '* Figure estimated by the country ({0}).', fr: '* Donnée estimée par le pays ({0}).', it: '* Dato stimato dal paese ({0}).' }), c.estimated.join(', '))}</Text> : null}
           </> : null}
           <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, { es: 'Fuente: Eurostat, for_remov (cuestionario conjunto del sector forestal).', en: 'Source: Eurostat, for_remov (Joint Forest Sector Questionnaire).', fr: 'Source : Eurostat, for_remov (questionnaire conjoint sur le secteur forestier).', it: 'Fonte: Eurostat, for_remov (questionario congiunto sul settore forestale).' })}</Text>
+        </> : null}
+        {rm && c && px ? <>
+          <SectionTitle>{tx(L, PX.h) + ' — ' + countryName(cc, L)}</SectionTitle>
+          {pxRows.length ? <Card>{pxRows.map((r, i) => { const y = yoy(r.pts)!; return <Row key={r.label} first={i === 0} title={r.label + ' · ' + (r.q ? y.a[0].replace('K', ' T') : fmtDate(y.a[0], L))} right={num(y.a[1], L, r.q ? 0 : 1)} rightSub={y.b ? pct((y.a[1] / y.b[1] - 1) * 100, L) + ' ' + tx(L, r.q ? PX.yq : PX.y12) : undefined} />; })}</Card> : <Note>{tx(L, PX.none)}</Note>}
+          <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, PX.note)}</Text>
         </> : null}
         {!pr && !rm ? <Note>{t('noDataNow')}</Note> : null}
       </>}
