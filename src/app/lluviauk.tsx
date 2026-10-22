@@ -15,6 +15,8 @@ const RN: Record<string, [string, string, string, string]> = { UK: ['Reino Unido
   ENG_SW: ['Inglaterra SO y sur de Gales', 'England SW & S Wales', 'Angleterre SO et sud du pays de Galles', 'Inghilterra SO e Galles S'], ENG_SE: ['Inglaterra SE y centro-sur', 'England SE & central S', 'Angleterre SE et centre-sud', 'Inghilterra SE e centro-sud'], MID: ['Midlands', 'Midlands', 'Midlands', 'Midlands'], EAN: ['East Anglia', 'East Anglia', 'East Anglia', 'East Anglia'],
   SCO_N: ['Norte de Escocia', 'Scotland N', 'Nord de l’Écosse', 'Scozia N'], SCO_E: ['Este de Escocia', 'Scotland E', 'Est de l’Écosse', 'Scozia E'], SCO_W: ['Oeste de Escocia', 'Scotland W', 'Ouest de l’Écosse', 'Scozia O'] };
 const LI = { es: 0, en: 1, fr: 2, it: 3 } as const;
+const LOC = { es: 'es-ES', en: 'en-GB', fr: 'fr-FR', it: 'it-IT' } as const;
+const mon = (p: string, l: keyof typeof LOC) => { try { return new Date(Date.UTC(+p.slice(0, 4), +p.slice(5, 7) - 1, 15)).toLocaleDateString(LOC[l], { month: 'long', year: 'numeric', timeZone: 'UTC' }); } catch { return p; } };
 type Reg = { rain: [string, number][]; rainNormal: (number | null)[]; tmean?: [string, number][]; tmeanNormal?: (number | null)[] };
 function pctN(r: Reg, n: number): number | null {
   if (!r.rain || r.rain.length < n) return null; let s = 0, sn = 0;
@@ -59,11 +61,11 @@ export default function LluviaUK() {
       </View>
       <SectionTitle>{name(sel)}</SectionTitle>
       <Card style={{ padding: 14, flexDirection: 'row', flexWrap: 'wrap', rowGap: 12, columnGap: 18 }}>
-        {kp(T('Lluvia de ', 'Rainfall in ', 'Pluie de ', 'Pioggia di ') + last[0], num(last[1], L, 1) + ' mm', p1 == null ? '' : num(p1, L, 0) + ' % ' + ofn, tone(p1))}
+        {kp(T('Lluvia de ', 'Rainfall in ', 'Pluie de ', 'Pioggia di ') + mon(last[0], L), num(last[1], L, 1) + ' mm', p1 == null ? '' : num(p1, L, 0) + ' % ' + ofn, tone(p1))}
         {kp(T('Últimos 3 meses', 'Last 3 months', '3 derniers mois', 'Ultimi 3 mesi'), p3 == null ? '—' : num(p3, L, 0) + ' %', ofn, tone(p3))}
         {kp(T('Últimos 6 meses', 'Last 6 months', '6 derniers mois', 'Ultimi 6 mesi'), p6 == null ? '—' : num(p6, L, 0) + ' %', ofn, tone(p6))}
         {kp(T('Últimos 12 meses', 'Last 12 months', '12 derniers mois', 'Ultimi 12 mesi'), p12 == null ? '—' : num(p12, L, 0) + ' %', ofn, tone(p12))}
-        {tm ? kp(T('Temperatura media ', 'Mean temperature ', 'Température moyenne ', 'Temperatura media ') + tm[0], num(tm[1], L, 1) + ' °C', tn == null ? '' : (tm[1] - tn >= 0 ? '+' : '−') + num(Math.abs(tm[1] - tn), L, 1) + ' °C ' + T('frente a lo normal', 'vs. normal', 'par rapport à la normale', 'rispetto alla norma')) : null}
+        {tm ? kp(T('Temperatura media · ', 'Mean temperature · ', 'Température moyenne · ', 'Temperatura media · ') + mon(tm[0], L), num(tm[1], L, 1) + ' °C', tn == null ? '' : (tm[1] - tn >= 0 ? '+' : '−') + num(Math.abs(tm[1] - tn), L, 1) + ' °C ' + T('frente a lo normal', 'vs. normal', 'par rapport à la normale', 'rispetto alla norma')) : null}
       </Card>
       <SectionTitle>{T('Últimos 3 meses por zona', 'Last 3 months by area', '3 derniers mois par zone', 'Ultimi 3 mesi per zona')}</SectionTitle>
       <Card>

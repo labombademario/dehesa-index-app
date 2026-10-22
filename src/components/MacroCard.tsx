@@ -10,17 +10,20 @@ import { tx } from '../lib/tx';
 import type { Lang } from '../lib/types';
 
 type M = { v: number; y: number; m?: string; cur?: string; src?: string; kind?: string };
+const EURO = new Set(['AT', 'BE', 'BG', 'CY', 'DE', 'EE', 'EL', 'ES', 'FI', 'FR', 'HR', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK']);
 const SYM: Record<string, string> = { EUR: '€', USD: '$', CAD: 'C$', AUD: 'A$', GBP: '£' };
 
 export function MacroCard({ cc, lang }: { cc: string; lang: Lang }) {
   const [m, setM] = useState<Record<string, M> | null>(null);
-  const [rate, setRate] = useState<{ v: number; p: string } | null>(null);
+  const [rate, setRate] = useState<{ v: number; p: string; ecb: boolean } | null>(null);
   useEffect(() => {
     let alive = true;
     webJson('data/country-macro.json', 12 * 3600e3).then(d => { if (alive) setM(d?.countries?.[cc] ?? null); });
     webJson('data/interest-rates-stats.json', 12 * 3600e3).then(d => {
-      const s = (d?.countries?.[cc]?.series ?? []).find((x: any) => /-policy-rate$/.test(x.id));
-      if (alive) setRate(s ? { v: s.latest, p: s.latestPeriod } : null);
+      const own = (d?.countries?.[cc]?.series ?? []).find((x: any) => /-policy-rate$/.test(x.id));
+      // zona euro: el tipo oficial es el del BCE (operaciones principales de financiación)
+      const s = own ?? (EURO.has(cc) ? (d?.countries?.EU?.series ?? []).find((x: any) => x.id === 'eu-policy-rate') : null);
+      if (alive) setRate(s ? { v: s.latest, p: s.latestPeriod, ecb: !own } : null);
     });
     return () => { alive = false; };
   }, [cc]);
@@ -41,8 +44,8 @@ export function MacroCard({ cc, lang }: { cc: string; lang: Lang }) {
   if (m.agri) add('agri', T('Sector primario (% del PIB)', 'Primary sector (% of GDP)', 'Secteur primaire (% du PIB)', 'Settore primario (% del PIL)'), num(m.agri.v, lang, 1) + ' %', m.agri);
   if (m.cons) add('cons', T('Consumo de los hogares (% del PIB)', 'Household consumption (% of GDP)', 'Consommation des ménages (% du PIB)', 'Consumi delle famiglie (% del PIL)'), num(m.cons.v, lang, 1) + ' %', m.cons);
   if (m.infl) add('infl', T('Inflación (interanual)', 'Inflation (year on year)', 'Inflation (sur un an)', 'Inflazione (su base annua)'), (m.infl.v > 0 ? '+' : '') + num(m.infl.v, lang, 1) + ' %', m.infl);
-  if (m.debt) add('debt', T('Deuda pública / PIB', 'Public debt / GDP', 'Dette publique / PIB', 'Debito pubblico / PIL'), num(m.debt.v, lang, 0) + ' %' + (m.debt.src === 'wb-central' ? ' *' : ''), m.debt);
-  if (rate) items.push({ k: 'rate', label: T('Tipo de interés oficial', 'Policy interest rate', 'Taux directeur', 'Tasso ufficiale'), val: num(rate.v, lang, 2) + ' %', y: rate.p });
+  if (m.debt) add('debt', T('Deuda pública / PIB', 'Public debt / GDP', 'Dette publique / PIB', 'Debito pubblico / PIL'), num(m.debt.v, lang, 0) + ' %' + (m.debt.src === 'wb-central' ? ' ' + T('(gobierno central)', '(central government)', '(administration centrale)', '(amministrazione centrale)') : ''), m.debt);
+  if (rate) items.push({ k: 'rate', label: T('Tipo de interés oficial', 'Policy interest rate', 'Taux directeur', 'Tasso ufficiale') + (rate.ecb ? T(' (BCE)', ' (ECB)', ' (BCE)', ' (BCE)') : ''), val: num(rate.v, lang, 2) + ' %', y: rate.p });
   if (!items.length) return null;
   return (
     <View style={{ gap: 10 }}>
