@@ -64,6 +64,9 @@ export default function Pais() {
     ...(c.code === 'ES' ? [{ icon: '📍', label: T('Provincias', 'Provinces', 'Provinces', 'Province'), go: () => router.push('/provincias') }] : []),
     ...(c.code === 'UK' ? [{ icon: '🌧️', label: T('Lluvia', 'Rainfall', 'Pluie', 'Pioggia'), go: () => router.push('/lluviauk') }] : []),
     ...(c.code === 'UK' ? [{ icon: '💷', label: T('Granjas', 'Farm accounts', 'Exploitations', 'Aziende'), go: () => router.push('/granjasuk') }] : []),
+    ...(c.code === 'UK' ? [{ icon: '🗺️', label: T('Renta por región', 'Income by region', 'Revenu par région', 'Reddito per regione'), go: () => router.push('/rentauk') }] : []),
+    ...(c.code === 'UK' ? [{ icon: '🐄', label: T('Ganado', 'Livestock', 'Élevage', 'Bestiame'), go: () => router.push('/ganadouk') }] : []),
+    ...(c.code === 'UK' ? [{ icon: '🍎', label: T('Fruta y hortaliza', 'Fruit and veg', 'Fruits et légumes', 'Frutta e ortaggi'), go: () => router.push({ pathname: '/frutas', params: { c: 'UK' } }) }] : []),
     ...(tradeOk ? [{ icon: '🚢', label: T('Comercio', 'Trade', 'Commerce', 'Commercio'), go: () => router.push({ pathname: '/comercio/[cc]', params: { cc: c.code } }) }] : []),
     ...(prof ? [{ icon: '🔎', label: T('Explorar', 'Explore', 'Explorer', 'Esplora'), go: () => router.push({ pathname: '/explorar', params: { cc: c.code } }) }] : []),
   ];

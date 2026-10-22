@@ -1,7 +1,7 @@
 // Frutas, hortalizas y frutos secos: los 52 productos de la web (precios.html?tab=hortalizas) con su precio semanal en el país elegido.
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Note, Segmented } from '../components/ui';
 import { C, changeColor } from '../lib/theme';
@@ -15,6 +15,12 @@ import { flag } from '../lib/tx';
 type G = 'all' | 'veg' | 'fruit' | 'nut';
 // Sudamérica (formato estándar de la web: un precio por kilo y producto, data/cl/fv.json). Argentina y Uruguay: sin fuente con licencia verificada.
 const SA = ['AR', 'CL', 'UY'];
+// Reino Unido: precio mayorista de producto local en Inglaterra y Gales (Defra), cada dos semanas, en libras y en la unidad publicada (data/views/fv-uk.json).
+interface UkItem { id: string; g: 'veg' | 'fruit' | 'flower'; n: string[]; e: string; u: string; v: number; p: number | null; y: number | null; d: string }
+interface UkDoc { items: UkItem[]; source: { name: string; url: string; license: string } }
+const UK_UNIT: Record<string, T4> = { kg: { es: 'kg', en: 'kg', fr: 'kg', it: 'kg' }, head: { es: 'pieza', en: 'head', fr: 'pièce', it: 'pezzo' }, stem: { es: 'tallo', en: 'stem', fr: 'tige', it: 'stelo' }, 'twin pack': { es: 'pack de 2', en: 'twin pack', fr: 'lot de 2', it: 'conf. da 2' }, bunch: { es: 'manojo', en: 'bunch', fr: 'botte', it: 'mazzo' }, each: { es: 'unidad', en: 'each', fr: 'unité', it: 'unità' } };
+const UK_NOTE: T4 = { es: 'Precio medio mayorista en Inglaterra y Gales de producto cultivado en el Reino Unido (Defra), cada dos semanas: lo que paga el comprador en el mercado mayorista, no lo que cobra el agricultor. La variación es frente al dato anterior; un producto fuera de temporada muestra su último precio en gris.', en: 'Average wholesale price in England and Wales for UK-grown produce (Defra), every two weeks: what buyers pay at wholesale markets, not what the farmer gets. The change is against the previous figure; a product out of season shows its last price in grey.', fr: 'Prix de gros moyen en Angleterre et au pays de Galles pour les produits cultivés au Royaume-Uni (Defra), toutes les deux semaines : ce que paie l’acheteur sur le marché de gros, pas ce que touche l’agriculteur. La variation est par rapport à la donnée précédente ; un produit hors saison affiche son dernier prix en gris.', it: 'Prezzo medio all’ingrosso in Inghilterra e Galles per prodotti coltivati nel Regno Unito (Defra), ogni due settimane: quanto paga l’acquirente al mercato all’ingrosso, non quanto incassa l’agricoltore. La variazione è rispetto al dato precedente; un prodotto fuori stagione mostra l’ultimo prezzo in grigio.' };
+const FLOWERS: T4 = { es: 'Flores', en: 'Flowers', fr: 'Fleurs', it: 'Fiori' };
 interface ClItem { id: string; g: 'veg' | 'fruit' | 'nut'; n: string[]; e: string; stage: 'wholesale' | 'retail'; v: number; p: number | null; y: number | null; d: string; nl: number }
 interface ClDoc { items: ClItem[]; source: { name: string; url: string; license: string } }
 const SA_NOTE: Record<string, T4> = {
@@ -29,11 +35,14 @@ export default function Frutas() {
   const L = user.lang;
   const [doc, setDoc] = useState<FvDoc | null>(null);
   const [done, setDone] = useState(false);
-  const [cc, setCc] = useState(user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES');
+  const prm = useLocalSearchParams<{ c?: string }>();
+  const [cc, setCc] = useState(typeof prm.c === 'string' && /^[A-Z]{2}$/.test(prm.c) ? prm.c : user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES');
   const [g, setG] = useState<G>('all');
   const [q, setQ] = useState('');
   const [cl, setCl] = useState<ClDoc | null>(null);
+  const [uk, setUk] = useState<UkDoc | null>(null);
   useEffect(() => { loadFv().then(d => { setDoc(d); setDone(true); }); }, []);
+  useEffect(() => { if (cc === 'UK' && !uk) webJson('data/views/fv-uk.json', 6 * 3600e3).then((d: UkDoc | null) => setUk(d)); }, [cc, uk]);
   useEffect(() => { if (cc === 'CL' && !cl) webJson('data/cl/fv.json', 3 * 3600e3).then((d: ClDoc | null) => setCl(d)); }, [cc, cl]);
   const groups = useMemo(() => {
     if (!doc) return [] as { g: 'veg' | 'fruit' | 'nut'; items: FvProduct[] }[];
@@ -46,8 +55,8 @@ export default function Frutas() {
     })).filter(x => x.items.length);
   }, [doc, g, q, L, cc]);
   const hidden = useMemo(() => (doc ? doc.products.filter(p => (g === 'all' || p.group === g) && !(p.eu?.latest[cc] || (cc === 'ES' && p.perc))).length : 0), [doc, g, cc]);
-  const ccs = useMemo(() => (doc ? doc.countries.concat(SA).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)) : []), [doc, L]);
-  const isSA = SA.includes(cc), li = { es: 0, en: 1, fr: 2, it: 3 }[L];
+  const ccs = useMemo(() => (doc ? doc.countries.concat(SA, ['UK']).sort((a, b) => countryName(a, L).localeCompare(countryName(b, L), L)) : []), [doc, L]);
+  const isUK = cc === 'UK', isSA = SA.includes(cc), li = { es: 0, en: 1, fr: 2, it: 3 }[L];
   const saGroups = useMemo(() => {
     if (!cl) return [] as { g: 'veg' | 'fruit' | 'nut'; items: ClItem[] }[];
     const qq = norm(q);
@@ -55,6 +64,14 @@ export default function Frutas() {
       g: x, items: cl.items.filter(i => i.g === x && (!qq || norm(i.n.join(' ')).includes(qq))).sort((a, b) => a.n[li].localeCompare(b.n[li], L) || (a.stage < b.stage ? 1 : -1)),
     })).filter(x => x.items.length);
   }, [cl, g, q, L, li]);
+  const ukGroups = useMemo(() => {
+    if (!uk) return [] as { g: 'veg' | 'fruit' | 'flower'; items: UkItem[] }[];
+    const qq = norm(q);
+    return (['veg', 'fruit', 'flower'] as const).filter(x => g === 'all' || g === x || (g === 'nut' && x === 'flower')).map(x => ({
+      g: x, items: uk.items.filter(i => i.g === x && (!qq || norm(i.n.join(' ')).includes(qq))).sort((a, b) => a.n[li].localeCompare(b.n[li], L)),
+    })).filter(x => x.items.length);
+  }, [uk, g, q, L, li]);
+  const ukNewest = uk ? uk.items.reduce((m, i) => (i.d > m ? i.d : m), '') : '';
   const now = Date.now();
   const gName = { veg: t('fvVeg'), fruit: t('fvFruit'), nut: t('fvNut') };
   return (
@@ -65,10 +82,36 @@ export default function Frutas() {
       {!doc ? <Note>{done ? t('noDataNow') : t('loading')}</Note> : <>
         <Text style={{ fontSize: 13, color: C.textMuted, fontWeight: '600' }}>{t('fvCountry')}</Text>
         <CountrySelect items={ccs.map(c => ({ value: c, label: countryName(c, L), flag: flag(c) }))} value={cc} onChange={setCc} title={t('fvCountry')} />
-        <Segmented options={[{ value: 'all', label: t('fvAll') }, { value: 'veg', label: t('fvVeg') }, { value: 'fruit', label: t('fvFruit') }, { value: 'nut', label: t('fvNut') }]} value={g} onChange={setG} />
+        <Segmented options={[{ value: 'all', label: t('fvAll') }, { value: 'veg', label: t('fvVeg') }, { value: 'fruit', label: t('fvFruit') }, { value: 'nut', label: isUK ? tx(L, FLOWERS) : t('fvNut') }]} value={g} onChange={setG} />
         <TextInput value={q} onChangeText={setQ} placeholder={t('fvFind')} placeholderTextColor={C.textMuted} clearButtonMode="while-editing" autoCorrect={false}
           style={{ height: 42, borderRadius: 10, paddingHorizontal: 12, backgroundColor: C.surfaceAlt, color: C.text, fontSize: 15 }} accessibilityLabel={t('fvFind')} />
-        {isSA ? (cc !== 'CL' ? <Note>{tx(L, SA_NOTE[cc])}</Note> : !cl ? <Note>{t('loading')}</Note> : !saGroups.length ? <Note>{t('fvNone')}</Note> : <>
+        {isUK ? (!uk ? <Note>{t('loading')}</Note> : !ukGroups.length ? <Note>{t('fvNone')}</Note> : <>
+          {ukGroups.map(gr => (
+            <View key={gr.g} style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: C.textMuted, marginTop: 4 }} accessibilityRole="header">{gr.g === 'flower' ? tx(L, FLOWERS) : gName[gr.g]}</Text>
+              <Card>
+                {gr.items.map((p, i) => {
+                  const old = Date.parse(ukNewest) - Date.parse(p.d) > 35 * 864e5, ch = !old && p.p ? (p.v / p.p - 1) * 100 : null;
+                  return (
+                    <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
+                      <Text style={{ fontSize: 22, width: 30, textAlign: 'center' }} accessibilityElementsHidden importantForAccessibility="no">{p.e}</Text>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={{ fontSize: 16, fontWeight: '600', color: C.text }}>{p.n[li]}</Text>
+                        <Text style={{ fontSize: 12.5, color: C.textMuted }} numberOfLines={2}>{fmtDate(p.d, L)}{old ? ' · ' + t('fvOld') : ''}</Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: old ? C.textMuted : C.text, fontVariant: ['tabular-nums'] }}>£{num(p.v, L, 2)}/{UK_UNIT[p.u] ? tx(L, UK_UNIT[p.u]) : p.u}</Text>
+                        {ch != null ? <Text style={{ fontSize: 12.5, color: changeColor(ch), fontVariant: ['tabular-nums'] }}>{ch > 0 ? '+' : ''}{num(ch, L, 1)} %</Text> : null}
+                      </View>
+                    </View>
+                  );
+                })}
+              </Card>
+            </View>
+          ))}
+          <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, UK_NOTE)}</Text>
+          <Text style={{ fontSize: 12, color: C.textMuted }}>{uk.source.name} · {uk.source.license}</Text>
+        </>) : isSA ? (cc !== 'CL' ? <Note>{tx(L, SA_NOTE[cc])}</Note> : !cl ? <Note>{t('loading')}</Note> : !saGroups.length ? <Note>{t('fvNone')}</Note> : <>
           {saGroups.map(gr => (
             <View key={gr.g} style={{ gap: 6 }}>
               <Text style={{ fontSize: 13, fontWeight: '700', color: C.textMuted, marginTop: 4 }} accessibilityRole="header">{gName[gr.g]}</Text>

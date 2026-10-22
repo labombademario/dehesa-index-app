@@ -22,6 +22,8 @@ export default function More() {
         <Row title={'🌱 ' + t('swTitle')} sub={t('swSub')} right="›" onPress={() => router.push('/siembra')} />
         <Row title={'💧 ' + t('sqTitle')} sub={t('sqSub')} right="›" onPress={() => router.push('/sequia')} />
         <Row title={'🌧️ ' + tx(user.lang, { es: 'Lluvia en el Reino Unido', en: 'UK rainfall', fr: 'Pluie au Royaume-Uni', it: 'Pioggia nel Regno Unito' })} sub={tx(user.lang, { es: 'Lluvia sobre lo normal por nación y región (Met Office)', en: 'Rainfall vs. normal by nation and region (Met Office)', fr: 'Pluie par rapport à la normale par nation et région (Met Office)', it: 'Pioggia rispetto alla norma per nazione e regione (Met Office)' })} right="›" onPress={() => router.push('/lluviauk')} />
+        <Row title={'🗺️ ' + tx(user.lang, { es: 'Renta agraria de Inglaterra', en: 'England farm income', fr: 'Revenu agricole de l’Angleterre', it: 'Reddito agricolo dell’Inghilterra' })} sub={tx(user.lang, { es: 'Por región y condado (Defra)', en: 'By region and county (Defra)', fr: 'Par région et comté (Defra)', it: 'Per regione e contea (Defra)' })} right="›" onPress={() => router.push('/rentauk')} />
+        <Row title={'🐄 ' + tx(user.lang, { es: 'Ganadería del Reino Unido', en: 'UK livestock', fr: 'Élevage au Royaume-Uni', it: 'Zootecnia del Regno Unito' })} sub={tx(user.lang, { es: 'Mercado de Irlanda del Norte y cabaña de Escocia', en: 'Northern Ireland market and Scotland herd', fr: 'Marché d’Irlande du Nord et cheptel écossais', it: 'Mercato dell’Irlanda del Nord e consistenze scozzesi' })} right="›" onPress={() => router.push('/ganadouk')} />
         <Row title={'⛽ ' + t('envTitle')} sub={t('envSub')} right="›" onPress={() => router.push('/entorno')} />
       </Card>
       <Card>

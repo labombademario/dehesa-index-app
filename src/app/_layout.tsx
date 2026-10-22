@@ -59,6 +59,8 @@ function RootStack() {
       <Stack.Screen name="sequia" options={{ title: '' }} />
       <Stack.Screen name="lluviauk" options={{ title: '' }} />
       <Stack.Screen name="granjasuk" options={{ title: '' }} />
+      <Stack.Screen name="rentauk" options={{ title: '' }} />
+      <Stack.Screen name="ganadouk" options={{ title: '' }} />
       <Stack.Screen name="entorno/index" options={{ title: '' }} />
       <Stack.Screen name="entorno/[cc]" options={{ title: '' }} />
       <Stack.Screen name="lonjas" options={{ title: '' }} />

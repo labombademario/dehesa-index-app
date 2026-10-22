@@ -16,6 +16,9 @@ Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 - **Ficha de país: Economía.** PIB, PIB por habitante, población, paro, sector primario, **consumo de los hogares (% del PIB)**, inflación, deuda y tipo de interés oficial, con el año o mes de cada dato (mismos ficheros que la web: `data/country-macro.json` e `interest-rates-stats.json`).
 - **Reino Unido:** edad de los titulares de explotación de Inglaterra (Defra) en la ficha del país y nueva pantalla **Lluvia en el Reino Unido** (Más y ficha del país): lluvia sobre lo normal 1991-2020 del último mes y de 3, 6 y 12 meses por nación y región, y temperatura del mes (Met Office, OGL v3.0).
 - **Granjas de Inglaterra** (ficha del Reino Unido): producción, costes y renta media por tipo de granja y en qué se va el dinero (Defra, Farm Business Survey). El tipo oficial del Reino Unido (Bank Rate) sale ya en el bloque de Economía.
+- **Renta agraria de Inglaterra** (ficha del Reino Unido y Más): cuenta de cada región (Defra, Total income from farming), de dónde sale la producción y reparto por condado.
+- **Ganadería del Reino Unido**: mercado semanal de vacuno y corderos de Irlanda del Norte (DAERA) y cabaña de Escocia (censo de junio).
+- **Frutas y hortalizas: Reino Unido** en el selector de país: precio mayorista de producto local en Inglaterra y Gales (Defra), en libras.
 - Sin probar en iPhone ni en simulador: solo `tsc` y los tests.
 
 ## Novedades de la compilación 7 (22 oct)
