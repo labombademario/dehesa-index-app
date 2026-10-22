@@ -12,10 +12,15 @@ App de [dehesaindex.com](https://dehesaindex.com) hecha con Expo (React Native +
 
 Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 
+## Novedades de la compilación 7 (22 oct)
+- **Mayoristas por mercado** (Más): fruta y hortaliza de Canadá (AAFC, 6 mercados, CAD) y de EE. UU. (USDA AMS, 9 terminales, USD), con buscador, filtro fruta/hortaliza y precio por kg o libra solo cuando el envase trae peso conocido.
+- **Glosario** (Más): los 43 términos de la web en los 4 idiomas, con buscador.
+- **Selector de provincia de Canadá** en la ficha de los precios de StatCan; aparece cuando exista `data/canada-farm-prices-prov.json` (a la espera de que StatCan vuelva a responder) y, mientras tanto, la ficha queda igual.
+- Sin probar en iPhone ni en simulador: solo `tsc` y los tests.
+
 ## Novedades de la compilación 6 (21 oct)
 - **Frutas y hortalizas: Sudamérica.** El selector de país suma Argentina, Chile y Uruguay. Chile sale en el formato estándar de la web (un precio por kilo y producto, mayorista en Lo Valledor y consumidor en la Región Metropolitana, con variación y etapa; ODEPA, CC BY). Argentina y Uruguay explican por qué aún no hay precios (sin fuente con licencia verificada).
 - Datos incluidos al día (`npm run sync-data`).
-- Pendiente en la app: mayoristas de Canadá y de EE. UU. por mercado, selector de provincia de Canadá (a la espera de que StatCan vuelva a responder), glosario de 43 términos.
 
 ## Novedades de la compilación 3 (19 oct)
 - **Qué sembrar**: los 21 países de la web, con selector de país y un mapa para elegir la región; las regiones sin cultivos con datos suficientes salen en gris y no se pueden elegir.

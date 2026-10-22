@@ -64,6 +64,8 @@ function RootStack() {
       <Stack.Screen name="vino" options={{ title: '' }} />
       <Stack.Screen name="madera" options={{ title: '' }} />
       <Stack.Screen name="localesus" options={{ title: '' }} />
+      <Stack.Screen name="mayoristas" options={{ title: '' }} />
+      <Stack.Screen name="glosario" options={{ title: '' }} />
       <Stack.Screen name="cambios" options={{ title: '' }} />
       <Stack.Screen name="empresas" options={{ title: '' }} />
       <Stack.Screen name="blog" options={{ title: '' }} />

@@ -19,7 +19,7 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "6"
+      "buildNumber": "7"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +33,7 @@
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
       ],
-      "versionCode": 5,
+      "versionCode": 6,
       "blockedPermissions": [
         "android.permission.READ_CALENDAR",
         "android.permission.WRITE_CALENDAR",
