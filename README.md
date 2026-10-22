@@ -12,6 +12,11 @@ App de [dehesaindex.com](https://dehesaindex.com) hecha con Expo (React Native +
 
 Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 
+## Novedades de la compilación 8 (22 oct, noche)
+- **Ficha de país: Economía.** PIB, PIB por habitante, población, paro, sector primario, **consumo de los hogares (% del PIB)**, inflación, deuda y tipo de interés oficial, con el año o mes de cada dato (mismos ficheros que la web: `data/country-macro.json` e `interest-rates-stats.json`).
+- **Reino Unido:** edad de los titulares de explotación de Inglaterra (Defra) en la ficha del país y nueva pantalla **Lluvia en el Reino Unido** (Más y ficha del país): lluvia sobre lo normal 1991-2020 del último mes y de 3, 6 y 12 meses por nación y región, y temperatura del mes (Met Office, OGL v3.0).
+- Sin probar en iPhone ni en simulador: solo `tsc` y los tests.
+
 ## Novedades de la compilación 7 (22 oct)
 - **Mayoristas por mercado** (Más): fruta y hortaliza de Canadá (AAFC, 6 mercados, CAD) y de EE. UU. (USDA AMS, 9 terminales, USD), con buscador, filtro fruta/hortaliza y precio por kg o libra solo cuando el envase trae peso conocido.
 - **Glosario** (Más): los 43 términos de la web en los 4 idiomas, con buscador.

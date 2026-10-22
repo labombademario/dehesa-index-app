@@ -21,6 +21,7 @@ export default function More() {
         <Row first title={'🍅 ' + t('fvTitle')} sub={t('fvSub', 52)} right="›" onPress={() => router.push('/frutas')} />
         <Row title={'🌱 ' + t('swTitle')} sub={t('swSub')} right="›" onPress={() => router.push('/siembra')} />
         <Row title={'💧 ' + t('sqTitle')} sub={t('sqSub')} right="›" onPress={() => router.push('/sequia')} />
+        <Row title={'🌧️ ' + tx(user.lang, { es: 'Lluvia en el Reino Unido', en: 'UK rainfall', fr: 'Pluie au Royaume-Uni', it: 'Pioggia nel Regno Unito' })} sub={tx(user.lang, { es: 'Lluvia sobre lo normal por nación y región (Met Office)', en: 'Rainfall vs. normal by nation and region (Met Office)', fr: 'Pluie par rapport à la normale par nation et région (Met Office)', it: 'Pioggia rispetto alla norma per nazione e regione (Met Office)' })} right="›" onPress={() => router.push('/lluviauk')} />
         <Row title={'⛽ ' + t('envTitle')} sub={t('envSub')} right="›" onPress={() => router.push('/entorno')} />
       </Card>
       <Card>

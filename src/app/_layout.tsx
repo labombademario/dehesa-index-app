@@ -57,6 +57,7 @@ function RootStack() {
       <Stack.Screen name="fruta/[id]" options={{ title: '' }} />
       <Stack.Screen name="siembra" options={{ title: t('swTitle') }} />
       <Stack.Screen name="sequia" options={{ title: '' }} />
+      <Stack.Screen name="lluviauk" options={{ title: '' }} />
       <Stack.Screen name="entorno/index" options={{ title: '' }} />
       <Stack.Screen name="entorno/[cc]" options={{ title: '' }} />
       <Stack.Screen name="lonjas" options={{ title: '' }} />

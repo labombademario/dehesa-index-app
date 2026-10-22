@@ -12,6 +12,7 @@ import type { Price, CountryProfile } from '../../lib/types';
 import { loadCountry, countryFromMemory } from '../../lib/api';
 import { webJson } from '../../lib/fv';
 import { CountryMapView } from '../../components/CountryMapView';
+import { MacroCard, UkFarmersAge } from '../../components/MacroCard';
 
 const REGION_OF: Record<string, Price['region']> = { US: 'us', CA: 'ca', UK: 'uk', GB: 'uk' };
 
@@ -61,6 +62,7 @@ export default function Pais() {
     ...(hasMkts ? [{ icon: '🏛️', label: T('Lonjas', 'Markets', 'Marchés', 'Piazze'), go: () => router.push({ pathname: '/lonjas', params: { c: c.code } }) }] : []),
     ...(hasEnv ? [{ icon: '⛽', label: T('Entorno', 'Environment', 'Contexte', 'Ambiente'), go: () => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } }) }] : []),
     ...(c.code === 'ES' ? [{ icon: '📍', label: T('Provincias', 'Provinces', 'Provinces', 'Province'), go: () => router.push('/provincias') }] : []),
+    ...(c.code === 'UK' ? [{ icon: '🌧️', label: T('Lluvia', 'Rainfall', 'Pluie', 'Pioggia'), go: () => router.push('/lluviauk') }] : []),
     ...(tradeOk ? [{ icon: '🚢', label: T('Comercio', 'Trade', 'Commerce', 'Commercio'), go: () => router.push({ pathname: '/comercio/[cc]', params: { cc: c.code } }) }] : []),
     ...(prof ? [{ icon: '🔎', label: T('Explorar', 'Explore', 'Explorer', 'Esplora'), go: () => router.push({ pathname: '/explorar', params: { cc: c.code } }) }] : []),
   ];
@@ -107,7 +109,9 @@ export default function Pais() {
           <Text style={{ fontSize: 13, color: C.textMuted, lineHeight: 19 }}>{t('coverageText', num(pctv, L, 0), c.name[L])}</Text>
         </Card>
       ) : null}
+      <MacroCard cc={c.code} lang={L} />
       <View {...mark('map')}><CountryMapView cc={c.code} /></View>
+      {c.code === 'UK' ? <UkFarmersAge lang={L} /> : null}
       {prices.length ? <View {...mark('prices')} style={{ gap: 16 }}>
         <SectionTitle>{t('pricesHere')}</SectionTitle>
         <Card>{prices.map((p, i) => <Row key={p.id} first={i === 0} title={p.name[L]} sub={p.place[L] + staleSuffix(p, L, t)} right={`${num(p.value, L)} ${p.unit[L]}`}
