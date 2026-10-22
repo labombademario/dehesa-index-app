@@ -63,6 +63,7 @@ export default function Pais() {
     ...(hasEnv ? [{ icon: '⛽', label: T('Entorno', 'Environment', 'Contexte', 'Ambiente'), go: () => router.push({ pathname: '/entorno/[cc]', params: { cc: c.code } }) }] : []),
     ...(c.code === 'ES' ? [{ icon: '📍', label: T('Provincias', 'Provinces', 'Provinces', 'Province'), go: () => router.push('/provincias') }] : []),
     ...(c.code === 'UK' ? [{ icon: '🌧️', label: T('Lluvia', 'Rainfall', 'Pluie', 'Pioggia'), go: () => router.push('/lluviauk') }] : []),
+    ...(c.code === 'UK' ? [{ icon: '💷', label: T('Granjas', 'Farm accounts', 'Exploitations', 'Aziende'), go: () => router.push('/granjasuk') }] : []),
     ...(tradeOk ? [{ icon: '🚢', label: T('Comercio', 'Trade', 'Commerce', 'Commercio'), go: () => router.push({ pathname: '/comercio/[cc]', params: { cc: c.code } }) }] : []),
     ...(prof ? [{ icon: '🔎', label: T('Explorar', 'Explore', 'Explorer', 'Esplora'), go: () => router.push({ pathname: '/explorar', params: { cc: c.code } }) }] : []),
   ];

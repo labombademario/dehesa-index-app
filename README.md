@@ -15,6 +15,7 @@ Sin cuenta: todo lo del usuario se guarda solo en el teléfono (AsyncStorage).
 ## Novedades de la compilación 8 (22 oct, noche)
 - **Ficha de país: Economía.** PIB, PIB por habitante, población, paro, sector primario, **consumo de los hogares (% del PIB)**, inflación, deuda y tipo de interés oficial, con el año o mes de cada dato (mismos ficheros que la web: `data/country-macro.json` e `interest-rates-stats.json`).
 - **Reino Unido:** edad de los titulares de explotación de Inglaterra (Defra) en la ficha del país y nueva pantalla **Lluvia en el Reino Unido** (Más y ficha del país): lluvia sobre lo normal 1991-2020 del último mes y de 3, 6 y 12 meses por nación y región, y temperatura del mes (Met Office, OGL v3.0).
+- **Granjas de Inglaterra** (ficha del Reino Unido): producción, costes y renta media por tipo de granja y en qué se va el dinero (Defra, Farm Business Survey). El tipo oficial del Reino Unido (Bank Rate) sale ya en el bloque de Economía.
 - Sin probar en iPhone ni en simulador: solo `tsc` y los tests.
 
 ## Novedades de la compilación 7 (22 oct)
