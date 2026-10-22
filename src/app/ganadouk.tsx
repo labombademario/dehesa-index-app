@@ -35,7 +35,7 @@ export default function GanadoUK() {
   const cats = N ? CATS.filter(([c]) => N[pid(c, 'price')]) : [];
   if (!cats.length && !(Sc && Object.keys(Sc).length)) return <Screen><Stack.Screen options={{ title }} /><Note>{done ? t('noDataNow') : t('loading')}</Note></Screen>;
   const ch = (a: number | null | undefined, b: number | null | undefined) => (a != null && b != null && b > 0 ? (a / b - 1) * 100 : null);
-  const s0 = N?.[pid(cat, 'price')], pts = s0 ? s0.points.slice(-156).map(p => p[1]) : [];
+  const s0 = N?.[pid(cat, 'price')], cut = s0 ? Date.parse(s0.points[s0.points.length - 1][0]) - 3 * 365 * 864e5 : 0, pts = s0 ? s0.points.filter(p => Date.parse(p[0]) >= cut).map(p => p[1]) : [];
   const sco = Sc ? SCO.filter(([k]) => Sc[k]) : [];
   return (
     <Screen>
@@ -45,7 +45,7 @@ export default function GanadoUK() {
         <Note>{T('Precio medio en canal que pagan los mataderos, en peniques por kilo (100 peniques = 1 libra), y animales con precio esa semana. Fuente: DAERA.', 'Average deadweight price paid by abattoirs, in pence per kilo (100p = £1), and animals priced that week. Source: DAERA.', 'Prix moyen en carcasse payé par les abattoirs, en pence par kilo (100 p = 1 £), et animaux cotés dans la semaine. Source : DAERA.', 'Prezzo medio a carcassa pagato dai macelli, in pence al chilo (100 p = 1 £), e capi quotati nella settimana. Fonte: DAERA.')}</Note>
         <Card>
           {cats.map(([c, nm], i) => {
-            const s = N[pid(c, 'price')], a = s.points[s.points.length - 1], b = s.points[s.points.length - 2], hd = N[pid(c, 'head')], h = hd?.points[hd.points.length - 1], r3 = N[pid(c, 'r3')], r = r3?.points[r3.points.length - 1], cc = ch(a[1], b?.[1]);
+            const s = N[pid(c, 'price')], a = s.points[s.points.length - 1], b0 = s.points[s.points.length - 2], b = b0 && Date.parse(a[0]) - Date.parse(b0[0]) <= 10 * 864e5 ? b0 : undefined, hd = N[pid(c, 'head')], h = hd?.points[hd.points.length - 1], r3 = N[pid(c, 'r3')], r = r3?.points[r3.points.length - 1], cc = ch(a[1], b?.[1]);
             return (
               <Pressable key={c} onPress={() => setCat(c)} accessibilityRole="button" accessibilityState={{ selected: c === cat }} android_ripple={{ color: C.surfaceAlt }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: C.border, backgroundColor: c === cat ? C.surfaceAlt : undefined }}>

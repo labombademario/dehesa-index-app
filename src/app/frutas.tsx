@@ -41,9 +41,10 @@ export default function Frutas() {
   const [q, setQ] = useState('');
   const [cl, setCl] = useState<ClDoc | null>(null);
   const [uk, setUk] = useState<UkDoc | null>(null);
+  const [extDone, setExtDone] = useState<Record<string, boolean>>({});
   useEffect(() => { loadFv().then(d => { setDoc(d); setDone(true); }); }, []);
-  useEffect(() => { if (cc === 'UK' && !uk) webJson('data/views/fv-uk.json', 6 * 3600e3).then((d: UkDoc | null) => setUk(d)); }, [cc, uk]);
-  useEffect(() => { if (cc === 'CL' && !cl) webJson('data/cl/fv.json', 3 * 3600e3).then((d: ClDoc | null) => setCl(d)); }, [cc, cl]);
+  useEffect(() => { if (cc === 'UK' && !uk) webJson('data/views/fv-uk.json', 6 * 3600e3).then((d: UkDoc | null) => { setUk(d); setExtDone(x => ({ ...x, UK: true })); }); }, [cc, uk]);
+  useEffect(() => { if (cc === 'CL' && !cl) webJson('data/cl/fv.json', 3 * 3600e3).then((d: ClDoc | null) => { setCl(d); setExtDone(x => ({ ...x, CL: true })); }); }, [cc, cl]);
   const groups = useMemo(() => {
     if (!doc) return [] as { g: 'veg' | 'fruit' | 'nut'; items: FvProduct[] }[];
     const qq = norm(q);
@@ -85,7 +86,7 @@ export default function Frutas() {
         <Segmented options={[{ value: 'all', label: t('fvAll') }, { value: 'veg', label: t('fvVeg') }, { value: 'fruit', label: t('fvFruit') }, { value: 'nut', label: isUK ? tx(L, FLOWERS) : t('fvNut') }]} value={g} onChange={setG} />
         <TextInput value={q} onChangeText={setQ} placeholder={t('fvFind')} placeholderTextColor={C.textMuted} clearButtonMode="while-editing" autoCorrect={false}
           style={{ height: 42, borderRadius: 10, paddingHorizontal: 12, backgroundColor: C.surfaceAlt, color: C.text, fontSize: 15 }} accessibilityLabel={t('fvFind')} />
-        {isUK ? (!uk ? <Note>{t('loading')}</Note> : !ukGroups.length ? <Note>{t('fvNone')}</Note> : <>
+        {isUK ? (!uk ? <Note>{extDone.UK ? t('noDataNow') : t('loading')}</Note> : !ukGroups.length ? <Note>{t('fvNone')}</Note> : <>
           {ukGroups.map(gr => (
             <View key={gr.g} style={{ gap: 6 }}>
               <Text style={{ fontSize: 13, fontWeight: '700', color: C.textMuted, marginTop: 4 }} accessibilityRole="header">{gr.g === 'flower' ? tx(L, FLOWERS) : gName[gr.g]}</Text>
@@ -111,7 +112,7 @@ export default function Frutas() {
           ))}
           <Text style={{ fontSize: 12, color: C.textMuted }}>{tx(L, UK_NOTE)}</Text>
           <Text style={{ fontSize: 12, color: C.textMuted }}>{uk.source.name} · {uk.source.license}</Text>
-        </>) : isSA ? (cc !== 'CL' ? <Note>{tx(L, SA_NOTE[cc])}</Note> : !cl ? <Note>{t('loading')}</Note> : !saGroups.length ? <Note>{t('fvNone')}</Note> : <>
+        </>) : isSA ? (cc !== 'CL' ? <Note>{tx(L, SA_NOTE[cc])}</Note> : !cl ? <Note>{extDone.CL ? t('noDataNow') : t('loading')}</Note> : !saGroups.length ? <Note>{t('fvNone')}</Note> : <>
           {saGroups.map(gr => (
             <View key={gr.g} style={{ gap: 6 }}>
               <Text style={{ fontSize: 13, fontWeight: '700', color: C.textMuted, marginTop: 4 }} accessibilityRole="header">{gName[gr.g]}</Text>

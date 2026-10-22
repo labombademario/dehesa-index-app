@@ -85,7 +85,7 @@ export default function RentaUK() {
       {terr.length ? <>
         <SectionTitle>{T('Por territorio', 'By area', 'Par territoire', 'Per territorio')}</SectionTitle>
         <Card>
-          {terr.map((a: any, i: number) => { const c = ch(a.v, a.p); return (
+          {terr.map((a: any, i: number) => { const c = a.p != null && a.p >= 1 ? ch(a.v, a.p) : null; return (
             <View key={a.n} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
               <Text style={{ flex: 1, fontSize: 14, color: C.text }}>{a.n}</Text>
               <Text style={{ fontSize: 14, fontWeight: '600', color: C.text, fontVariant: ['tabular-nums'] }}>{m(a.v)}{c == null ? '' : '  '}<Text style={{ fontSize: 12, color: changeColor(c) }}>{c == null ? '' : pct(c, L)}</Text></Text>
