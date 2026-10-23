@@ -5,6 +5,8 @@ export type T4 = Record<Lang, string>;
 export interface Price {
   id: string;
   product: string;
+  /** categoría de la web (cereales, lacteos, …, tropicales); la app agrupa con ella */
+  cat?: string;
   region: 'eu' | 'us' | 'uk' | 'ca';
   /** país de la UE cuando el precio es de ese país (data/app/v1/eu/<CC>.json); sin él, España como referencia */
   cc?: string;
