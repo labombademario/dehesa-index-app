@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Text, TextInput } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useApp, staleSuffix } from '../lib/store';
 import { Screen, Card, Row, SectionTitle, Note, s } from '../components/ui';
 import { C } from '../lib/theme';
 import { norm } from '../lib/logic';
 import { loadSearchIndex, loadCatalog, type SearchRow } from '../lib/api';
+import { openSafe } from '../lib/openLink';
 
 export default function Buscar() {
   const { data, user, t } = useApp();
@@ -68,7 +69,7 @@ export default function Buscar() {
       {res && res.sections.length ? <><SectionTitle>{t('gsSections')}</SectionTitle>
         <Card>{res.sections.map((x, i) => <Row key={x.id} first={i === 0} title={x.name[L]} right="›" onPress={() => router.push(`/seccion/${x.id}`)} />)}</Card></> : null}
       {res && res.news.length ? <><SectionTitle>{t('gsNews')}</SectionTitle>
-        <Card>{res.news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={n.source} onPress={() => Linking.openURL(n.url)} />)}</Card></> : null}
+        <Card>{res.news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={n.source} onPress={() => openSafe(n.url)} />)}</Card></> : null}
       {res ? <>
         <SectionTitle>{t('gsSeries')}</SectionTitle>
         {!idx ? <Note>{t('gsIndexLoading')}</Note> : res.series.length ? <Card>{res.series.map((x, i) => <Row key={x.row[0] + x.row[1]} first={i === 0} title={x.label} sub={cname(x.row[0])} right="›" onPress={() => openSeries(x.row[0], x.row[1])} />)}</Card> : null}

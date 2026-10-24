@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Text, View, useWindowDimensions } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle } from '../components/ui';
@@ -9,13 +9,17 @@ import { RangeChart } from '../components/RangeChart';
 import { numAuto } from '../lib/format';
 import type { RegionData } from '../lib/types';
 import { fmtMetric } from '../components/CountryMapView';
+import { openSafe } from '../lib/openLink';
+import { param } from '../lib/safe';
 
 // Unidades de Eurostat (en inglés) en el idioma de la app
 const UNITS: Record<string, [string, string, string, string]> = { 'EUR million, current prices': ['millones de EUR, precios corrientes', 'EUR million, current prices', 'millions d’EUR, prix courants', 'milioni di EUR, prezzi correnti'], 'thousand ha': ['mil ha', 'thousand ha', 'milliers d’ha', 'migliaia di ha'], 'thousand t': ['mil t', 'thousand t', 'milliers de t', 'migliaia di t'], 'thousand head': ['miles de cabezas', 'thousand head', 'milliers de têtes', 'migliaia di capi'], 'thousand tonnes': ['mil t', 'thousand tonnes', 'milliers de t', 'migliaia di t'] };
 const LI: Record<string, number> = { es: 0, en: 1, fr: 2, it: 3 };
 
 export default function Region() {
-  const { cc, r } = useLocalSearchParams<{ cc: string; r: string }>();
+  const rp = useLocalSearchParams<{ cc: string; r: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const cc = param(rp.cc, 'cc');
+  const r = param(rp.r, 'id');
   const { data, user, t } = useApp();
   const { width } = useWindowDimensions();
   const [rd, setRd] = useState<RegionData | null>(null);
@@ -73,7 +77,7 @@ export default function Region() {
         </> : null}
         {rd!.source ? <Note>{t('regSource')}: {rd!.source.name} · {rd!.source.license}</Note> : null}
       </> : null}
-      <Button kind="secondary" label={t('regionWeb')} onPress={() => Linking.openURL(`https://dehesaindex.com/region.html?c=${cc}&r=${reg.id}`)} />
+      <Button kind="secondary" label={t('regionWeb')} onPress={() => openSafe(`https://dehesaindex.com/region.html?c=${cc}&r=${reg.id}`)} />
     </Screen>
   );
 }

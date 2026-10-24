@@ -14,6 +14,7 @@ import { LJ } from '../lib/lonjasNames';
 import { SourceCite } from '../components/SourceCite';
 import { tx, fill, flag } from '../lib/tx';
 import { CountrySelect } from '../components/CountryPicker';
+import { param } from '../lib/safe';
 
 type Reg = { c: string; m?: string; last: [string, number]; prev?: [string, number] | null; yoy?: [string, number] | null };
 type Ser = { id: string; parts: string[]; unit: string; regions: Reg[] };
@@ -28,7 +29,8 @@ export default function Lonjas() {
   const { user, t } = useApp();
   const L = user.lang, li = LI[L];
   const { width } = useWindowDimensions();
-  const { c: pc } = useLocalSearchParams<{ c?: string }>();
+  const rp = useLocalSearchParams<{ c?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const pc = param(rp.c, 'cc') || undefined;
   const [cc, setCc] = useState<string>(pc && LJ.CTRY[String(pc)] ? String(pc) : LJ.CTRY[user.market] ? user.market : 'ES');
   const [fam, setFam] = useState<string>('cereales');
   const [data, setData] = useState<Record<string, { series: Ser[] } | null>>({});

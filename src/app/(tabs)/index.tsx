@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Row, SectionTitle, Icon, Note } from '../../components/ui';
@@ -8,6 +8,7 @@ import { movers } from '../../lib/logic';
 import { countryName } from '../../lib/fv';
 import { tx } from '../../lib/tx';
 import { num, pct, date, localTime } from '../../lib/format';
+import { openSafe } from '../../lib/openLink';
 
 // Nombre legible de un conjunto de datos: si el feed solo trae el nombre del fichero, se limpia (data/abares-stats.json -> abares)
 function dataName(name: string, file: string): string {
@@ -53,7 +54,7 @@ export default function Today() {
 
       {news.length ? <>
         <SectionTitle action={t('seeAll')} onAction={() => router.push('/noticias')}>{t('news')}</SectionTitle>
-        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country ? countryName(n.country, user.lang) : ''].filter(Boolean).join(' · ')} onPress={() => Linking.openURL(n.url)} />)}</Card>
+        <Card>{news.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country ? countryName(n.country, user.lang) : ''].filter(Boolean).join(' · ')} onPress={() => openSafe(n.url)} />)}</Card>
       </> : null}
 
       {data.today.newDatasets.length ? <>

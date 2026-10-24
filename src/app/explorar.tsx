@@ -10,6 +10,7 @@ import { loadCatalog, countryFromMemory, type CatSeries } from '../lib/api';
 import { loadGloss } from '../lib/gloss';
 import { tl } from '../lib/labelTl';
 import { tx } from '../lib/tx';
+import { param } from '../lib/safe';
 
 // Nombre de cada grupo de series en los cuatro idiomas (antes salían ids internos como «idx_perc» o «prices_lv»)
 const GROUPS: Record<string, { es: string; en: string; fr: string; it: string }> = {
@@ -27,7 +28,10 @@ const GROUPS: Record<string, { es: string; en: string; fr: string; it: string }>
 const PAGE = 60;
 
 export default function Explorar() {
-  const { cc, g, q: q0 } = useLocalSearchParams<{ cc: string; g?: string; q?: string }>();
+  const rp = useLocalSearchParams<{ cc: string; g?: string; q?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const cc = param(rp.cc, 'cc');
+  const g = param(rp.g, 'flag') || undefined;
+  const q0 = param(rp.q, 'text') || undefined;
   const { data, user, t } = useApp();
   const L = user.lang;
   const [cat, setCat] = useState<CatSeries[] | null>(null);

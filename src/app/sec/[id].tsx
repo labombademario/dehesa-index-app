@@ -12,12 +12,15 @@ import { C } from '../../lib/theme';
 import { webJson, countryName } from '../../lib/fv';
 import { flag, tx } from '../../lib/tx';
 import { CountrySelect } from '../../components/CountryPicker';
+import { param } from '../../lib/safe';
 
 type Doc = { id: string; title: T4; emoji?: string; blocks: Block[] };
 const SPECIAL: Record<string, T4> = { WORLD: { es: 'Mundo', en: 'World', fr: 'Monde', it: 'Mondo' }, EU: { es: 'UE', en: 'EU', fr: 'UE', it: 'UE' } };
 
 export default function Seccion() {
-  const { id, c } = useLocalSearchParams<{ id: string; c?: string }>();
+  const rp = useLocalSearchParams<{ id: string; c?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const id = param(rp.id, 'id');
+  const c = param(rp.c, 'cc') || undefined;
   const { user, t } = useApp();
   const L = user.lang;
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);

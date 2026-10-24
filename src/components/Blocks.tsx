@@ -1,7 +1,7 @@
 // Plantilla única para los bloques que genera la web (data/app/v1/env y data/app/v1/sec): cifras, gráficos con selector de serie,
 // barras (las 12 primeras y «ver todas»), nota y fuente. Así cada sección nueva de la web llega a la app sin escribir otra pantalla.
 import React, { useState } from 'react';
-import { Linking, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { useApp } from '../lib/store';
 import { Card, Row, Segmented } from './ui';
 import { RangeChart } from './RangeChart';
@@ -9,6 +9,7 @@ import { Chips } from './Chips';
 import { C } from '../lib/theme';
 import { num, date as fmtDate } from '../lib/format';
 import type { Lang } from '../lib/types';
+import { openSafe } from '../lib/openLink';
 
 export type T4 = Record<Lang, string>;
 export interface BStat { label: T4; value: number | null; unit: string | T4; dec: number; sub?: { d?: string | T4 } }
@@ -79,7 +80,7 @@ export function BlockView({ b, onLink, linkLabel }: { b: Block; onLink?: (href: 
       {(b.charts ?? []).map((c, k) => <ChartCard key={b.id + 'c' + k} c={c} L={L} width={cw} />)}
       {(b.bars ?? []).map((x, k) => <BarsCard key={b.id + 'b' + k} b={x} L={L} />)}
       {b.note ? <Text style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 18 }}>{b.note[L]}</Text> : null}
-      {b.source ? <Pressable onPress={() => b.source?.url && Linking.openURL(b.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{t('envSource', b.source.name)}</Text></Pressable> : null}
+      {b.source ? <Pressable onPress={() => b.source?.url && openSafe(b.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{t('envSource', b.source.name)}</Text></Pressable> : null}
     </View>
   );
 }

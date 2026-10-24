@@ -1,7 +1,7 @@
 // Mercados Dehesa (como dehesa.html): cerdo ibérico (censo MAPA), pastos (precio de la tierra y renta, MAPA), corcho (producción por comunidad y valor, MITECO) y productos del monte (Anuario forestal 2021).
 // Lee data/dehesa.json de la web. Solo cifras oficiales ya publicadas; lo que no tiene fuente abierta se declara pendiente. No se calcula ni se estima nada en la app.
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, useWindowDimensions } from 'react-native';
+import { Pressable, Text, useWindowDimensions } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle } from '../components/ui';
@@ -11,6 +11,7 @@ import { C, changeColor } from '../lib/theme';
 import { num, pct, date as fmtDate } from '../lib/format';
 import { webJson } from '../lib/fv';
 import { tx, type T4 } from '../lib/tx';
+import { openSafe } from '../lib/openLink';
 
 type Pt = [string, number];
 type Src = { name: string; url: string };
@@ -28,7 +29,7 @@ const FOREST: [string, string, T4, string][] = [
   ['mushrooms', '🍄', { es: 'Setas', en: 'Mushrooms', fr: 'Champignons', it: 'Funghi' }, 'kg'],
   ['resin', '🌲', { es: 'Resina', en: 'Resin', fr: 'Résine', it: 'Resina' }, 't'],
 ];
-const link = (s: Src, L: string) => <Pressable onPress={() => Linking.openURL(s.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{tx(L as 'es', { es: 'Fuente: ', en: 'Source: ', fr: 'Source : ', it: 'Fonte: ' }) + s.name}</Text></Pressable>;
+const link = (s: Src, L: string) => <Pressable onPress={() => openSafe(s.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{tx(L as 'es', { es: 'Fuente: ', en: 'Source: ', fr: 'Source : ', it: 'Fonte: ' }) + s.name}</Text></Pressable>;
 const small = { fontSize: 12.5, color: C.textMuted } as const;
 
 export default function DehesaScreen() {

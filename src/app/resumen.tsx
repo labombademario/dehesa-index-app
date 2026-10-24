@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, SectionTitle, Note, Segmented } from '../components/ui';
@@ -8,6 +8,7 @@ import { numAuto, pct, date } from '../lib/format';
 import { loadGloss } from '../lib/gloss';
 import { tl } from '../lib/labelTl';
 import { loadSummary, type SummaryData } from '../lib/api';
+import { openSafe } from '../lib/openLink';
 
 export default function Resumen() {
   const { user, t, data } = useApp();
@@ -64,7 +65,7 @@ export default function Resumen() {
             );
           })}</Card>
           <SectionTitle>{t('sumTop')}</SectionTitle>
-          <Card>{w.top.map((x, i) => <Row key={x.url} first={i === 0} title={x.h} sub={[x.source, date(x.date, L)].join(' · ')} onPress={() => Linking.openURL(x.url)} />)}</Card>
+          <Card>{w.top.map((x, i) => <Row key={x.url} first={i === 0} title={x.h} sub={[x.source, date(x.date, L)].join(' · ')} onPress={() => openSafe(x.url)} />)}</Card>
         </> : null}
       </>}
     </Screen>

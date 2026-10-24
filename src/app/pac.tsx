@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Button, Note, Segmented } from '../components/ui';
@@ -7,6 +7,7 @@ import { C } from '../lib/theme';
 import { loadPac, type PacData } from '../lib/api';
 import { tx } from '../lib/tx';
 import { date } from '../lib/format';
+import { openSafe } from '../lib/openLink';
 
 // «Md€» solo se entiende en español: abreviatura de miles de millones en cada idioma
 const BN: Record<string, string> = { es: 'Md€', en: 'bn €', fr: 'Md€', it: 'Mld €' };
@@ -63,7 +64,7 @@ export default function Pac() {
           ))}
         </Card>
         <Text style={{ fontSize: 12, color: C.textMuted }}>{pac.act.replace(/^Reglamento \(UE\)/, tx(L, { es: 'Reglamento (UE)', en: 'Regulation (EU)', fr: 'Règlement (UE)', it: 'Regolamento (UE)' }))} · {pac.sourceName} · {tx(L, { es: 'versión consolidada del', en: 'consolidated version of', fr: 'version consolidée du', it: 'versione consolidata del' })} {date(pac.consolidated, L)}</Text>
-        <Button kind="secondary" style={{ flex: 0 }} label={t('pacLaw')} onPress={() => Linking.openURL(pac.url)} />
+        <Button kind="secondary" style={{ flex: 0 }} label={t('pacLaw')} onPress={() => openSafe(pac.url)} />
       </>}
     </Screen>
   );

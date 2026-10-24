@@ -2,6 +2,7 @@
 // data/series/ES/*.json y data/spain-crops/crops-<grupo>.json) y guarda la última copia en el teléfono para verlos sin conexión.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Lang } from './types';
+import { dataPath, parseJson } from './safe';
 
 const WEB = 'https://dehesaindex.com/';
 export type Stage = 'pack' | 'farm' | 'retail';
@@ -18,6 +19,7 @@ const mem: Record<string, any> = {};
 // peticiones en curso: dos pantallas que piden el mismo fichero a la vez lo bajan y lo guardan una sola vez
 const inflight: Record<string, Promise<any | null>> = {};
 function getCached(path: string, maxAgeMs: number): Promise<any | null> {
+  path = dataPath(path); if (!path) return Promise.resolve(null);   // solo rutas relativas normales dentro de la web
   return inflight[path] ??= getCached1(path, maxAgeMs).finally(() => { delete inflight[path]; });
 }
 async function getCached1(path: string, maxAgeMs: number): Promise<any | null> {
@@ -30,7 +32,7 @@ async function getCached1(path: string, maxAgeMs: number): Promise<any | null> {
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 20000);
     const r = await fetch(WEB + path + '?t=' + Math.floor(Date.now() / 3600e3), { signal: ctrl.signal }); clearTimeout(t);
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const body = await r.json(); const rec = { at: Date.now(), body }; mem[path] = rec;
+    const body = parseJson(await r.text()); const rec = { at: Date.now(), body }; mem[path] = rec;
     try { await AsyncStorage.setItem(key, JSON.stringify(rec)); } catch { /* sin espacio: solo en memoria */ }
     return body;
   } catch {

@@ -2,12 +2,13 @@
 // la licencia y el texto de atribución tal como los publica la fuente. Todo sale de data/views/license-cite.json (generado desde data/license-registry.json)
 // a través del sourceId: ningún texto de fuente o licencia se escribe a mano en las pantallas.
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useApp } from '../lib/store';
 import { webJson } from '../lib/fv';
 import { C } from '../lib/theme';
 import { date as fmtDate } from '../lib/format';
 import { tx } from '../lib/tx';
+import { openSafe } from '../lib/openLink';
 
 type Src = { name: string; short?: string; url?: string; licenseUrl?: string; licenseName?: string; attributionText?: string; verifiedAt?: string; status?: string; aliases?: string[] };
 let REG: Record<string, Src> | null = null;
@@ -36,7 +37,7 @@ export function SourceCite({ sourceId, period }: { sourceId?: string | null; per
   if (!s) return null;
   const per = period ? (/^\d{4}-\d{2}-\d{2}$/.test(period) ? fmtDate(period, L) : period) : '';
   const lab = { fontSize: 12, color: C.textMuted };
-  const link = (label: string, url?: string) => (safe(url) ? <Pressable onPress={() => Linking.openURL(safe(url))} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{label}</Text></Pressable> : <Text style={lab}>{label}</Text>);
+  const link = (label: string, url?: string) => (safe(url) ? <Pressable onPress={() => openSafe(url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{label}</Text></Pressable> : <Text style={lab}>{label}</Text>);
   return (
     <View style={{ gap: 4 }}>
       <Pressable onPress={() => setOpen(!open)} accessibilityRole="button" accessibilityState={{ expanded: open }}

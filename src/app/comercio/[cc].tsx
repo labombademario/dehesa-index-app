@@ -9,11 +9,13 @@ import { BlockView, type Block } from '../../components/Blocks';
 import { C } from '../../lib/theme';
 import { webJson, countryName } from '../../lib/fv';
 import type { Lang } from '../../lib/types';
+import { param } from '../../lib/safe';
 
 type Doc = { country: string; blocks: (Block & { asOfT?: Record<Lang, string> })[] };
 
 export default function Comercio() {
-  const { cc } = useLocalSearchParams<{ cc: string }>();
+  const rp = useLocalSearchParams<{ cc: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const cc = param(rp.cc, 'cc');
   const { user, t } = useApp();
   const L = user.lang;
   const code = String(cc).toUpperCase();

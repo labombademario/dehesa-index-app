@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { tx } from '../../lib/tx';
 import { norm } from '../../lib/logic';
@@ -13,11 +13,14 @@ import { loadCountry, countryFromMemory } from '../../lib/api';
 import { webJson } from '../../lib/fv';
 import { CountryMapView } from '../../components/CountryMapView';
 import { MacroCard, UkFarmersAge } from '../../components/MacroCard';
+import { openSafe } from '../../lib/openLink';
+import { param } from '../../lib/safe';
 
 const REGION_OF: Record<string, Price['region']> = { US: 'us', CA: 'ca', UK: 'uk', GB: 'uk' };
 
 export default function Pais() {
-  const { code } = useLocalSearchParams<{ code: string }>();
+  const rp = useLocalSearchParams<{ code: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const code = param(rp.code, 'cc');
   const { data, user, t, loadEu } = useApp();
   const L = user.lang;
   const c = data.countries.find(x => x.code === code);
@@ -170,7 +173,7 @@ export default function Pais() {
           {Array.from(new Set(prof.groups.flatMap(g => g.series.map(sr => sr.sourceId)))).map(id => <SourceCite key={id} sourceId={id} period={prof.latestPeriod} />)}
         </> : null}
       </View>
-      <Button label={t('fullProfile')} onPress={() => Linking.openURL(c.url)} />
+      <Button label={t('fullProfile')} onPress={() => openSafe(c.url)} />
     </Screen>
   );
 }

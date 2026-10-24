@@ -8,6 +8,7 @@ import { evaluateAlert, type AlertRule } from '../lib/logic';
 import { num, parseNum } from '../lib/format';
 import type { Lang } from '../lib/types';
 import { ensurePermission, markSeen, notificationsEnabled } from '../lib/notify';
+import { param } from '../lib/safe';
 
 let PL: Lang = 'es';
 const parse = (v: string) => parseNum(v, PL);
@@ -16,7 +17,8 @@ const parse = (v: string) => parseNum(v, PL);
 const ud = (v: number) => (Number.isInteger(v) ? 0 : Math.min(3, String(v).split('.')[1]?.length ?? 0));
 
 export default function Avisos() {
-  const { nuevo } = useLocalSearchParams<{ nuevo?: string }>();
+  const rp = useLocalSearchParams<{ nuevo?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const nuevo = param(rp.nuevo, 'id') || undefined;
   const { data, user, setUser, price, t } = useApp();
   const L = user.lang; PL = L;
   const [form, setForm] = useState<{ priceId: string; cond: AlertRule['cond']; value: string; touched?: boolean } | null>(null);

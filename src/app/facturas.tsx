@@ -1,7 +1,7 @@
 // Comparador de facturas con el mercado (como comparador-facturas.html): pega tus compras o ventas y mira si pagaste o cobraste más o menos que el mercado
 // en esas mismas fechas y con las mismas cantidades. Todo se calcula en el teléfono: no se envía ni se guarda nada. Reglas en src/lib/invoice.ts.
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle, Segmented, Button } from '../components/ui';
@@ -10,6 +10,7 @@ import { webJson } from '../lib/fv';
 import { norm } from '../lib/logic';
 import { tx, fill, type T4 } from '../lib/tx';
 import { parse, compute, amb, type Pt } from '../lib/invoice';
+import { openSafe } from '../lib/openLink';
 
 type Idx = { series: { id: string; product: string; region: string; name: T4; unit: string; currency: string }[] };
 type Ser = { id: string; product: string; region: string; name: T4; place?: T4; unit: string; currency: string; frequency: string; sourceName: string; license: string; attribution: string; note?: T4; points: Pt[] };
@@ -144,7 +145,7 @@ export default function Facturas() {
               <Text style={small}>{T('Para cada factura se toma el precio de mercado de su mismo mes (series mensuales), trimestre (trimestrales) o la última cotización de los 14 días anteriores (semanales; 7 días en las diarias). Sin dato, la línea no entra. Esto no es asesoramiento financiero: la serie es un precio de referencia de una fuente oficial, no tu mercado exacto.', 'For each invoice we take the market price of the same month (monthly series), quarter (quarterly) or the latest quote from the previous 14 days (weekly; 7 days for daily). With no data, the line is left out. This is not financial advice: the series is a reference price from an official source, not your exact market.', 'Pour chaque facture on prend le prix de marché du même mois (séries mensuelles), trimestre (trimestrielles) ou la dernière cotation des 14 jours précédents (hebdomadaires ; 7 jours pour les quotidiennes). Sans donnée, la ligne est exclue. Ce n’est pas un conseil financier : la série est un prix de référence d’une source officielle, pas votre marché exact.', 'Per ogni fattura si prende il prezzo di mercato dello stesso mese (serie mensili), trimestre (trimestrali) o l’ultima quotazione dei 14 giorni precedenti (settimanali; 7 giorni per le giornaliere). Senza dato, la riga è esclusa. Non è consulenza finanziaria: la serie è un prezzo di riferimento di una fonte ufficiale, non il tuo mercato esatto.')}</Text>
               <Text style={small}>{T('Fuente: ', 'Source: ', 'Source : ', 'Fonte: ') + ser.sourceName + ' · ' + T('Licencia: ', 'Licence: ', 'Licence : ', 'Licenza: ') + ser.license}</Text>
               {ser.note ? <Text style={small}>{T('Qué mide la serie: ', 'What the series measures: ', 'Ce que mesure la série : ', 'Cosa misura la serie: ') + tx(L, ser.note)}</Text> : null}
-              <Pressable onPress={() => Linking.openURL('https://dehesaindex.com/comparador-facturas.html?s=' + encodeURIComponent(ser.id))} accessibilityRole="link"><Text style={{ fontSize: 12.5, color: C.accent }}>{T('Abrir en la web para imprimir o descargar el CSV', 'Open on the web to print or download the CSV', 'Ouvrir sur le web pour imprimer ou télécharger le CSV', 'Apri sul web per stampare o scaricare il CSV')}</Text></Pressable>
+              <Pressable onPress={() => openSafe('https://dehesaindex.com/comparador-facturas.html?s=' + encodeURIComponent(ser.id))} accessibilityRole="link"><Text style={{ fontSize: 12.5, color: C.accent }}>{T('Abrir en la web para imprimir o descargar el CSV', 'Open on the web to print or download the CSV', 'Ouvrir sur le web pour imprimer ou télécharger le CSV', 'Apri sul web per stampare o scaricare il CSV')}</Text></Pressable>
             </>}
           </> : null}
       </> : null}

@@ -12,6 +12,7 @@ import { num, date as fmtDate, pct } from '../../lib/format';
 import { loadFv, loadEuSeries, loadPerc, loadCrops, loadFarm, countryName, stageName, variantName, type FvProduct, type CropsDoc, type FarmDoc } from '../../lib/fv';
 import { CountrySelect } from '../../components/CountryPicker';
 import { flag } from '../../lib/tx';
+import { param } from '../../lib/safe';
 
 type Pts = [string, number][];
 const DAY = 864e5;
@@ -30,7 +31,9 @@ function Bar({ label, value, sub, frac, strong, muted }: { label: string; value:
 }
 
 export default function Fruta() {
-  const { id, c } = useLocalSearchParams<{ id: string; c?: string }>();
+  const rp = useLocalSearchParams<{ id: string; c?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const id = param(rp.id, 'id');
+  const c = param(rp.c, 'cc') || undefined;
   const { user, t } = useApp();
   const L = user.lang;
   const homeCc = user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES';

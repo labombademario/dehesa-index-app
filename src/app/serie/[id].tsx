@@ -12,13 +12,15 @@ import { num, pct, date } from '../../lib/format';
 import { Chips } from '../../components/Chips';
 import { webJson } from '../../lib/fv';
 import { tx } from '../../lib/tx';
+import { param } from '../../lib/safe';
 
 type ProvX = { province: string; last: string; value: number; changePct: number | null; points: [string, number][] };
 type ProvDoc = { products: Record<string, { unit: string; default: string; provinces: ProvX[] }> };
 const PROV_FR: Record<string, string> = { Quebec: 'Québec' };
 
 export default function Serie() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const rp = useLocalSearchParams<{ id: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const id = param(rp.id, 'id');
   const { price, data, user, setUser, t, loadEu } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;

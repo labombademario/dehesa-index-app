@@ -8,6 +8,7 @@ import { C, mode } from '../lib/theme';
 import { num, pct } from '../lib/format';
 import { norm } from '../lib/logic';
 import { loadPriceHistory } from '../lib/api';
+import { param } from '../lib/safe';
 
 type Pts = [string, number][];
 const colors = () => (mode === 'dark' ? ['#7FD0A0', '#F08A7E', '#7FB2E8', '#E3B04F'] : ['#1f6b43', '#b03a2e', '#2b6cb0', '#c07f12']);
@@ -20,7 +21,8 @@ function ts(p: string): number {
 function addMonths(t: number, n: number) { const d = new Date(t); d.setUTCMonth(d.getUTCMonth() - n); return d.getTime(); }
 
 export default function Comparar() {
-  const { ids } = useLocalSearchParams<{ ids?: string }>();
+  const rp = useLocalSearchParams<{ ids?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const ids = param(rp.ids, 'ids') || undefined;
   const { data, user, t, loadEu } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;

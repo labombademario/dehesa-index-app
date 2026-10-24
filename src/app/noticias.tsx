@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle } from '../components/ui';
 import { date } from '../lib/format';
 import { C } from '../lib/theme';
+import { openSafe } from '../lib/openLink';
 
 const REGIONS = [['us', 'newsRegionUS'], ['eu', 'newsRegionEU'], ['uk', 'newsRegionUK'], ['ca', 'newsRegionCA'], ['global', 'newsRegionGlobal']] as const;
 
@@ -71,7 +72,7 @@ export default function Noticias() {
       <Note>{t('newsShowing').replace('{n}', String(list.length))}</Note>
       {list.length ? (
         <Card>{list.map((n, i) => <Row key={n.id} first={i === 0} title={n.title} sub={[n.source, n.country ? cname(n.country) : '', n.date ? date(n.date.slice(0, 10), L) : ''].filter(Boolean).join(' · ')}
-          onPress={() => Linking.openURL(n.url)} accessibilityLabel={`${n.title}, ${n.source}`} />)}</Card>
+          onPress={() => openSafe(n.url)} accessibilityLabel={`${n.title}, ${n.source}`} />)}</Card>
       ) : <Note>{t('noNews')}</Note>}
       {filtered ? <Pressable onPress={() => { setRegion('all'); setCountry('all'); }}><Text style={{ color: C.accent, fontWeight: '600', paddingVertical: 12 }}>{t('newsClear')}</Text></Pressable> : null}
     </Screen>

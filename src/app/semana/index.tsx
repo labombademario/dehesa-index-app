@@ -1,7 +1,7 @@
 // «La semana en cada país» (como semana.html de la web): por país (España, Francia, Italia, Alemania, EE. UU.) y semana, cuántos datos llegaron,
 // qué precios se movieron más y qué titulares publicaron sus medios agrarios. La prosa sale solo de las cifras del fichero; no se interpreta nada.
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Note, SectionTitle } from '../../components/ui';
@@ -14,6 +14,8 @@ import { loadGloss } from '../../lib/gloss';
 import { tl } from '../../lib/labelTl';
 import { flag } from '../../lib/tx';
 import { CountrySelect } from '../../components/CountryPicker';
+import { openSafe } from '../../lib/openLink';
+import { param } from '../../lib/safe';
 
 const CCS = ['ES', 'FR', 'IT', 'DE', 'US'];
 type Wk = { week: string; from: string; to: string; complete: boolean; updates: number; news: number };
@@ -25,7 +27,8 @@ export default function Semana() {
   const { user } = useApp();
   const L = user.lang, t = SW.T[L] ?? SW.T.es;
   const [idx, setIdx] = useState<Record<string, Wk[]> | null>(null);
-  const { c: pc } = useLocalSearchParams<{ c?: string }>();
+  const rp = useLocalSearchParams<{ c?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const pc = param(rp.c, 'cc') || undefined;
   const [cc, setCc] = useState(pc && CCS.includes(String(pc)) ? String(pc) : CCS.includes(user.market) ? user.market : 'ES');
   const [wk, setWk] = useState<string | null>(null);
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);
@@ -98,7 +101,7 @@ export default function Semana() {
           {doc.releases.length ? <Fold k="rl" title={t.releases} desc={t.releasesD}>{rows(doc.releases, false)}</Fold> : null}
           {doc.news.length ? <Fold k="nw" title={t.news} desc={fill(t.newsD, { m: m.charAt(0).toUpperCase() + m.slice(1) })}>
             <Card>{doc.news.map((n, i) => (
-              <Pressable key={i} onPress={() => Linking.openURL(n.url)} accessibilityRole="link" style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
+              <Pressable key={i} onPress={() => openSafe(n.url)} accessibilityRole="link" style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
                 <Text style={{ fontSize: 14.5, color: C.accent, fontWeight: '600' }}>{n.h}</Text>
                 <Text style={{ fontSize: 12, color: C.textMuted }}>{n.source} · {fmtDate(n.date, L)}{n.lang && n.lang !== L ? ' · ' + t.lang + ': ' + n.lang.toUpperCase() : ''}</Text>
               </Pressable>

@@ -1,7 +1,7 @@
 // Paquete por país (como los bloques de gasóleo, emisiones, sequía y nitratos de la ficha de país de la web): lee data/app/v1/env/<CC>.json,
 // que scripts/build-app-env.py genera desde los ficheros de cada país, y pinta cualquier bloque con la misma plantilla.
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../lib/store';
 import { Screen, Card, Row, Note, Segmented, Button } from '../../components/ui';
@@ -10,6 +10,8 @@ import { C } from '../../lib/theme';
 import { num, date as fmtDate } from '../../lib/format';
 import { webJson, countryName } from '../../lib/fv';
 import type { Lang } from '../../lib/types';
+import { openSafe } from '../../lib/openLink';
+import { param } from '../../lib/safe';
 
 type T4 = Record<Lang, string>;
 interface Stat { label: T4; value: number | null; unit: string | T4; dec: number; sub?: { d?: string } }
@@ -56,7 +58,9 @@ function BarsCard({ b, L }: { b: Bars; L: Lang }) {
 }
 
 export default function Entorno() {
-  const { cc, tab } = useLocalSearchParams<{ cc: string; tab?: string }>();
+  const rp = useLocalSearchParams<{ cc: string; tab?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const cc = param(rp.cc, 'cc');
+  const tab = param(rp.tab, 'flag') || undefined;
   const { user, t } = useApp();
   const L = user.lang;
   const { width } = useWindowDimensions();
@@ -87,7 +91,7 @@ export default function Entorno() {
           {(b.charts ?? []).map((c, k) => <ChartCard key={sel + k} c={c} L={L} width={cw} />)}
           {(b.bars ?? []).map((x, k) => <BarsCard key={sel + 'b' + k} b={x} L={L} />)}
           {b.note ? <Text style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 18 }}>{b.note[L]}</Text> : null}
-          {b.source ? <Pressable onPress={() => b.source?.url && Linking.openURL(b.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{t('envSource', b.source.name)}</Text></Pressable> : null}
+          {b.source ? <Pressable onPress={() => b.source?.url && openSafe(b.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{t('envSource', b.source.name)}</Text></Pressable> : null}
         </>}
       </>}
     </Screen>

@@ -1,6 +1,7 @@
 // Datos de dehesaindex.com/data/app/v1 con caché en el teléfono y copia incluida para el primer arranque sin conexión.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AppData, CountryProfile, CountryMap, RegionData } from './types';
+import { MAX_JSON_BYTES, dataPath, parseJson, validMain } from './safe';
 
 const BASE = 'https://dehesaindex.com/data/app/v1/';
 const FILES = ['prices', 'today', 'news', 'countries', 'sections'] as const;
@@ -37,13 +38,16 @@ export async function cached(): Promise<AppData | null> {
   }
 }
 
-async function getJson(url: string, timeoutMs = 15000): Promise<any> {
+async function getJson(url: string, timeoutMs = 15000, maxBytes = MAX_JSON_BYTES): Promise<any> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const r = await fetch(url, { signal: ctrl.signal, headers: { 'Cache-Control': 'no-cache' } });
     if (!r.ok) throw new Error(url + ': HTTP ' + r.status);
-    return await r.json();
+    const len = Number(r.headers.get('content-length') || 0);
+    if (len > 0 && len > maxBytes) throw new Error(url + ': demasiado grande');
+    // texto + parseJson: rechaza respuestas enormes, vacías o que no son un objeto JSON (la app sigue con la última copia buena)
+    return parseJson(await r.text(), maxBytes);
   } finally {
     clearTimeout(t);
   }
@@ -53,15 +57,22 @@ async function getJson(url: string, timeoutMs = 15000): Promise<any> {
 export async function refresh(): Promise<AppData> {
   let prev: Cached | null = null;
   try { const raw = await AsyncStorage.getItem(CACHE_KEY); prev = raw ? JSON.parse(raw) : null; } catch { prev = null; }
-  const manifest = await getJson(BASE + 'manifest.json?t=' + Date.now());
+  const manifest = await getJson(BASE + 'manifest.json?t=' + Date.now(), 15000, 2 * 1024 * 1024);
   const hashes: Partial<Record<FileKey, string>> = {};
   const bodies: Partial<Record<FileKey, any>> = {};
   // los ficheros que cambiaron se bajan a la vez (antes uno detrás de otro: cinco esperas seguidas al abrir la app)
   await Promise.all(FILES.map(async f => {
     const h = manifest.files?.[f + '.json']?.hash as string | undefined;
     if (h && prev?.hashes[f] === h && prev.bodies[f]) { bodies[f] = prev.bodies[f]; hashes[f] = h; return; }
-    bodies[f] = await getJson(BASE + f + '.json?h=' + (h ?? Date.now()));
-    hashes[f] = bodies[f].hash ?? h;
+    try {
+      const b = await getJson(BASE + f + '.json?h=' + (h ?? Date.now()));
+      if (!validMain(f, b)) throw new Error(f + ': forma inesperada');
+      bodies[f] = b; hashes[f] = b.hash ?? h;
+    } catch (e) {
+      // fichero corrupto, enorme o sin red: se conserva la última copia buena de ese fichero (si no hay, falla y la app sigue con lo guardado)
+      if (prev?.bodies[f]) { bodies[f] = prev.bodies[f]; hashes[f] = prev.hashes[f]; return; }
+      throw e;
+    }
   }));
   const c: Cached = { hashes, bodies, fetchedAt: new Date().toISOString() };
   try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch { /* sin espacio: seguimos con lo descargado */ }
@@ -71,6 +82,7 @@ export async function refresh(): Promise<AppData> {
 // Ficha de un pais (data/app/v1/country/<CC>.json): se baja al abrir el pais y se guarda en el telefono para verla sin conexion.
 const profileMem: Record<string, CountryProfile> = {};
 export async function loadCountry(cc: string): Promise<{ profile: CountryProfile | null; offline: boolean }> {
+  if (!/^[A-Z]{2}$/.test(cc)) return { profile: null, offline: false };   // código raro (p. ej. desde un enlace dehesaindex://): no encontrado
   const key = 'dehesa:country:' + cc;
   let stored: CountryProfile | null = profileMem[cc] ?? null;
   if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
@@ -104,6 +116,7 @@ export async function loadPriceHistory(id: string, version: string): Promise<Pts
 }
 const chunkMem: Record<string, Map<string, Pts>> = {};
 export async function loadSeriesHistory(file: string, id: string): Promise<Pts | null> {
+  file = dataPath(file); if (!file) return null;   // ruta del fichero sacada de los datos: solo rutas relativas normales
   try {
     if (!chunkMem[file]) {
       const r = await getJson('https://dehesaindex.com/data/' + file, 25000);
@@ -118,6 +131,7 @@ export async function loadSeriesHistory(file: string, id: string): Promise<Pts |
 // Mapa de un pais (data/app/v1/map/<CC>.json): contornos de regiones y metricas, con copia en el telefono.
 const mapMem: Record<string, CountryMap> = {};
 export async function loadMap(cc: string): Promise<{ map: CountryMap | null; offline: boolean }> {
+  if (!/^[A-Z]{2}$/.test(cc)) return { map: null, offline: false };
   const key = 'dehesa:map:' + cc;
   let stored: CountryMap | null = mapMem[cc] ?? null;
   if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
@@ -140,6 +154,7 @@ export function mapFromMemory(cc: string): CountryMap | null { return mapMem[cc]
 // Datos por region de un pais (data/app/v1/region/<CC>.json)
 const regMem: Record<string, RegionData> = {};
 export async function loadRegionData(cc: string): Promise<RegionData | null> {
+  if (!/^[A-Z]{2}$/.test(cc)) return null;
   const key = 'dehesa:region:' + cc;
   let stored: RegionData | null = regMem[cc] ?? null;
   if (!stored) { try { const raw = await AsyncStorage.getItem(key); stored = raw ? JSON.parse(raw) : null; } catch { stored = null; } }
@@ -159,6 +174,7 @@ export async function loadRegionData(cc: string): Promise<RegionData | null> {
 export interface CatSeries { id: string; label: string; unit: string; freq: string; group: string; latestPeriod: string; latest: number; changePct: number | null; sourceId: string; file: string }
 const catMem: Record<string, CatSeries[]> = {};
 export async function loadCatalog(cc: string): Promise<CatSeries[] | null> {
+  if (!/^[A-Z]{2}$/.test(cc)) return null;
   if (catMem[cc]) return catMem[cc];
   try {
     const r = await getJson('https://dehesaindex.com/data/catalog/' + cc + '.json', 30000);

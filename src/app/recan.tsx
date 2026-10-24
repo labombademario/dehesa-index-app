@@ -1,7 +1,7 @@
 // Costes y rentas de las explotaciones españolas (como la sección RECAN de la web; data/recan.json, MAPA, CC BY 4.0).
 // Cada cifra es la que publica el MAPA para una comunidad autónoma, un tipo de explotación y una dimensión económica: no se promedia nada.
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle } from '../components/ui';
@@ -12,6 +12,7 @@ import { num } from '../lib/format';
 import { webJson } from '../lib/fv';
 import { RT } from '../lib/recanText';
 import { tx, fill } from '../lib/tx';
+import { openSafe } from '../lib/openLink';
 
 type Doc = { years: number[]; ccaa: string[]; types: [string, string][]; dims: string[]; vars: [string, string, string][]; rows: [number, number, number, number, number | null, number | null, (number | null)[]][]; source: { url: string } };
 const KEY = ['SE025', 'SE010', 'SE131', 'SE270', 'SE605', 'SE410', 'SE420', 'SE425'];
@@ -70,7 +71,7 @@ export default function Recan() {
             </View>); })}</Card>
         </> : null}
       </>}
-      <Pressable onPress={() => Linking.openURL(d.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{tx(L, { es: 'Fuente: MAPA, RECAN (CC BY 4.0)', en: 'Source: MAPA, RECAN (CC BY 4.0)', fr: 'Source : MAPA, RECAN (CC BY 4.0)', it: 'Fonte: MAPA, RECAN (CC BY 4.0)' })}</Text></Pressable>
+      <Pressable onPress={() => openSafe(d.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{tx(L, { es: 'Fuente: MAPA, RECAN (CC BY 4.0)', en: 'Source: MAPA, RECAN (CC BY 4.0)', fr: 'Source : MAPA, RECAN (CC BY 4.0)', it: 'Fonte: MAPA, RECAN (CC BY 4.0)' })}</Text></Pressable>
     </Screen>
   );
 }

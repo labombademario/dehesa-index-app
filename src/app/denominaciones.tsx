@@ -1,7 +1,7 @@
 // Denominaciones de origen (como la sección de la web, data/gi/<CC>.json): vinos y quesos con nombre protegido en la UE según el registro
 // eAmbrosia de la Comisión Europea. Solo lo que publica el registro: nombre, DOP/IGP, año de protección y enlace al texto legal.
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Note, Segmented } from '../components/ui';
@@ -11,6 +11,8 @@ import { webJson, countryName } from '../lib/fv';
 import { norm } from '../lib/logic';
 import { tx, fill, flag } from '../lib/tx';
 import { CountrySelect } from '../components/CountryPicker';
+import { openSafe } from '../lib/openLink';
+import { param } from '../lib/safe';
 
 type GI = { n: string[]; t: 'PDO' | 'PGI' | 'GI'; y?: number; f?: string; u?: string };
 type Kind = 'wine' | 'cheese';
@@ -20,7 +22,8 @@ export default function Denominaciones() {
   const { user, t } = useApp();
   const L = user.lang;
   const [idx, setIdx] = useState<Record<string, { wine: number; cheese: number }> | null>(null);
-  const { c: pc } = useLocalSearchParams<{ c?: string }>();
+  const rp = useLocalSearchParams<{ c?: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const pc = param(rp.c, 'cc') || undefined;
   const [cc, setCc] = useState<string>(pc ? String(pc) : 'ES');
   const [doc, setDoc] = useState<Record<string, { wine: GI[]; cheese: GI[] } | null>>({});
   const [kind, setKind] = useState<Kind>('wine');
@@ -50,7 +53,7 @@ export default function Denominaciones() {
           style={{ height: 42, borderRadius: 10, paddingHorizontal: 12, backgroundColor: C.surfaceAlt, color: C.text, fontSize: 15 }} />
         {d === undefined ? <Note>{t('loading')}</Note> : !items.length ? <Note>{tx(L, { es: 'Sin denominaciones registradas.', en: 'No registered designations.', fr: 'Aucune appellation enregistrée.', it: 'Nessuna denominazione registrata.' })}</Note> : <Card>
           {shown.map((g, i) => (
-            <Pressable key={g.f ?? g.n[0]} disabled={!g.u} onPress={() => g.u && Linking.openURL(g.u)} accessibilityRole={g.u ? 'link' : undefined}
+            <Pressable key={g.f ?? g.n[0]} disabled={!g.u} onPress={() => g.u && openSafe(g.u)} accessibilityRole={g.u ? 'link' : undefined}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ fontSize: 15, fontWeight: '600', color: C.text }}>{g.n.join(' / ')}</Text>

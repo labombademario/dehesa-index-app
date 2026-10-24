@@ -11,6 +11,7 @@ import { tx, type T4 } from '../lib/tx';
 import { norm } from '../lib/logic';
 import { CountrySelect } from '../components/CountryPicker';
 import { flag } from '../lib/tx';
+import { param } from '../lib/safe';
 
 type G = 'all' | 'veg' | 'fruit' | 'nut';
 // Sudamérica (formato estándar de la web: un precio por kilo y producto, data/cl/fv.json). Argentina y Uruguay: sin fuente con licencia verificada.
@@ -35,7 +36,7 @@ export default function Frutas() {
   const L = user.lang;
   const [doc, setDoc] = useState<FvDoc | null>(null);
   const [done, setDone] = useState(false);
-  const prm = useLocalSearchParams<{ c?: string }>();
+  const prm = { c: param(useLocalSearchParams<{ c?: string }>().c, 'cc') || undefined };   // parámetro saneado
   const [cc, setCc] = useState(typeof prm.c === 'string' && /^[A-Z]{2}$/.test(prm.c) ? prm.c : user.market !== 'US' && user.market !== 'CA' ? user.market : 'ES');
   const [g, setG] = useState<G>('all');
   const [q, setQ] = useState('');

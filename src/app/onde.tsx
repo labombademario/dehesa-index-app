@@ -1,7 +1,7 @@
 // Francia: ríos que se quedan sin agua (ONDE, OFB) por departamento y mes — como #fronde de la web. Lee data/fr-onde.json (Licence Ouverte 2.0).
 // Cada mes (mayo a septiembre) se visitan ~3.300 puntos de pequeños ríos y se anota si el agua corre, está parada o el cauce está seco.
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, Text, TextInput, useWindowDimensions } from 'react-native';
+import { Pressable, Text, TextInput, useWindowDimensions } from 'react-native';
 import { Stack } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, SectionTitle, Segmented } from '../components/ui';
@@ -12,6 +12,7 @@ import { num, date as fmtDate } from '../lib/format';
 import { webJson } from '../lib/fv';
 import { norm } from '../lib/logic';
 import { tx } from '../lib/tx';
+import { openSafe } from '../lib/openLink';
 
 type Cnt = [number, number, number];   // corre, parada sin corriente, seca
 type Doc = { asOf: string; source: { name: string; url: string; license: string }; deptNames: Record<string, string>; months: { month: string; total: Cnt; departments: Record<string, Cnt> }[] };
@@ -68,7 +69,7 @@ export default function Onde() {
       {dept ? <Pressable onPress={() => setDept('')} accessibilityRole="button"><Text style={{ color: C.accent, fontWeight: '600' }}>‹ {T('Toda Francia', 'All of France', 'Toute la France', 'Tutta la Francia')}</Text></Pressable> : null}
       {hist.length > 2 ? <RangeChart key={dept + kind} points={hist} unit="%" label={kind === 'dry' ? T('Cauce seco', 'Dry bed', 'Lit à sec', 'Alveo asciutto') : T('Seco o sin corriente', 'Dry or no flow', 'Sec ou sans écoulement', 'Asciutto o senza corrente')} width={cw} />
         : <Note>{T('Sin histórico suficiente.', 'Not enough history.', 'Historique insuffisant.', 'Storico insufficiente.')}</Note>}
-      <Pressable onPress={() => Linking.openURL(d.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{T('Fuente: ', 'Source: ', 'Source : ', 'Fonte: ') + d.source.name + ' · ' + d.source.license}</Text></Pressable>
+      <Pressable onPress={() => openSafe(d.source.url)} accessibilityRole="link"><Text style={{ fontSize: 12, color: C.accent }}>{T('Fuente: ', 'Source: ', 'Source : ', 'Fonte: ') + d.source.name + ' · ' + d.source.license}</Text></Pressable>
     </Screen>
   );
 }

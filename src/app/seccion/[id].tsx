@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { SourceCite } from '../../components/SourceCite';
 import { useApp } from '../../lib/store';
@@ -7,9 +7,12 @@ import { Screen, Card, Row, Button, Note, text } from '../../components/ui';
 import { C, changeColor } from '../../lib/theme';
 import { num, pct, date } from '../../lib/format';
 import { figureText, NATIVE, secFor } from '../../lib/sections';
+import { openSafe } from '../../lib/openLink';
+import { param } from '../../lib/safe';
 
 export default function Seccion() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const rp = useLocalSearchParams<{ id: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const id = param(rp.id, 'id');
   const { data, user, t } = useApp();
   const L = user.lang;
 
@@ -29,7 +32,7 @@ export default function Seccion() {
             <Row title={t('source')} right="Dehesa Index" />
           </Card>
         </> : <Note>{t('missing')}</Note>}
-        <Button style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL('https://dehesaindex.com/metodologia.html')} />
+        <Button style={{ flex: 0 }} label={t('openWeb')} onPress={() => openSafe('https://dehesaindex.com/metodologia.html')} />
       </Screen>
     );
   }
@@ -53,7 +56,7 @@ export default function Seccion() {
       {secFor(sec.id, user.market) ? <Button style={{ flex: 0 }} label={t('openInApp')} onPress={() => router.push({ pathname: '/sec/[id]', params: { id: secFor(sec.id, user.market)! } })} /> : null}
       {NATIVE[sec.id] ? <Button style={{ flex: 0 }} label={t('seeSeries')} onPress={() => router.push({ pathname: '/explorar', params: NATIVE[sec.id] })} /> : null}
       <Note>{t('sectionNote')}</Note>
-      <Button kind={NATIVE[sec.id] ? 'secondary' : 'primary'} style={{ flex: 0 }} label={t('openWeb')} onPress={() => Linking.openURL(sec.url)} />
+      <Button kind={NATIVE[sec.id] ? 'secondary' : 'primary'} style={{ flex: 0 }} label={t('openWeb')} onPress={() => openSafe(sec.url)} />
     </Screen>
   );
 }

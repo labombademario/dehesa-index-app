@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Text, View, useWindowDimensions } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Button, LineChart, Note, Change, text } from '../components/ui';
@@ -10,9 +10,13 @@ import type { CountrySeries } from '../lib/types';
 import { RangeChart } from '../components/RangeChart';
 import { SourceCite } from '../components/SourceCite';
 import { ExportCsv } from '../components/ExportCsv';
+import { openSafe } from '../lib/openLink';
+import { param } from '../lib/safe';
 
 export default function Indicador() {
-  const { cc, id } = useLocalSearchParams<{ cc: string; id: string }>();
+  const rp = useLocalSearchParams<{ cc: string; id: string }>();   // parámetros saneados: un valor raro (p. ej. desde dehesaindex://) cuenta como no encontrado
+  const cc = param(rp.cc, 'cc');
+  const id = param(rp.id, 'id');
   const { data, user, t } = useApp();
   const { width } = useWindowDimensions();
   const L = user.lang;
@@ -44,7 +48,7 @@ export default function Indicador() {
       </Card>
       <SourceCite sourceId={sr.sourceId} period={sr.period} />
       <ExportCsv title={sr.labelT?.[L] ?? sr.label} place={country?.name[L]} unit={sr.unit} sourceId={sr.sourceId} points={sr.points} load={sr.file ? () => loadSeriesHistory(sr.file as string, sr.id) : undefined} />
-      {country ? <Button kind="secondary" label={t('openOnWeb')} onPress={() => Linking.openURL(country.url)} /> : null}
+      {country ? <Button kind="secondary" label={t('openOnWeb')} onPress={() => openSafe(country.url)} /> : null}
     </Screen>
   );
 }

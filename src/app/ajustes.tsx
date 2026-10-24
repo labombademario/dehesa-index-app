@@ -11,6 +11,7 @@ import { C } from '../lib/theme';
 import { LANGS, LANG_NAMES } from '../lib/i18n';
 import { notificationsEnabled } from '../lib/notify';
 import { tx } from '../lib/tx';
+import { openSafe } from '../lib/openLink';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const VERSION: string = require('../../app.json').expo.version;
@@ -55,8 +56,8 @@ export default function Ajustes() {
       <Note>{t('sourcesHint')}</Note>
       <Card>
         {sources.map(([name, count], i) => <Row key={name} first={i === 0} title={srcName(name, user.lang)} right={t('pricesCount', count)} />)}
-        <Row title={t('openWeb')} right="›" onPress={() => Linking.openURL('https://dehesaindex.com/metodologia.html')} />
-        <Row title={t('youtube')} right="›" onPress={() => Linking.openURL('https://www.youtube.com/@dehesaindex')} />
+        <Row title={t('openWeb')} right="›" onPress={() => openSafe('https://dehesaindex.com/metodologia.html')} />
+        <Row title={t('youtube')} right="›" onPress={() => openSafe('https://www.youtube.com/@dehesaindex')} />
       </Card>
       <Button kind="danger" label={t('wipe')} onPress={wipe} />
       <Text style={{ fontSize: 12, color: C.textMuted, textAlign: 'center' }}>Dehesa Index · {t('appVersion', VERSION)}</Text>
