@@ -3,7 +3,7 @@ import { Text, View, useWindowDimensions } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle } from '../components/ui';
-import { C } from '../lib/theme';
+import { C, MAX_W } from '../lib/theme';
 import { mapFromMemory, loadRegionData } from '../lib/api';
 import { RangeChart } from '../components/RangeChart';
 import { numAuto } from '../lib/format';
@@ -59,7 +59,7 @@ export default function Region() {
         </> : null}
         {rec.eaa.length ? <>
           <SectionTitle>{t('regOutput')}</SectionTitle>
-          <RangeChart points={rec.eaa[0].points!.map(p => [String(p[0]), p[1]] as [string, number])} unit={un(rd!.units.eaa)} label={rd!.labels[rec.eaa[0].k][L]} width={width - 32 - 28 - 2} />
+          <RangeChart points={rec.eaa[0].points!.map(p => [String(p[0]), p[1]] as [string, number])} unit={un(rd!.units.eaa)} label={rd!.labels[rec.eaa[0].k][L]} width={Math.min(width, MAX_W) - 32 - 28 - 2} />
           <Card>{rec.eaa.map((x, i) => <Row key={x.k} first={i === 0} title={rd!.labels[x.k][L]} sub={`${x.period} · ${un(rd!.units.eaa)}`} right={numAuto(x.value, L)} />)}</Card>
         </> : null}
         {rec.crops.length ? <>

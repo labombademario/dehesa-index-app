@@ -5,7 +5,7 @@ import { SourceCite } from '../../components/SourceCite';
 import { ExportCsv } from '../../components/ExportCsv';
 import { useApp, BASKET_MAX, staleSuffix, srcName } from '../../lib/store';
 import { Screen, Card, Row, Button, Note, SectionTitle, Change, OfficialBadge, text } from '../../components/ui';
-import { C, changeColor } from '../../lib/theme';
+import { C, MAX_W, changeColor } from '../../lib/theme';
 import { RangeChart } from '../../components/RangeChart';
 import { loadPriceHistory } from '../../lib/api';
 import { num, pct, date } from '../../lib/format';
@@ -65,7 +65,7 @@ export default function Serie() {
         <Chips items={provs.map(x => ({ value: x.province, label: provLabel(x.province) + (x.province === P!.default ? ' ★' : '') }))} value={prov ?? P!.default} onChange={setProv} />
       </> : null}
       {p.stale && !selP ? <Note>{t('staleData', date(p.date, L))}</Note> : null}
-      <RangeChart key={selP ? selP.province : 'd'} points={shownPts} unit={p.unit[L]} label={p.name[L]} width={width - 32 - 28 - 2} load={selP ? undefined : () => loadPriceHistory(p.id, p.date)} />
+      <RangeChart key={selP ? selP.province : 'd'} points={shownPts} unit={p.unit[L]} label={p.name[L]} width={Math.min(width, MAX_W) - 32 - 28 - 2} load={selP ? undefined : () => loadPriceHistory(p.id, p.date)} />
       <Card>
         <Row first title={t('source')} right={srcName(p.sourceName, L)} />
         <Row title={t('lastData')} right={date(shownDate, L)} />

@@ -12,6 +12,8 @@ const DARK: typeof LIGHT = {
   text: '#F2EFE3', textMuted: '#ABA68F', textSoft: '#C6C1AA', accent: '#D9BE72', accentInk: '#1E3328', accentSoft: '#3A3A22',
   positive: '#4FCB77', negative: '#E8776D', outline: '#8F8A74', gold: '#C9A227', hero: '#1E3328', badgeBg: '#26402F', badgeInk: '#9FDDB3',
 };
+/** Ancho máximo de la columna de contenido (pantallas anchas: iPad, iPhone plegable abierto, horizontal) */
+export const MAX_W = 720;
 export type Mode = 'light' | 'dark';
 export const C: typeof LIGHT = { ...LIGHT };
 export let mode: Mode = 'light';

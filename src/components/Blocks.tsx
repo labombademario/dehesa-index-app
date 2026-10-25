@@ -6,7 +6,7 @@ import { useApp } from '../lib/store';
 import { Card, Row, Segmented } from './ui';
 import { RangeChart } from './RangeChart';
 import { Chips } from './Chips';
-import { C } from '../lib/theme';
+import { C, MAX_W } from '../lib/theme';
 import { num, date as fmtDate } from '../lib/format';
 import type { Lang } from '../lib/types';
 import { openSafe } from '../lib/openLink';
@@ -65,7 +65,7 @@ export function BlockView({ b, onLink, linkLabel }: { b: Block; onLink?: (href: 
   const { user, t } = useApp();
   const L = user.lang;
   const { width } = useWindowDimensions();
-  const cw = Math.min(width, 700) - 32 - 28;
+  const cw = Math.min(width, MAX_W) - 32 - 28;
   const sd = (s: BStat) => (s.sub?.d == null ? '' : typeof s.sub.d === 'string' ? s.sub.d : s.sub.d[L] ?? s.sub.d.es);
   const fill = (s: BStat) => { const d = sd(s); return s.label[L].replace('{d}', d ? (isDate(d) ? fmtDate(d, L) : d) : ''); };
   return (

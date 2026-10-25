@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle, t
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
-import { C, R, ANDROID, changeColor, onThemeChange, mode as themeMode } from '../lib/theme';
+import { MAX_W, C, R, ANDROID, changeColor, onThemeChange, mode as themeMode } from '../lib/theme';
 import { useApp } from '../lib/store';
 import { date as fmtDate } from '../lib/format';
 
@@ -43,13 +43,13 @@ export function Screen({ children, title, subtitle, right, scroll = true, refres
       {right}
     </View>
   ) : null;
-  if (!scroll) return <View style={s.screen}>{head}{children}</View>;
+  if (!scroll) return <View style={[s.screen, s.wide]}>{head}{children}</View>;
   // «sticky»: una barra que se queda pegada arriba al desplazar. Se busca su posición entre los hijos reales del ScrollView por su clave.
   const kids = React.Children.toArray([refresh ? <BrandBar key="brand" /> : null, head ? <React.Fragment key="head">{head}</React.Fragment> : null, <DataStatus key="status" />,
     sticky ? <View key="sticky">{sticky}</View> : null, <React.Fragment key="body">{children}</React.Fragment>]);
   const stickyIdx = sticky ? kids.findIndex(k => (k as React.ReactElement).key === '.$sticky') : -1;
   return (
-    <ScrollView ref={scrollRef} style={{ backgroundColor: C.bg }} contentContainerStyle={s.screen} contentInsetAdjustmentBehavior="automatic"
+    <ScrollView ref={scrollRef} style={{ backgroundColor: C.bg }} contentContainerStyle={[s.screen, s.wide]} contentInsetAdjustmentBehavior="automatic"
       stickyHeaderIndices={stickyIdx >= 0 ? [stickyIdx] : undefined}
       refreshControl={refresh ? <RefreshControl refreshing={refreshing} onRefresh={reload} tintColor={C.accent} colors={[C.accent]} /> : undefined}>
       {kids}
@@ -161,6 +161,8 @@ export function Note({ children }: { children: React.ReactNode }) {
 }
 
 function build() { return StyleSheet.create({
+  // En pantallas anchas (iPad, iPhone plegable abierto, móvil en horizontal) el contenido se queda en una columna centrada
+  wide: { width: '100%', maxWidth: MAX_W, alignSelf: 'center' },
   screen: { padding: 16, paddingBottom: 40, gap: 16, backgroundColor: C.bg, flexGrow: 1 },
   headRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   title: { fontSize: ANDROID ? 28 : 34, fontWeight: '700', color: C.text, letterSpacing: ANDROID ? 0 : -0.5 },

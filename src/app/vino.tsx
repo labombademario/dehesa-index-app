@@ -7,7 +7,7 @@ import { useApp } from '../lib/store';
 import { Screen, Card, Row, Note, Segmented, SectionTitle } from '../components/ui';
 import { Chips } from '../components/Chips';
 import { RangeChart } from '../components/RangeChart';
-import { C } from '../lib/theme';
+import { C, MAX_W } from '../lib/theme';
 import { num, date as fmtDate, pct } from '../lib/format';
 import { webJson, countryName } from '../lib/fv';
 import { tx, flag } from '../lib/tx';
@@ -28,7 +28,7 @@ export default function Vino() {
   const [col, setCol] = useState<'red' | 'white'>('red');
   const [ft, setFt] = useState<keyof typeof FRT>('vsig_var');
   useEffect(() => { webJson('data/wine-prices.json', 6 * 3600e3).then(x => { setD(x); setDone(true); }); }, []);
-  const cw = Math.min(width, 700) - 32 - 28;
+  const cw = Math.min(width, MAX_W) - 32 - 28;
   let pts: Pts = [], weekly = false;
   if (d && cc === 'ES' && d.es) { weekly = true; pts = d.es.weeks.filter(w => w[col] != null).map(w => [w.to, w[col] as number]); }
   if (d && cc === 'FR' && d.fr) pts = d.fr.series[col + '.' + ft] ?? [];

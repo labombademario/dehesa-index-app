@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-na
 import Svg, { Path } from 'react-native-svg';
 import { router } from 'expo-router';
 import { Card, Note, Row, SectionTitle } from './ui';
-import { C, mode } from '../lib/theme';
+import { C, MAX_W, mode } from '../lib/theme';
 import { useApp } from '../lib/store';
 import { loadMap, mapFromMemory } from '../lib/api';
 import { num } from '../lib/format';
@@ -39,7 +39,7 @@ export function CountryMapView({ cc }: { cc: string }) {
   if (state === 'none' || (state === 'ok' && !map)) return null;
   if (state === 'loading' || !map || !m || !k) return <><SectionTitle>{t('mapRegions')}</SectionTitle><Note>{t('mapLoading')}</Note></>;
   const [, , vw, vh] = map.viewBox.split(' ').map(Number);
-  const w = width - 32 - 28, h = w * vh / vw;
+  const w = Math.min(width, MAX_W) - 32 - 28, h = w * vh / vw;
   const selected = map.regions.find(r => r.id === sel);
   const ranked = map.regions.filter(r => m.vals[r.id] != null).sort((a, b) => m.vals[b.id] - m.vals[a.id]);
   const missing = map.regions.filter(r => m.vals[r.id] == null);
