@@ -19,7 +19,8 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "9"
+      "buildNumber": "9",
+      "appleTeamId": "4AHMWU4NZ6"
     },
     "android": {
       "adaptiveIcon": {
