@@ -13,6 +13,7 @@ import { tx, fill, flag } from '../lib/tx';
 import { CountrySelect } from '../components/CountryPicker';
 import { openSafe } from '../lib/openLink';
 import { param } from '../lib/safe';
+import { GiZone, ZONE_TXT, type GiGeo } from '../components/GiZone';
 
 type GI = { n: string[]; t: 'PDO' | 'PGI' | 'GI'; y?: number; f?: string; u?: string };
 type Kind = 'wine' | 'cheese';
@@ -31,8 +32,10 @@ export default function Denominaciones() {
   const [q, setQ] = useState('');
   const [all, setAll] = useState(false);
   const [idxDone, setIdxDone] = useState(false);
+  const [geo, setGeo] = useState<Record<string, GiGeo | null>>({});   // zonas por país (no hay para FR: sus contornos van aparte en la web)
+  const [zone, setZone] = useState<string | null>(null);
   useEffect(() => { webJson('data/gi/index.json', 24 * 3600e3).catch(() => null).then((d: any) => { const c = d?.countries ?? null; setIdx(c); setIdxDone(true); if (c && !pc && user.market && c[user.market]) setCc(user.market); }); }, []);
-  useEffect(() => { if (doc[cc] === undefined) webJson('data/gi/' + cc + '.json', 24 * 3600e3).catch(() => null).then((d: any) => setDoc(o => ({ ...o, [cc]: d ? { wine: d.wine ?? [], cheese: d.cheese ?? [] } : null }))); setAll(false); }, [cc]);
+  useEffect(() => { if (doc[cc] === undefined) webJson('data/gi/' + cc + '.json', 24 * 3600e3).catch(() => null).then((d: any) => setDoc(o => ({ ...o, [cc]: d ? { wine: d.wine ?? [], cheese: d.cheese ?? [] } : null }))); setAll(false); setZone(null); if (cc !== 'FR' && geo[cc] === undefined) webJson('data/gi/' + cc + '-geo.json', 24 * 3600e3).catch(() => null).then((g: any) => setGeo(o => ({ ...o, [cc]: g && g.areas ? g : null }))); }, [cc]);
   const ccs = useMemo(() => (idx ? Object.keys(idx).filter(k => idx[k].wine + idx[k].cheese > 0).sort((a, b) => (idx[b].wine + idx[b].cheese) - (idx[a].wine + idx[a].cheese)) : []), [idx]);
   const d = doc[cc];
   const items = useMemo(() => {
@@ -53,7 +56,8 @@ export default function Denominaciones() {
           style={{ height: 42, borderRadius: 10, paddingHorizontal: 12, backgroundColor: C.surfaceAlt, color: C.text, fontSize: 15 }} />
         {d === undefined ? <Note>{t('loading')}</Note> : !items.length ? <Note>{tx(L, { es: 'Sin denominaciones registradas.', en: 'No registered designations.', fr: 'Aucune appellation enregistrée.', it: 'Nessuna denominazione registrata.' })}</Note> : <Card>
           {shown.map((g, i) => (
-            <Pressable key={g.f ?? g.n[0]} disabled={!g.u} onPress={() => g.u && openSafe(g.u)} accessibilityRole={g.u ? 'link' : undefined}
+            <React.Fragment key={g.f ?? g.n[0]}>
+            <Pressable disabled={!g.u} onPress={() => g.u && openSafe(g.u)} accessibilityRole={g.u ? 'link' : undefined}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: i ? 1 : 0, borderTopColor: C.border }}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ fontSize: 15, fontWeight: '600', color: C.text }}>{g.n.join(' / ')}</Text>
@@ -63,6 +67,13 @@ export default function Denominaciones() {
                 <Text style={{ fontSize: 12, fontWeight: '700', color: g.t === 'PDO' ? C.accentInk : C.text }}>{tx(L, TYPE[g.t] ?? TYPE.GI)}</Text>
               </View>
             </Pressable>
+            {g.f && geo[cc]?.areas[g.f] ? <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+              <Pressable onPress={() => setZone(zone === g.f ? null : g.f!)} accessibilityRole="button" accessibilityState={{ expanded: zone === g.f }}>
+                <Text style={{ color: C.accent, fontWeight: '600', fontSize: 13 }}>{tx(L, zone === g.f ? ZONE_TXT.hide : ZONE_TXT.show)}</Text>
+              </Pressable>
+              {zone === g.f ? <GiZone geo={geo[cc]!} f={g.f} L={L} /> : null}
+            </View> : null}
+            </React.Fragment>
           ))}
           {!all && !q && items.length > 40 ? <Pressable onPress={() => setAll(true)} accessibilityRole="button" style={{ padding: 12, borderTopWidth: 1, borderTopColor: C.border }}>
             <Text style={{ color: C.accent, fontWeight: '600', textAlign: 'center' }}>{fill(tx(L, { es: 'Ver las {0}', en: 'Show all {0}', fr: 'Voir les {0}', it: 'Vedi tutte le {0}' }), items.length)}</Text>
